@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useFrappeAuth, useFrappeGetDoc, useFrappeGetDocList } from 'frappe-react-sdk';
+import { useFrappeAuth, useFrappeGetDoc, useFrappeGetCall } from 'frappe-react-sdk';
 import { useWishlist } from '@/store/wishlist';
 
 interface Order { name: string; transaction_date: string; grand_total: number; status: string; }
@@ -28,12 +28,12 @@ export default function AccountPage() {
   const setWishlistUser = useWishlist(s => s.setUser);
   const { currentUser, logout, isLoading: authLoading } = useFrappeAuth();
   const { data: userDoc } = useFrappeGetDoc<FrappeUser>('User', currentUser ?? undefined);
-  const { data: orders = [] } = useFrappeGetDocList<Order>('Sales Order', currentUser ? {
-    fields: ['name', 'transaction_date', 'grand_total', 'status'],
-    filters: [['contact_email', '=', currentUser]],
-    orderBy: { field: 'transaction_date', order: 'desc' },
-    limit: 50,
-  } : undefined);
+  const { data: ordersRes } = useFrappeGetCall<{ message: Order[] }>(
+    'square_payment.api.get_my_orders',
+    undefined,
+    currentUser ? 'square_payment.api.get_my_orders' : null
+  );
+  const orders: Order[] = ordersRes?.message || [];
 
   useEffect(() => {
     if (!authLoading && !currentUser) navigate('/login');

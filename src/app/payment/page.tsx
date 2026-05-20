@@ -37,7 +37,7 @@ export default function PaymentPage() {
 
   // Fetch Square config from backend
   useEffect(() => {
-    fetch('/api/method/hira_payment.api.get_square_config', {
+    fetch('/api/method/square_payment.api.get_config', {
       headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': 'fetch' },
     })
       .then(r => r.json())
@@ -72,7 +72,7 @@ export default function PaymentPage() {
   async function initSquare() {
     if (!squareConfig || !cardContainerRef.current) return;
     try {
-      const payments = window.Square?.payments(squareConfig.app_id, squareConfig.location_id);
+      const payments = await window.Square?.payments(squareConfig.app_id, squareConfig.location_id);
       const card = await payments.card();
       await card.attach(cardContainerRef.current);
       cardRef.current = card;
@@ -104,7 +104,7 @@ export default function PaymentPage() {
 
       // 3. Call Frappe backend to charge & create order
       const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
-      const resp = await fetch('/api/method/hira_payment.api.process_payment', {
+      const resp = await fetch('/api/method/square_payment.api.process_payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -122,9 +122,17 @@ export default function PaymentPage() {
 
       const data = await resp.json();
       if (!resp.ok || data.exc) {
-        const msg = data.exc_type === 'ValidationError'
-          ? data._server_messages ? JSON.parse(JSON.parse(data._server_messages)[0]).message : 'Payment failed'
-          : data.message || 'Payment failed. Please try again.';
+        let msg = 'Payment failed. Please try again.';
+        try {
+          if (data._server_messages) {
+            const parsed = JSON.parse(data._server_messages);
+            const first = parsed[0];
+            try { msg = JSON.parse(first).message || first; } catch { msg = first; }
+            msg = msg.replace(/<[^>]+>/g, '').trim();
+          } else if (data.exception) {
+            msg = data.exception.split(':').slice(1).join(':').trim() || msg;
+          }
+        } catch { /* use default msg */ }
         throw new Error(msg);
       }
 

@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && yarn deploy",
     "build:frappe": "VITE_CATALOG_BASE=/assets/hira/catalog_images vite build --base /assets/hira/hirastore/",
+    "deploy": "rm -rf ../hirastore/public/store/assets/* && mkdir -p ../hirastore/public/store/assets ../hirastore/www/store && cp -r dist/assets/. ../hirastore/public/store/assets/ && cp dist/index.html ../hirastore/www/store/index.html",
     "preview": "vite preview"
   },
   "dependencies": {

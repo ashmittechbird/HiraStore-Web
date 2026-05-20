@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
-import { createOrder } from '@/lib/api';
+import { useFrappeCreateDoc } from 'frappe-react-sdk';
 
 export default function PaymentPage() {
   const navigate = useNavigate();
   const { clearCart } = useCart();
+  const { createDoc } = useFrappeCreateDoc();
   const [checkoutData, setCheckoutData] = useState<{ customer: Record<string, string>; cart: unknown[]; couponCode?: string; discount?: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -28,22 +29,43 @@ export default function PaymentPage() {
     setLoading(true);
     setError('');
     try {
-      const token = localStorage.getItem('hs_session_token');
-      const payload = {
-        customer: checkoutData.customer,
-        cart: checkoutData.cart,
-        paymentId: 'DEMO-' + Date.now(),
-        couponCode: checkoutData.couponCode || '',
-        discount: checkoutData.discount || 0,
-      };
-      const result = await createOrder(payload);
+      const { customer, cart, couponCode, discount } = checkoutData;
+      const today = new Date().toISOString().split('T')[0];
+      const delivDate = new Date();
+      delivDate.setDate(delivDate.getDate() + 7);
+
+      // Ensure Customer record exists (silently ignored if already exists)
+      await createDoc('Customer', {
+        customer_name: customer.fullName,
+        customer_type: 'Individual',
+        customer_group: 'Individual',
+        territory: 'All Territories',
+        email_id: customer.email,
+      }).catch(() => {});
+
+      const result = await createDoc('Sales Order', {
+        customer: customer.fullName,
+        transaction_date: today,
+        delivery_date: delivDate.toISOString().split('T')[0],
+        contact_email: customer.email,
+        contact_mobile: customer.phone,
+        remarks: [`Payment ID: DEMO-${Date.now()}`, couponCode ? `Coupon: ${couponCode} (Discount: $${discount || 0})` : ''].filter(Boolean).join(' | '),
+        items: (cart as Array<{ name?: string; id?: string; item_name?: string; qty?: number; price?: number; price_usd?: number }>).map(item => ({
+          item_code: (item as any).name || (item as any).id,
+          item_name: (item as any).item_name || (item as any).name || (item as any).id,
+          qty: (item as any).qty || 1,
+          rate: parseFloat(String((item as any).price_usd || (item as any).price || 0)),
+          uom: 'Nos',
+        })),
+      });
+
       clearCart();
       sessionStorage.removeItem('hs_checkout');
       sessionStorage.removeItem('hs_coupon');
       sessionStorage.setItem('hs_order_success', JSON.stringify({
-        orderId: result.name || result.order_id || 'HS-' + Date.now(),
-        customer: checkoutData.customer,
-        total: (checkoutData.cart as Array<{ price: number; qty: number }>).reduce((s, i) => s + i.price * i.qty, 0) - (checkoutData.discount || 0),
+        orderId: (result as any).name || 'HS-' + Date.now(),
+        customer,
+        total: (cart as Array<{ price: number; qty: number }>).reduce((s, i) => s + i.price * i.qty, 0) - (discount || 0),
       }));
       navigate('/order-success');
     } catch (e: unknown) {

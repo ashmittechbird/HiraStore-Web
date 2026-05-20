@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
-import { validateCoupon } from '@/lib/api';
+import { useFrappePostCall } from 'frappe-react-sdk';
 
 export default function CartPage() {
   const { items, removeItem, updateQty, clearCart, totalItems, totalPrice } = useCart();
@@ -12,6 +12,9 @@ export default function CartPage() {
   const [removing, setRemoving] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const { call: frappeGetList } = useFrappePostCall<{ message: any[] }>('frappe.client.get_list');
+  const { call: frappeGet } = useFrappePostCall<{ message: any }>('frappe.client.get');
+
   const subtotal = totalPrice();
   const shipping = subtotal >= 15 ? 0 : 5;
   const total = subtotal - discount + shipping;
@@ -21,9 +24,25 @@ export default function CartPage() {
     setCouponLoading(true);
     setCouponMsg('');
     try {
-      const data = await validateCoupon(coupon.trim(), subtotal);
-      setDiscount(data.discount || 0);
-      setCouponMsg(`✓ Coupon applied! You save $${(data.discount || 0).toFixed(2)}`);
+      const today = new Date().toISOString().split('T')[0];
+      const listRes = await frappeGetList({
+        doctype: 'Coupon Code',
+        fields: ['name', 'coupon_code', 'minimum_amount', 'valid_upto'],
+        filters: [['coupon_code', '=', coupon.trim()]],
+        limit: 1,
+      });
+      const hit = listRes.message?.[0];
+      if (!hit) throw new Error('Invalid coupon code');
+      if (hit.valid_upto && hit.valid_upto < today) throw new Error('This coupon code has expired');
+      const docRes = await frappeGet({ doctype: 'Coupon Code', name: hit.name });
+      const couponDoc = docRes.message;
+      if (couponDoc.minimum_amount && subtotal < couponDoc.minimum_amount)
+        throw new Error(`Minimum order $${couponDoc.minimum_amount} required`);
+      const disc = couponDoc.discount_percentage
+        ? +(subtotal * couponDoc.discount_percentage / 100).toFixed(2)
+        : 0;
+      setDiscount(disc);
+      setCouponMsg(`✓ Coupon applied! You save $${disc.toFixed(2)}`);
     } catch (e: unknown) {
       setCouponMsg((e as Error).message || 'Invalid coupon');
       setDiscount(0);

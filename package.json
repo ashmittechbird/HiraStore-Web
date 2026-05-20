@@ -6,24 +6,21 @@
     "dev": "vite",
     "build": "vite build",
     "build:frappe": "VITE_CATALOG_BASE=/assets/hira/catalog_images vite build --base /assets/hira/hirastore/",
-    "preview": "vite preview",
-    "server": "node server.js",
-    "dev:all": "concurrently \"node server.js\" \"vite\""
+    "preview": "vite preview"
   },
   "dependencies": {
+    "frappe-react-sdk": "^1.4.3",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-router-dom": "^6.23.1",
-    "frappe-react-sdk": "^1.4.3",
-    "zustand": "^4.5.2",
-    "concurrently": "^8.2.0"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "typescript": "^5",
     "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.0"
+    "typescript": "^5",
+    "vite": "^5.4.21"
   }
 }

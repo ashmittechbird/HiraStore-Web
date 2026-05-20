@@ -16,10 +16,10 @@ export default defineConfig({
       '/api/method': { target: 'http://localhost:8001', changeOrigin: true },
       '/api/resource': { target: 'http://localhost:8001', changeOrigin: true },
       '/files': { target: 'http://localhost:8001', changeOrigin: true },
-      // Custom server.js routes (auth, orders, coupons, homepage)
-      '/api': { target: 'http://localhost:5500', changeOrigin: true },
-      '/erp': { target: 'http://localhost:5500', changeOrigin: true },
-      '/catalog_images': { target: 'http://localhost:5500', changeOrigin: true },
+      // Remaining /api/* not matched above → ERPNext
+      '/api': { target: 'http://localhost:8001', changeOrigin: true },
+      // Local catalog images (move folder to public/catalog_images/ for dev)
+      '/catalog_images': { target: 'http://localhost:8001', changeOrigin: true },
     },
   },
 })

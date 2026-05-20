@@ -25,6 +25,8 @@ export default function ProductPage() {
   const wishToggle = useWishlist(s => s.toggle);
   const wishHas = useWishlist(s => s.has);
   const addItem = useCart(s => s.addItem);
+  const updateQty = useCart(s => s.updateQty);
+  const cartItems = useCart(s => s.items);
 
   useEffect(() => { setActiveIdx(0); }, [id]);
 
@@ -93,6 +95,7 @@ export default function ProductPage() {
   const category = itemCategory(item as Parameters<typeof itemCategory>[0]);
   const itemId = item.name || item.product_id || decodeURIComponent(id);
   const wished = wishHas(itemId);
+  const cartQty = cartItems.find(c => c.id === itemId)?.qty || 0;
 
   return (
     <div className="product-page">
@@ -173,20 +176,33 @@ export default function ProductPage() {
 
           <div className="divider" />
 
-          {/* Qty */}
-          <div className="qty-row">
-            <span className="qty-label">Qty</span>
-            <div className="qty-ctrl">
-              <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
-              <span className="qty-num">{qty}</span>
-              <button className="qty-btn" onClick={() => setQty(q => Math.min(10, q + 1))}>+</button>
+          {cartQty > 0 ? (
+            /* In-cart stepper — replaces qty selector + add button */
+            <div className="incart-stepper">
+              <button className="incart-btn" onClick={() => updateQty(itemId, cartQty - 1)}>−</button>
+              <div className="incart-mid">
+                <span className="incart-num">{cartQty}</span>
+                <span className="incart-label">in cart</span>
+              </div>
+              <button className="incart-btn" onClick={() => { addItem({ id: itemId, name, category, price, image: images[0] }); showToast('Added!'); }}>+</button>
             </div>
-          </div>
-
-          <button className={`btn-add${added ? ' added' : ''}`} onClick={handleAdd}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
-            {added ? 'Added to Cart ✓' : 'Add to Cart'}
-          </button>
+          ) : (
+            /* Qty selector + add button when not in cart */
+            <>
+              <div className="qty-row">
+                <span className="qty-label">Qty</span>
+                <div className="qty-ctrl">
+                  <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
+                  <span className="qty-num">{qty}</span>
+                  <button className="qty-btn" onClick={() => setQty(q => Math.min(10, q + 1))}>+</button>
+                </div>
+              </div>
+              <button className={`btn-add${added ? ' added' : ''}`} onClick={handleAdd}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
+                {added ? 'Added to Cart ✓' : 'Add to Cart'}
+              </button>
+            </>
+          )}
 
           <button className={`btn-wish${wished ? ' wishlisted' : ''}`} onClick={toggleWishlist}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill={wished ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
@@ -249,15 +265,23 @@ export default function ProductPage() {
         .detail-label { font-weight:500;color:#6b8b91;min-width:80px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;padding-top:1px; }
         .detail-val { color:#334d52;line-height:1.5; }
         .product-desc { font-size:14px;color:#6b8b91;line-height:1.7;margin-bottom:24px; }
-        .qty-row { display:flex;align-items:center;gap:16px;margin-bottom:16px; }
-        .qty-label { font-size:12px;font-weight:500;color:#6b8b91;text-transform:uppercase;letter-spacing:.05em; }
-        .qty-ctrl { display:flex;align-items:center;border:1.5px solid #c8e0e4;border-radius:6px;overflow:hidden; }
-        .qty-btn { width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:none;border:none;cursor:pointer;color:#6b8b91;font-size:18px;transition:background .15s; }
-        .qty-btn:hover { background:#f0f8f9;color:#005969; }
-        .qty-num { width:40px;text-align:center;font-size:14px;font-weight:500;color:#334d52; }
+        .qty-row { display:flex;align-items:center;gap:14px;margin-bottom:16px; }
+        .qty-label { font-size:11px;font-weight:600;color:#6b8b91;text-transform:uppercase;letter-spacing:.08em; }
+        .qty-ctrl { display:flex;align-items:center;border:1.5px solid #c8e0e4;border-radius:8px;overflow:hidden;height:44px; }
+        .qty-btn { width:44px;height:100%;display:flex;align-items:center;justify-content:center;background:#f5fbfc;border:none;cursor:pointer;color:#005969;font-size:20px;font-weight:300;transition:background .15s,color .15s,transform .08s;user-select:none;flex-shrink:0; }
+        .qty-btn:hover { background:#dff0f3;color:#003d4a; }
+        .qty-btn:active { transform:scale(0.85); }
+        .qty-num { width:44px;text-align:center;font-size:15px;font-weight:600;color:#005969;user-select:none;border-left:1px solid #c8e0e4;border-right:1px solid #c8e0e4; }
         .btn-add { width:100%;padding:15px 24px;background:#005969;color:#fff;font-size:15px;font-weight:500;border:none;border-radius:8px;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px; }
         .btn-add:hover { background:#003d4a; }
         .btn-add.added { background:#16a34a; }
+        .incart-stepper { display:flex;align-items:stretch;border:2px solid #005969;border-radius:10px;overflow:hidden;margin-bottom:12px;height:56px;background:#fff; }
+        .incart-btn { width:56px;min-width:56px;display:flex;align-items:center;justify-content:center;background:#005969;color:#fff;border:none;font-size:26px;font-weight:300;cursor:pointer;transition:background .15s,transform .08s;line-height:1;font-family:inherit;user-select:none;flex-shrink:0; }
+        .incart-btn:hover { background:#003d4a; }
+        .incart-btn:active { transform:scale(0.88); }
+        .incart-mid { flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-left:1.5px solid #b8dde3;border-right:1.5px solid #b8dde3; }
+        .incart-num { font-size:22px;font-weight:700;color:#005969;line-height:1; }
+        .incart-label { font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#8ab0b7;font-weight:600; }
         .btn-wish { width:100%;padding:12px 24px;background:transparent;color:#334d52;font-size:14px;border:1.5px solid #c8e0e4;border-radius:8px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px; }
         .btn-wish:hover { border-color:#005969;color:#005969;background:#f0f8f9; }
         .btn-wish.wishlisted { border-color:#005969;color:#005969;background:#e0f2f4; }

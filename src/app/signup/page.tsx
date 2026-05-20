@@ -1,31 +1,24 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useFrappeAuth } from 'frappe-react-sdk';
-import { signup } from '@/lib/api';
+import { Link } from 'react-router-dom';
+import { useFrappePostCall } from 'frappe-react-sdk';
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const { login } = useFrappeAuth();
+  const [success, setSuccess] = useState(false);
+  const { call, loading } = useFrappePostCall<{ message: string }>('frappe.core.doctype.user.user.sign_up');
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    if (!fullName || !email || !password) { setError('All fields required'); return; }
-    if (password.length < 8) { setError('Password must be at least 8 characters'); return; }
-    setLoading(true);
+    if (!fullName || !email) { setError('Name and email required'); return; }
     try {
-      await signup(fullName, email, password);
-      await login({ username: email, password });
-      navigate('/account');
+      await call({ email, full_name: fullName, redirect_to: '' });
+      setSuccess(true);
     } catch (err: unknown) {
       setError((err as Error).message || 'Signup failed');
     }
-    setLoading(false);
   }
 
   return (
@@ -37,26 +30,33 @@ export default function SignupPage() {
           <p>Join The Hira Store family</p>
         </div>
         <div className="auth-body">
-          <form onSubmit={handleSubmit}>
-            <div className="field">
-              <label>Full Name</label>
-              <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your name" autoComplete="name" />
+          {success ? (
+            <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px' }}>✉️</div>
+              <p style={{ color: '#334d52', fontWeight: 500, marginBottom: '8px' }}>Check your email!</p>
+              <p style={{ fontSize: '13px', color: '#6b8b91', marginBottom: '24px' }}>
+                We sent a link to <strong>{email}</strong>.<br />Click it to set your password and log in.
+              </p>
+              <Link to="/login" className="btn-primary" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>Go to Sign In</Link>
             </div>
-            <div className="field">
-              <label>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" autoComplete="email" />
-            </div>
-            <div className="field">
-              <label>Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" autoComplete="new-password" />
-            </div>
-            {error && <div className="auth-error">{error}</div>}
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? 'Creating account…' : 'Create Account'}
-            </button>
-          </form>
-          <div className="divider">or</div>
-          <Link to="/" className="guest-btn">← Back to Store</Link>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <div className="field">
+                <label>Full Name</label>
+                <input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your name" autoComplete="name" />
+              </div>
+              <div className="field">
+                <label>Email</label>
+                <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" autoComplete="email" />
+              </div>
+              {error && <div className="auth-error">{error}</div>}
+              <button type="submit" className="btn-primary" disabled={loading}>
+                {loading ? 'Creating account…' : 'Create Account'}
+              </button>
+              <div className="divider">or</div>
+              <Link to="/" className="guest-btn">← Back to Store</Link>
+            </form>
+          )}
         </div>
         <div className="auth-footer">
           Already have an account? <Link to="/login">Sign in</Link>

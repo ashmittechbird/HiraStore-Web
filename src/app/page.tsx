@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchItems, getHomepageSections, itemImage, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
+import { useFrappeGetDocList } from 'frappe-react-sdk';
+import { itemImage, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 
@@ -120,12 +121,33 @@ function ProductCard({ item, onAddToCart }: { item: Product; onAddToCart: (item:
   );
 }
 
+const HP_FIELDS = ['name','item_name','item_group','standard_rate','image','disabled'];
+
 export default function HomePage() {
   const [heroIdx, setHeroIdx] = useState(0);
-  const [mostLoved, setMostLoved] = useState<Product[]>([]);
-  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const addItem = useCart(s => s.addItem);
   useReveal();
+
+  const { data: featuredItems = [] } = useFrappeGetDocList<Product>('Item', {
+    fields: HP_FIELDS,
+    filters: [['custom_is_featured', '=', 1], ['disabled', '=', 0]],
+    limit: 8,
+    orderBy: { field: 'modified', order: 'desc' },
+  });
+  const { data: recentItems = [] } = useFrappeGetDocList<Product>('Item', {
+    fields: HP_FIELDS,
+    filters: [['disabled', '=', 0]],
+    limit: 8,
+    orderBy: { field: 'modified', order: 'desc' },
+  });
+  const { data: newArrivals = [] } = useFrappeGetDocList<Product>('Item', {
+    fields: HP_FIELDS,
+    filters: [['disabled', '=', 0]],
+    limit: 4,
+    orderBy: { field: 'creation', order: 'desc' },
+  });
+
+  const mostLoved = featuredItems.length > 0 ? featuredItems : recentItems;
 
   useEffect(() => {
     const t = setInterval(() => setHeroIdx(i => (i + 1) % HERO_IMAGES.length), 6000);
@@ -141,26 +163,6 @@ export default function HomePage() {
       image: itemImage(item as Parameters<typeof itemImage>[0]),
     });
   }, [addItem]);
-
-  useEffect(() => {
-    (async () => {
-      const sections = await getHomepageSections();
-      if (sections.most_loved?.length) {
-        const items = await fetchItems([['name', 'in', sections.most_loved]], sections.most_loved.length);
-        setMostLoved(items);
-      } else {
-        const items = await fetchItems([], 8, 'modified desc');
-        setMostLoved(items);
-      }
-      if (sections.new_arrivals?.length) {
-        const items = await fetchItems([['name', 'in', sections.new_arrivals]], sections.new_arrivals.length);
-        setNewArrivals(items);
-      } else {
-        const items = await fetchItems([], 4, 'creation desc');
-        setNewArrivals(items);
-      }
-    })();
-  }, []);
 
   return (
     <>
@@ -202,7 +204,7 @@ export default function HomePage() {
         </div>
         <div className="cat-grid">
           {CATEGORIES.map((c, i) => (
-            <Link key={c.cat} href={`/shop?cat=${c.cat}`} className={`cat-card reveal reveal-delay-${(i % 4) + 1}`}>
+            <Link key={c.cat} to={`/shop?cat=${c.cat}`} className={`cat-card reveal reveal-delay-${(i % 4) + 1}`}>
               <div className="cat-img-wrap">
                 <img src={c.img} alt={c.name} />
               </div>

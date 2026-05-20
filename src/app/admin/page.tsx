@@ -1,57 +1,37 @@
 import { useEffect, useState, useRef } from 'react';
+import {
+  useFrappeAuth, useFrappeGetDocList, useFrappeCreateDoc,
+  useFrappeUpdateDoc, useFrappeDeleteDoc, useFrappePostCall,
+} from 'frappe-react-sdk';
 import './admin.css';
 
 // ─── TYPES ───────────────────────────────────────────────────────────
-interface Cfg { url: string; key: string; secret: string; group: string; company: string; }
 interface Item { name: string; item_name?: string; item_group?: string; standard_rate?: number; image?: string; custom_item_images?: string; custom_is_featured?: number|boolean; custom_material?: string; custom_short_description?: string; description?: string; weight_per_unit?: number; }
 interface SalesOrder { name: string; customer?: string; transaction_date?: string; grand_total?: number; status?: string; contact_phone?: string; contact_mobile?: string; contact_email?: string; shipping_address_name?: string; per_delivered?: number; remarks?: string; items?: OItem[]; }
 interface OItem { item_name?: string; item_code?: string; qty: number; rate: number; amount: number; }
 interface Customer { name: string; customer_name?: string; customer_type?: string; email_id?: string; mobile_no?: string; creation?: string; }
-interface Coupon { name: string; coupon_code?: string; minimum_amount?: number; valid_from?: string; valid_upto?: string; description?: string; discount_percentage?: number; }
+interface Coupon { name: string; coupon_code?: string; minimum_amount?: number; valid_from?: string; valid_upto?: string; description?: string; discount_percentage?: number; pricing_rule?: string; }
 interface Addr { address_line1?: string; address_line2?: string; city?: string; state?: string; pincode?: string; country?: string; phone?: string; email_id?: string; address_type?: string; }
 interface Toasty { id: number; msg: string; type: 'success'|'error'|'info'; }
 type PageId = 'dashboard'|'products'|'orders'|'customers'|'homepage'|'offers'|'settings';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────
-const DEFAULTS: Cfg = { url:'http://127.0.0.1:8001', key:'df4ffcff00dcb5d', secret:'054316891a5f19f', group:'Jewelry', company:'' };
 const STATUSES = ['Draft','To Deliver and Bill','To Bill','To Deliver','Completed','Cancelled'];
 const PAGE_TITLES: Record<PageId,string> = { dashboard:'Dashboard', products:'Products', orders:'Orders', customers:'Customers', homepage:'Homepage Sections', offers:'Offers & Coupons', settings:'Settings' };
 
 // ─── HELPERS ──────────────────────────────────────────────────────────
-function loadCfg(): Cfg {
-  if (typeof window === 'undefined') return { ...DEFAULTS };
-  try { const s = localStorage.getItem('hs_admin_cfg'); if (s) return { ...DEFAULTS, ...JSON.parse(s) }; } catch {}
-  return { ...DEFAULTS };
-}
-function saveCfg(c: Cfg) { localStorage.setItem('hs_admin_cfg', JSON.stringify(c)); }
-function iUrl(cfg: Cfg, img?: string): string {
+function iUrl(img?: string): string {
   if (!img) return `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><rect fill='%23f5f0ea' width='200' height='200'/><text x='50%25' y='50%25' text-anchor='middle' dominant-baseline='middle' fill='%23a89580' font-size='32'>✦</text></svg>`;
   if (img.startsWith('http')) return img;
-  return cfg.url + img;
+  return img;
 }
 function fmtDate(d?: string) { if (!d) return '—'; return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
 function sBadgeCls(s?: string) { const m: Record<string,string> = {'Completed':'badge-green','Draft':'badge-gray','To Deliver and Bill':'badge-amber','To Bill':'badge-blue','To Deliver':'badge-blue','Cancelled':'badge-red'}; return m[s||'']||'badge-gray'; }
 function parseRemarks(r?: string) {
   if (!r) return {};
-  const pay = r.match(/Square Payment ID:\s*([^\s|]+)/i);
+  const pay = r.match(/Square Payment ID:\s*([^\s|]+)/i) || r.match(/Payment ID:\s*([^\s|]+)/i);
   const coup = r.match(/Coupon:\s*([^|]+)/i);
   return { paymentId: pay?.[1], coupon: coup?.[1]?.trim() };
-}
-
-// ─── API ──────────────────────────────────────────────────────────────
-async function erpCall(cfg: Cfg, method: string, ep: string, body?: object): Promise<any> {
-  const r = await fetch(cfg.url + ep, {
-    method,
-    headers: { 'Authorization': `token ${cfg.key}:${cfg.secret}`, 'Content-Type': 'application/json' },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  });
-  if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error((e as any).message || (e as any).exc || r.statusText); }
-  return r.json();
-}
-async function erpUpload(cfg: Cfg, file: File): Promise<string|null> {
-  const fd = new FormData(); fd.append('file', file, file.name); fd.append('is_private', '0');
-  const r = await fetch(`${cfg.url}/api/method/upload_file`, { method:'POST', headers:{ 'Authorization': `token ${cfg.key}:${cfg.secret}` }, body: fd });
-  const d = await r.json(); return (d as any).message?.file_url || (d as any).file_url || null;
 }
 
 // ─── ICONS ────────────────────────────────────────────────────────────
@@ -106,13 +86,13 @@ function StatCard({ icon, label, value, meta }: { icon: React.ReactNode; label: 
   );
 }
 
-function HpSection({ items, selected, cfg, onToggle }: { items: Item[]; selected: string[]; cfg: Cfg; onToggle: (id:string)=>void }) {
+function HpSection({ items, selected, onToggle }: { items: Item[]; selected: string[]; onToggle: (id:string)=>void }) {
   const sorted = [...items.filter(i => selected.includes(i.name)), ...items.filter(i => !selected.includes(i.name))];
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:8, maxHeight:400, overflowY:'auto' }}>
       {sorted.map(item => {
         const checked = selected.includes(item.name);
-        const img = iUrl(cfg, item.image);
+        const img = iUrl(item.image);
         return (
           <label key={item.name} style={{ display:'flex', alignItems:'center', gap:12, padding:'8px 10px', borderRadius:8, cursor:'pointer', border:`1.5px solid ${checked?'var(--gold)':'var(--border)'}`, background:checked?'var(--gold-xl)':'transparent', transition:'all .15s' }}>
             <input type="checkbox" checked={checked} onChange={() => onToggle(item.name)} style={{ display:'none' }} />
@@ -161,7 +141,7 @@ function OrderDetailBody({ order, addr }: { order: SalesOrder; addr: Addr|null }
         <div style={{ marginBottom:16, paddingBottom:16, borderBottom:'1px solid var(--border)' }}>
           <div style={{ fontSize:11, fontWeight:600, textTransform:'uppercase', letterSpacing:'.1em', color:'var(--text3)', marginBottom:8 }}>Payment</div>
           <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-            {paymentId && <span style={{ background:'var(--green-bg)', color:'var(--green)', padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:500 }}>Square — {paymentId}</span>}
+            {paymentId && <span style={{ background:'var(--green-bg)', color:'var(--green)', padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:500 }}>Payment — {paymentId}</span>}
             {coupon && <span style={{ background:'var(--amber-bg)', color:'var(--amber)', padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:500 }}>Coupon: {coupon}</span>}
           </div>
         </div>
@@ -238,7 +218,7 @@ function CustomerDetailBody({ data }: { data: { name:string; email:string; order
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6, fontSize:12, color:'var(--text2)' }}>
                   <div>Date: {fmtDate(o.transaction_date)}</div>
                   <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:15, color:'var(--text)', fontWeight:600 }}>${(o.grand_total||0).toFixed(2)}</div>
-                  {p.paymentId && <div style={{ gridColumn:'1/-1' }}><span style={{ background:'var(--green-bg)', color:'var(--green)', padding:'2px 8px', borderRadius:4, fontSize:11, fontWeight:500 }}>Square — {p.paymentId}</span></div>}
+                  {p.paymentId && <div style={{ gridColumn:'1/-1' }}><span style={{ background:'var(--green-bg)', color:'var(--green)', padding:'2px 8px', borderRadius:4, fontSize:11, fontWeight:500 }}>Payment — {p.paymentId}</span></div>}
                   {p.coupon && <div style={{ gridColumn:'1/-1' }}>Coupon: {p.coupon}</div>}
                 </div>
               </div>
@@ -250,27 +230,47 @@ function CustomerDetailBody({ data }: { data: { name:string; email:string; order
   );
 }
 
+// ─── FILE UPLOAD HELPER (session-based) ──────────────────────────────
+async function uploadImage(file: File): Promise<string | null> {
+  const fd = new FormData();
+  fd.append('file', file, file.name);
+  fd.append('is_private', '0');
+  const csrfCookie = document.cookie.match(/csrftoken=([^;]+)/);
+  const csrf = csrfCookie ? csrfCookie[1] : '';
+  const r = await fetch('/api/method/upload_file', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'X-Frappe-CSRF-Token': csrf },
+    body: fd,
+  });
+  const d = await r.json();
+  return d.message?.file_url || d.file_url || null;
+}
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────
 export default function AdminPage() {
-  const [cfg, setCfg] = useState<Cfg>(DEFAULTS);
+  // Auth
+  const { currentUser, login, logout: sdkLogout, isLoading: authLoading } = useFrappeAuth();
+  const authed = !authLoading && !!currentUser;
+
+  // Login state
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [loginErr, setLoginErr] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
-  const [authed, setAuthed] = useState(false);
+
+  // UI state
   const [page, setPage] = useState<PageId>('dashboard');
   const [sbOpen, setSbOpen] = useState(false);
-  const [connOk, setConnOk] = useState(false);
   const [toasts, setToasts] = useState<Toasty[]>([]);
 
-  const [stats, setStats] = useState({ products:0, orders:0, pending:0, revenue:0 });
-  const [recentOrders, setRecentOrders] = useState<SalesOrder[]>([]);
-  const [dashLoading, setDashLoading] = useState(false);
+  // Settings
+  const [itemGroup, setItemGroup] = useState(() => localStorage.getItem('hs_item_group') || 'Jewelry');
 
-  const [allProducts, setAllProducts] = useState<Item[]>([]);
+  // Products state
   const [prodSearch, setProdSearch] = useState('');
   const [prodCat, setProdCat] = useState('');
   const [prodView, setProdView] = useState<'grid'|'list'>('grid');
-  const [prodLoading, setProdLoading] = useState(false);
-
   const [prodModal, setProdModal] = useState(false);
   const [editingId, setEditingId] = useState<string|null>(null);
   const emptyExtraImg = () => ({ url:'', file:null as File|null, preview:'' });
@@ -278,171 +278,123 @@ export default function AdminPage() {
   const [pf, setPf] = useState(defaultPf);
   const [prodSaving, setProdSaving] = useState(false);
 
-  const [allOrders, setAllOrders] = useState<SalesOrder[]>([]);
+  // Orders state
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatusF, setOrderStatusF] = useState('');
-  const [ordersLoading, setOrdersLoading] = useState(false);
   const [orderModal, setOrderModal] = useState<{ order:SalesOrder; addr:Addr|null }|null>(null);
   const [orderModalLoading, setOrderModalLoading] = useState(false);
 
-  const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
+  // Customers state
   const [custSearch, setCustSearch] = useState('');
-  const [custLoading, setCustLoading] = useState(false);
   const [custModal, setCustModal] = useState<{ name:string; email:string; orders:SalesOrder[]; addresses:Addr[] }|null>(null);
   const [custModalLoading, setCustModalLoading] = useState(false);
 
-  const [hpItems, setHpItems] = useState<Item[]>([]);
+  // Homepage state
   const [hpML, setHpML] = useState<string[]>([]);
   const [hpNA, setHpNA] = useState<string[]>([]);
-  const [hpLoading, setHpLoading] = useState(false);
   const [hpSaving, setHpSaving] = useState(false);
 
+  // Offers state
   const [allOffers, setAllOffers] = useState<Coupon[]>([]);
-  const [offersLoading, setOffersLoading] = useState(false);
   const [ofCode,setOfCode] = useState(''); const [ofPct,setOfPct] = useState(''); const [ofMin,setOfMin] = useState('');
   const [ofFrom,setOfFrom] = useState(''); const [ofUpto,setOfUpto] = useState(''); const [ofDesc,setOfDesc] = useState('');
 
+  // Confirm dialog
   const [confirmDlg, setConfirmDlg] = useState<{ title:string; msg:string; onOk:()=>void }|null>(null);
 
-  const cfgRef = useRef(cfg);
-  cfgRef.current = cfg;
+  // ── SDK DATA HOOKS ──
+  const ITEM_FIELDS = ['name','item_name','standard_rate','item_group','image','custom_item_images','custom_is_featured','custom_material','custom_short_description','description','weight_per_unit'];
+  const { data: allProducts = [], isLoading: prodLoading, mutate: reloadProducts } = useFrappeGetDocList<Item>(
+    'Item', authed ? { fields: ITEM_FIELDS, limit: 500 } : undefined
+  );
 
+  const ORDER_FIELDS = ['name','customer','transaction_date','grand_total','status','contact_phone','shipping_address_name','per_delivered'];
+  const { data: allOrders = [], isLoading: ordersLoading, mutate: reloadOrders } = useFrappeGetDocList<SalesOrder>(
+    'Sales Order', authed ? { fields: ORDER_FIELDS, limit: 500, orderBy: { field: 'transaction_date', order: 'desc' } } : undefined
+  );
+
+  const CUST_FIELDS = ['name','customer_name','customer_type','email_id','mobile_no','creation'];
+  const { data: allCustomers = [], isLoading: custLoading, mutate: reloadCustomers } = useFrappeGetDocList<Customer>(
+    'Customer', authed ? { fields: CUST_FIELDS, limit: 200, orderBy: { field: 'creation', order: 'desc' } } : undefined
+  );
+
+  const HP_FIELDS = ['name','item_name','image','standard_rate','item_group','custom_is_featured'];
+  const { data: hpItemsList = [], isLoading: hpLoading, mutate: reloadHp } = useFrappeGetDocList<Item>(
+    'Item', authed ? { fields: HP_FIELDS, filters: [['disabled','=',0]], limit: 200, orderBy: { field: 'item_name', order: 'asc' } } : undefined
+  );
+
+  const COUPON_FIELDS = ['name','coupon_code','minimum_amount','valid_from','valid_upto','description'];
+  const { data: couponList = [], isLoading: offersListLoading, mutate: reloadOffers } = useFrappeGetDocList<Coupon>(
+    'Coupon Code', authed ? { fields: COUPON_FIELDS, limit: 50, orderBy: { field: 'creation', order: 'desc' } } : undefined
+  );
+
+  const { data: companyList = [] } = useFrappeGetDocList<{ name: string }>(
+    'Company', authed ? { fields: ['name'], limit: 1 } : undefined
+  );
+
+  // ── SDK MUTATIONS ──
+  const { createDoc } = useFrappeCreateDoc();
+  const { updateDoc } = useFrappeUpdateDoc();
+  const { deleteDoc } = useFrappeDeleteDoc();
+  const { call: frappeGet } = useFrappePostCall<{ message: any }>('frappe.client.get');
+  const { call: frappeGetList } = useFrappePostCall<{ message: any[] }>('frappe.client.get_list');
+  const { call: makeDelivNote } = useFrappePostCall<{ message: any }>('erpnext.selling.doctype.sales_order.sales_order.make_delivery_note');
+
+  // Ref to avoid stale closure in effects
+  const frappeGetRef = useRef(frappeGet);
+  frappeGetRef.current = frappeGet;
+
+  // ── DERIVED DATA ──
+  const dashLoading = prodLoading || ordersLoading;
+  const stats = {
+    products: allProducts.length,
+    orders: allOrders.length,
+    pending: allOrders.filter(o => !['Completed','Cancelled'].includes(o.status||'')).length,
+    revenue: allOrders.reduce((s,o) => s+(o.grand_total||0), 0),
+  };
+  const recentOrders = allOrders.slice(0, 8);
+  const offersLoading = offersListLoading || (couponList.length > 0 && allOffers.length === 0);
+
+  // ── EFFECTS ──
+  useEffect(() => {
+    if (!hpItemsList.length) return;
+    setHpML(hpItemsList.filter(i => i.custom_is_featured).map(i => i.name));
+    try { setHpNA(JSON.parse(localStorage.getItem('hs_hp_na') || '[]')); } catch {}
+  }, [hpItemsList]);
+
+  useEffect(() => {
+    if (!couponList.length) { setAllOffers([]); return; }
+    Promise.all(
+      couponList.map(c => frappeGetRef.current({ doctype: 'Coupon Code', name: c.name })
+        .then(r => r.message || c).catch(() => c))
+    ).then(full => setAllOffers(full));
+  }, [couponList]);
+
+  // ── FILTERS ──
+  const filteredProducts = allProducts.filter(p => { const q=prodSearch.toLowerCase(); return (p.item_name||p.name||'').toLowerCase().includes(q) && (!prodCat||p.item_group===prodCat); });
+  const filteredOrders = allOrders.filter(o => { const q=orderSearch.toLowerCase(); return ((o.name||'').toLowerCase().includes(q)||(o.customer||'').toLowerCase().includes(q)) && (!orderStatusF||o.status===orderStatusF); });
+  const filteredCusts = allCustomers.filter(c => { const q=custSearch.toLowerCase(); return (c.customer_name||'').toLowerCase().includes(q)||(c.email_id||'').toLowerCase().includes(q)||(c.mobile_no||'').toLowerCase().includes(q); });
+  const categories = Array.from(new Set(allProducts.map(p=>p.item_group).filter(Boolean))).sort() as string[];
+  const pendingCount = allOrders.filter(o => !['Completed','Cancelled'].includes(o.status||'')).length;
+
+  // ── HANDLERS ──
   function toast(msg: string, type: 'success'|'error'|'info' = 'info') {
     const id = Date.now() + Math.random();
     setToasts(p => [...p, { id, msg, type }]);
     setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 3500);
   }
-  function erp(method: string, ep: string, body?: object) { return erpCall(cfgRef.current, method, ep, body); }
-
-  useEffect(() => {
-    const saved = loadCfg(); setCfg(saved); cfgRef.current = saved;
-    if (localStorage.getItem('hs_admin_cfg')) {
-      erpCall(saved, 'GET', '/api/resource/Item?limit=1').then(() => { setAuthed(true); setConnOk(true); }).catch(() => {});
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!authed) return;
-    loadDashboard(); loadProducts(); loadOrders(); loadCustomers(); loadOffers(); loadHomepage();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authed]);
-
-  async function loadDashboard() {
-    setDashLoading(true);
-    try {
-      const [ir, or2] = await Promise.all([
-        erp('GET', '/api/resource/Item?fields=["name"]&limit=500'),
-        erp('GET', '/api/resource/Sales Order?fields=["name","status","grand_total"]&limit=500'),
-      ]);
-      const orders: SalesOrder[] = or2.data || [];
-      const pending = orders.filter(o => !['Completed','Cancelled'].includes(o.status||''));
-      const rev = orders.reduce((s,o) => s+(o.grand_total||0), 0);
-      setStats({ products: (ir.data||[]).length, orders: orders.length, pending: pending.length, revenue: rev });
-      setRecentOrders(orders.slice(0,8));
-    } catch(e: any) { toast('Dashboard load failed: '+e.message, 'error'); }
-    setDashLoading(false);
-  }
-
-  async function loadProducts() {
-    setProdLoading(true);
-    try {
-      const fields = JSON.stringify(["name","item_name","standard_rate","item_group","image","custom_item_images","custom_is_featured","custom_material","custom_short_description","description"]);
-      const r = await erp('GET', `/api/resource/Item?fields=${encodeURIComponent(fields)}&limit=500`);
-      setAllProducts(r.data || []);
-    } catch(e: any) { toast('Products load failed: '+e.message, 'error'); }
-    setProdLoading(false);
-  }
-
-  async function loadOrders() {
-    setOrdersLoading(true);
-    try {
-      const fields = JSON.stringify(["name","customer","transaction_date","grand_total","status","contact_phone","shipping_address_name","per_delivered"]);
-      const r = await erp('GET', `/api/resource/Sales Order?fields=${encodeURIComponent(fields)}&limit=500&order_by=transaction_date desc`);
-      setAllOrders(r.data || []);
-    } catch(e: any) { toast('Orders load failed: '+e.message, 'error'); }
-    setOrdersLoading(false);
-  }
-
-  async function loadCustomers() {
-    setCustLoading(true);
-    try {
-      const fields = JSON.stringify(["name","customer_name","customer_type","email_id","mobile_no","creation"]);
-      const r = await erp('GET', `/api/resource/Customer?fields=${encodeURIComponent(fields)}&limit=200&order_by=creation desc`);
-      setAllCustomers(r.data || []);
-    } catch(e: any) { toast('Customers load failed: '+e.message, 'error'); }
-    setCustLoading(false);
-  }
-
-  async function loadHomepage() {
-    setHpLoading(true);
-    try {
-      const fields = encodeURIComponent(JSON.stringify(["name","item_name","image","standard_rate","item_group"]));
-      const filters = encodeURIComponent(JSON.stringify([["disabled","=",0]]));
-      const r = await erp('GET', `/api/resource/Item?fields=${fields}&filters=${filters}&limit=200&order_by=item_name asc`);
-      setHpItems(r.data || []);
-    } catch {}
-    try {
-      const r = await fetch('/api/homepage/sections');
-      const d = await r.json(); setHpML(d.most_loved||[]); setHpNA(d.new_arrivals||[]);
-    } catch {}
-    setHpLoading(false);
-  }
-
-  async function saveHomepage() {
-    setHpSaving(true);
-    try {
-      const r = await fetch('/api/homepage/sections', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ most_loved:hpML, new_arrivals:hpNA }) });
-      if (!r.ok) throw new Error(await r.text());
-      toast('Homepage sections saved!', 'success');
-    } catch(e: any) { toast('Failed to save: '+e.message, 'error'); }
-    setHpSaving(false);
-  }
-
-  async function loadOffers() {
-    setOffersLoading(true);
-    try {
-      const fields = JSON.stringify(["name","coupon_code","minimum_amount","valid_from","valid_upto","description"]);
-      const r = await erp('GET', `/api/resource/Coupon Code?fields=${encodeURIComponent(fields)}&limit=50&order_by=creation desc`);
-      const list: Coupon[] = r.data || [];
-      const full = await Promise.all(list.map(c => erp('GET', `/api/resource/Coupon Code/${encodeURIComponent(c.name)}`).then(d => d.data||c).catch(()=>c)));
-      setAllOffers(full);
-    } catch(e: any) { toast('Offers load failed: '+e.message, 'error'); }
-    setOffersLoading(false);
-  }
-
-  async function createCoupon(e: React.FormEvent) {
-    e.preventDefault();
-    if (!ofCode||!ofPct||!ofUpto) { toast('Code, discount % and valid until required','error'); return; }
-    try {
-      const r = await fetch('/api/coupon/create', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ coupon_code:ofCode, discount_percentage:parseFloat(ofPct), minimum_amount:ofMin?parseFloat(ofMin):0, valid_from:ofFrom||new Date().toISOString().split('T')[0], valid_upto:ofUpto, description:ofDesc||`${ofPct}% discount` }) });
-      const d = await r.json(); if (!r.ok) throw new Error((d as any).error||'Failed');
-      toast('Coupon created: '+ofCode, 'success');
-      setOfCode(''); setOfPct(''); setOfMin(''); setOfFrom(''); setOfUpto(''); setOfDesc('');
-      loadOffers();
-    } catch(e: any) { toast('Failed: '+e.message, 'error'); }
-  }
-
-  function delCoupon(name: string) {
-    setConfirmDlg({ title:'Delete Coupon?', msg:`Delete "${name}"? Cannot be undone.`, onOk: async () => {
-      setConfirmDlg(null);
-      try {
-        const r = await fetch('/api/coupon/delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name }) });
-        const d = await r.json(); if (!r.ok) throw new Error((d as any).error||'Failed');
-        toast('Coupon deleted','success'); loadOffers();
-      } catch(e: any) { toast('Failed: '+e.message,'error'); }
-    }});
-  }
 
   async function doLogin(e: React.FormEvent) {
     e.preventDefault(); setLoginErr(''); setLoginLoading(true);
     try {
-      await erpCall(cfg, 'GET', '/api/resource/Item?limit=1');
-      saveCfg(cfg); setAuthed(true); setConnOk(true);
-    } catch { setLoginErr('Connection failed. Check your credentials or URL.'); }
+      await login({ username: loginEmail, password: loginPassword });
+    } catch(err: any) {
+      setLoginErr(err?.message || 'Login failed. Check your credentials.');
+    }
     setLoginLoading(false);
   }
 
-  function logout() { localStorage.removeItem('hs_admin_cfg'); setAuthed(false); setConnOk(false); }
+  function logout() { sdkLogout(); }
 
   function openAdd() { setEditingId(null); setPf(defaultPf); setProdModal(true); }
   function openEdit(item: Item) {
@@ -453,12 +405,12 @@ export default function AdminPage() {
         const arr: string[] = JSON.parse(item.custom_item_images);
         if (Array.isArray(arr)) {
           arr.slice(0, 4).forEach((url, i) => {
-            extraImgs[i] = { url, file:null, preview: url.startsWith('http') ? url : iUrl(cfg, url) };
+            extraImgs[i] = { url, file:null, preview: iUrl(url) };
           });
         }
       } catch {}
     }
-    setPf({ name:item.item_name||item.name, price:String(item.standard_rate||''), weight:String(item.weight_per_unit||''), category:item.item_group||'', material:item.custom_material||'', desc:item.custom_short_description||item.description||'', featured:!!item.custom_is_featured, imageUrl:item.image||'', imageFile:null, imagePreview:item.image?iUrl(cfg,item.image):'', extraImgs });
+    setPf({ name:item.item_name||item.name, price:String(item.standard_rate||''), weight:String(item.weight_per_unit||''), category:item.item_group||'', material:item.custom_material||'', desc:item.custom_short_description||item.description||'', featured:!!item.custom_is_featured, imageUrl:item.image||'', imageFile:null, imagePreview:item.image?iUrl(item.image):'', extraImgs });
     setProdModal(true);
   }
 
@@ -467,17 +419,23 @@ export default function AdminPage() {
     setProdSaving(true);
     try {
       let imageUrl = pf.imageUrl;
-      if (pf.imageFile) { toast('Uploading image…','info'); imageUrl = (await erpUpload(cfg, pf.imageFile)) || imageUrl; }
+      if (pf.imageFile) { toast('Uploading image…','info'); imageUrl = (await uploadImage(pf.imageFile)) || imageUrl; }
       const extraUrls: string[] = [];
       for (let i = 0; i < pf.extraImgs.length; i++) {
         const ei = pf.extraImgs[i];
-        if (ei.file) { toast(`Uploading image ${i+2}…`,'info'); const u = await erpUpload(cfg, ei.file); if (u) extraUrls.push(u); }
+        if (ei.file) { toast(`Uploading image ${i+2}…`,'info'); const u = await uploadImage(ei.file); if (u) extraUrls.push(u); }
         else if (ei.url) { extraUrls.push(ei.url); }
       }
-      const payload: any = { item_name:pf.name, item_group:pf.category||cfg.group, standard_rate:parseFloat(pf.price)||0, custom_material:pf.material, custom_short_description:pf.desc, custom_is_featured:pf.featured?1:0, image:imageUrl||null, custom_item_images: extraUrls.length ? JSON.stringify(extraUrls) : null, is_sales_item:1 };
-      if (editingId) { await erp('PUT', '/api/resource/Item/'+encodeURIComponent(editingId), payload); toast('Product updated','success'); }
-      else { payload.item_code = pf.name.replace(/[^a-zA-Z0-9]/g,'-').toUpperCase()+'-'+Date.now().toString().slice(-5); await erp('POST', '/api/resource/Item', payload); toast('Product added','success'); }
-      setProdModal(false); loadProducts(); loadDashboard();
+      const payload: any = { item_name:pf.name, item_group:pf.category||itemGroup, standard_rate:parseFloat(pf.price)||0, custom_material:pf.material, custom_short_description:pf.desc, custom_is_featured:pf.featured?1:0, image:imageUrl||null, custom_item_images: extraUrls.length ? JSON.stringify(extraUrls) : null, is_sales_item:1 };
+      if (editingId) {
+        await updateDoc('Item', editingId, payload);
+        toast('Product updated','success');
+      } else {
+        payload.item_code = pf.name.replace(/[^a-zA-Z0-9]/g,'-').toUpperCase()+'-'+Date.now().toString().slice(-5);
+        await createDoc('Item', payload);
+        toast('Product added','success');
+      }
+      setProdModal(false); reloadProducts();
     } catch(e: any) { toast('Error: '+e.message,'error'); }
     setProdSaving(false);
   }
@@ -485,7 +443,7 @@ export default function AdminPage() {
   function delProd(item: Item) {
     setConfirmDlg({ title:`Delete "${item.item_name||item.name}"?`, msg:'This will permanently remove the product from ERPNext.', onOk: async () => {
       setConfirmDlg(null);
-      try { await erp('DELETE', '/api/resource/Item/'+encodeURIComponent(item.name)); toast('Product deleted','success'); loadProducts(); loadDashboard(); }
+      try { await deleteDoc('Item', item.name); toast('Product deleted','success'); reloadProducts(); }
       catch(e: any) { toast('Delete failed: '+e.message,'error'); }
     }});
   }
@@ -493,10 +451,12 @@ export default function AdminPage() {
   async function viewOrder(name: string) {
     setOrderModal({ order:{ name }, addr:null }); setOrderModalLoading(true);
     try {
-      const res = await erp('GET', '/api/resource/Sales Order/'+encodeURIComponent(name));
-      const o: SalesOrder = res.data;
+      const res = await frappeGet({ doctype: 'Sales Order', name });
+      const o: SalesOrder = res.message;
       let addr: Addr|null = null;
-      if (o.shipping_address_name) addr = await erp('GET', '/api/resource/Address/'+encodeURIComponent(o.shipping_address_name)).then(r=>r.data).catch(()=>null);
+      if (o.shipping_address_name) {
+        addr = await frappeGet({ doctype: 'Address', name: o.shipping_address_name }).then(r=>r.message).catch(()=>null);
+      }
       setOrderModal({ order:o, addr });
     } catch(e: any) { toast('Failed to load order: '+e.message,'error'); }
     setOrderModalLoading(false);
@@ -504,69 +464,122 @@ export default function AdminPage() {
 
   async function updateStatus(id: string, status: string) {
     try {
-      await erp('PUT', '/api/resource/Sales Order/'+encodeURIComponent(id), { status });
-      setAllOrders(p => p.map(o => o.name===id?{...o,status}:o));
-      toast('Order status updated','success'); loadDashboard();
-    } catch(e: any) { toast('Failed: '+e.message,'error'); loadOrders(); }
+      await updateDoc('Sales Order', id, { status });
+      toast('Order status updated','success');
+      reloadOrders();
+    } catch(e: any) { toast('Failed: '+e.message,'error'); }
   }
 
   async function shipOrder(name: string) {
     if (!window.confirm(`Create Delivery Note for ${name} and deduct stock?`)) return;
     try {
-      const makeRes = await erp('POST', '/api/method/erpnext.selling.doctype.sales_order.sales_order.make_delivery_note', { source_name:name });
-      const dn = makeRes.message; if (!dn) throw new Error('No Delivery Note returned');
-      const saveRes = await erp('POST', '/api/resource/Delivery Note', dn);
-      const dnName = saveRes.data?.name; if (!dnName) throw new Error('Failed to save Delivery Note');
-      await erp('PUT', '/api/resource/Delivery Note/'+encodeURIComponent(dnName), { docstatus:1 });
-      toast('Stock deducted! DN: '+dnName,'success'); loadOrders(); loadDashboard();
+      const dnData = await makeDelivNote({ source_name: name });
+      const dn = dnData.message; if (!dn) throw new Error('No Delivery Note returned');
+      const saved = await createDoc('Delivery Note', dn);
+      await updateDoc('Delivery Note', (saved as any).name, { docstatus:1 });
+      toast('Stock deducted! DN: '+(saved as any).name,'success'); reloadOrders();
     } catch(e: any) { toast('Ship failed: '+e.message,'error'); }
   }
 
   async function viewCust(customerName: string, email: string) {
     setCustModal({ name:customerName, email, orders:[], addresses:[] }); setCustModalLoading(true);
     try {
-      const af = encodeURIComponent(JSON.stringify([["Dynamic Link","link_doctype","=","Customer"],["Dynamic Link","link_name","=",customerName]]));
-      const afl = encodeURIComponent(JSON.stringify(["address_line1","address_line2","city","state","pincode","country","phone","email_id","address_type"]));
-      const of2 = encodeURIComponent(JSON.stringify([["customer","=",customerName]]));
-      const ofl = encodeURIComponent(JSON.stringify(["name","transaction_date","grand_total","status","remarks","contact_email","contact_mobile","per_delivered"]));
-      const [ar, or2] = await Promise.all([
-        erp('GET', `/api/resource/Address?filters=${af}&fields=${afl}&limit=10`).catch(()=>({data:[]})),
-        erp('GET', `/api/resource/Sales Order?filters=${of2}&fields=${ofl}&limit=20&order_by=creation desc`).catch(()=>({data:[]})),
+      const [addrRes, ordRes] = await Promise.all([
+        frappeGetList({ doctype:'Address', filters:[['Dynamic Link','link_doctype','=','Customer'],['Dynamic Link','link_name','=',customerName]], fields:['address_line1','address_line2','city','state','pincode','country','phone','email_id','address_type'], limit:10 }).catch(()=>({ message:[] })),
+        frappeGetList({ doctype:'Sales Order', filters:[['customer','=',customerName]], fields:['name','transaction_date','grand_total','status','remarks','contact_email','contact_mobile','per_delivered'], limit:20, order_by:'creation desc' } as any).catch(()=>({ message:[] })),
       ]);
-      setCustModal({ name:customerName, email, orders:or2.data||[], addresses:ar.data||[] });
+      setCustModal({ name:customerName, email, orders:ordRes.message||[], addresses:addrRes.message||[] });
     } catch(e: any) { toast('Failed to load customer: '+e.message,'error'); }
     setCustModalLoading(false);
   }
 
-  async function testConn() {
-    try { await erp('GET', '/api/resource/Item?limit=1'); toast('Connection successful!','success'); setConnOk(true); }
-    catch(e: any) { toast('Connection failed: '+e.message,'error'); setConnOk(false); }
+  async function saveHomepage() {
+    setHpSaving(true);
+    try {
+      const changed = hpItemsList.filter(item => {
+        const shouldFeat = hpML.includes(item.name);
+        const isFeat = !!(item.custom_is_featured);
+        return shouldFeat !== isFeat;
+      });
+      await Promise.all(changed.map(item =>
+        updateDoc('Item', item.name, { custom_is_featured: hpML.includes(item.name) ? 1 : 0 })
+      ));
+      localStorage.setItem('hs_hp_na', JSON.stringify(hpNA));
+      reloadHp();
+      toast('Homepage sections saved!','success');
+    } catch(e: any) { toast('Failed to save: '+e.message,'error'); }
+    setHpSaving(false);
   }
 
-  function saveSettings(e: React.FormEvent) { e.preventDefault(); saveCfg(cfg); toast('Settings saved','success'); setConnOk(true); }
+  async function createCoupon(e: React.FormEvent) {
+    e.preventDefault();
+    if (!ofCode||!ofPct||!ofUpto) { toast('Code, discount % and valid until required','error'); return; }
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const company = companyList[0]?.name || '';
+      const pr = await createDoc('Pricing Rule', {
+        title: `Coupon: ${ofCode}`,
+        apply_on: 'Transaction',
+        price_or_product_discount: 'Price',
+        rate_or_discount: 'Discount Percentage',
+        discount_percentage: parseFloat(ofPct),
+        selling: 1,
+        company,
+        valid_from: ofFrom || today,
+        valid_upto: ofUpto,
+      });
+      if (!(pr as any).name) throw new Error('Failed to create pricing rule');
+      await createDoc('Coupon Code', {
+        coupon_code: ofCode,
+        coupon_type: 'Percentage',
+        pricing_rule: (pr as any).name,
+        discount_percentage: parseFloat(ofPct),
+        minimum_amount: ofMin ? parseFloat(ofMin) : 0,
+        valid_from: ofFrom || today,
+        valid_upto: ofUpto,
+        description: ofDesc || `${ofPct}% discount`,
+      });
+      toast('Coupon created: '+ofCode,'success');
+      setOfCode(''); setOfPct(''); setOfMin(''); setOfFrom(''); setOfUpto(''); setOfDesc('');
+      reloadOffers();
+    } catch(e: any) { toast('Failed: '+e.message,'error'); }
+  }
 
-  const filteredProducts = allProducts.filter(p => { const q=prodSearch.toLowerCase(); return (p.item_name||p.name||'').toLowerCase().includes(q) && (!prodCat||p.item_group===prodCat); });
-  const filteredOrders = allOrders.filter(o => { const q=orderSearch.toLowerCase(); return ((o.name||'').toLowerCase().includes(q)||(o.customer||'').toLowerCase().includes(q)) && (!orderStatusF||o.status===orderStatusF); });
-  const filteredCusts = allCustomers.filter(c => { const q=custSearch.toLowerCase(); return (c.customer_name||'').toLowerCase().includes(q)||(c.email_id||'').toLowerCase().includes(q)||(c.mobile_no||'').toLowerCase().includes(q); });
-  const categories = Array.from(new Set(allProducts.map(p=>p.item_group).filter(Boolean))).sort() as string[];
-  const pendingCount = allOrders.filter(o => !['Completed','Cancelled'].includes(o.status||'')).length;
+  function delCoupon(name: string) {
+    setConfirmDlg({ title:'Delete Coupon?', msg:`Delete "${name}"? Cannot be undone.`, onOk: async () => {
+      setConfirmDlg(null);
+      try {
+        const docRes = await frappeGet({ doctype: 'Coupon Code', name });
+        const pricingRule = docRes.message?.pricing_rule;
+        await deleteDoc('Coupon Code', name);
+        if (pricingRule) await deleteDoc('Pricing Rule', pricingRule).catch(() => {});
+        toast('Coupon deleted','success'); reloadOffers();
+      } catch(e: any) { toast('Failed: '+e.message,'error'); }
+    }});
+  }
 
   const nav = (p: PageId) => { setPage(p); setSbOpen(false); };
 
   return (
     <div className="adm-root">
+      {/* LOADING */}
+      {authLoading && (
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'var(--bg)' }}>
+          <div className="spin" style={{ width:32, height:32 }} />
+        </div>
+      )}
+
       {/* LOGIN */}
-      {!authed && (
+      {!authLoading && !authed && (
         <div className="adm-login">
           <form className="adm-login-box" onSubmit={doLogin}>
             <div className="adm-login-logo">
               <img src="https://wearparts.norework.in/wp-content/uploads/2023/09/Hira-1.png" alt="Hira Store" style={{ height:60, filter:'brightness(0) invert(1)', margin:'0 auto 10px', display:'block' }} />
               <div className="adm-login-sub">Admin Dashboard</div>
             </div>
-            <div className="adm-login-field"><label>ERPNext URL</label><input type="url" value={cfg.url} onChange={e=>setCfg(p=>({...p,url:e.target.value}))} placeholder="https://your-site.erpnext.com" autoComplete="off" /></div>
-            <div className="adm-login-field"><label>API Key</label><input type="text" value={cfg.key} onChange={e=>setCfg(p=>({...p,key:e.target.value}))} placeholder="Your API Key" autoComplete="off" /></div>
-            <div className="adm-login-field"><label>API Secret</label><input type="password" value={cfg.secret} onChange={e=>setCfg(p=>({...p,secret:e.target.value}))} placeholder="Your API Secret" /></div>
-            <button className="adm-login-btn" type="submit" disabled={loginLoading}>{loginLoading?'Connecting…':'Connect to ERPNext'}</button>
+            <div className="adm-login-field"><label>Email</label><input type="email" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} placeholder="admin@example.com" autoComplete="username" required /></div>
+            <div className="adm-login-field"><label>Password</label><input type="password" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)} placeholder="Your password" autoComplete="current-password" required /></div>
+            <button className="adm-login-btn" type="submit" disabled={loginLoading}>{loginLoading?'Signing in…':'Sign In'}</button>
             {loginErr && <div className="adm-login-err">{loginErr}</div>}
           </form>
         </div>
@@ -612,8 +625,8 @@ export default function AdminPage() {
               </div>
               <div className="topbar-right">
                 <div className="topbar-erp">
-                  <span className={`dot${connOk?' green':' red'}`} />
-                  <span>{connOk?cfg.url.replace(/https?:\/\//,''):'Disconnected'}</span>
+                  <span className="dot green" />
+                  <span>{currentUser}</span>
                 </div>
                 <a href="/" target="_blank" className="btn btn-outline btn-sm">{I.ext} View Site</a>
               </div>
@@ -659,7 +672,7 @@ export default function AdminPage() {
                   <div className="product-grid">
                     {filteredProducts.map(p=>(
                       <div key={p.name} className="prod-card">
-                        <img className="prod-img" src={iUrl(cfg,p.image)} alt={p.item_name||''} loading="lazy" onError={e=>{(e.target as HTMLImageElement).src=iUrl(cfg);}} />
+                        <img className="prod-img" src={iUrl(p.image)} alt={p.item_name||''} loading="lazy" onError={e=>{(e.target as HTMLImageElement).src=iUrl();}} />
                         <div className="prod-info">
                           <div className="prod-name">{p.item_name||p.name}</div>
                           <div className="prod-meta">{p.item_group||''}{p.custom_material?' · '+p.custom_material:''}</div>
@@ -680,7 +693,7 @@ export default function AdminPage() {
                     <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Featured</th><th>Actions</th></tr></thead>
                     <tbody>{filteredProducts.map(p=>(
                       <tr key={p.name}>
-                        <td><img className="td-img" src={iUrl(cfg,p.image)} alt="" onError={e=>{(e.target as HTMLImageElement).src=iUrl(cfg);}} /></td>
+                        <td><img className="td-img" src={iUrl(p.image)} alt="" onError={e=>{(e.target as HTMLImageElement).src=iUrl();}} /></td>
                         <td><div className="td-name">{p.item_name||p.name}</div><div className="td-sub">{p.custom_material||''}</div></td>
                         <td><span className="badge badge-gray">{p.item_group||'—'}</span></td>
                         <td style={{fontFamily:'Cormorant Garamond,serif',fontSize:15}}>${(p.standard_rate||0).toFixed(2)}</td>
@@ -697,7 +710,7 @@ export default function AdminPage() {
                 <div className="toolbar">
                   <div className="search-wrap">{I.search}<input className="search-input" type="text" placeholder="Search by order ID or customer…" value={orderSearch} onChange={e=>setOrderSearch(e.target.value)} /></div>
                   <select className="filter-select" value={orderStatusF} onChange={e=>setOrderStatusF(e.target.value)}><option value="">All Statuses</option>{STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select>
-                  <button className="btn btn-outline btn-sm" onClick={loadOrders}>{I.refresh} Refresh</button>
+                  <button className="btn btn-outline btn-sm" onClick={()=>reloadOrders()}>{I.refresh} Refresh</button>
                 </div>
                 <div className="card"><div className="tbl-wrap">
                   {ordersLoading?<div className="loading-overlay"><div className="spin"/><p>Loading orders…</p></div>:filteredOrders.length===0?<div className="empty"><div className="empty-icon">{I.order}</div><h3>No orders found</h3></div>:(
@@ -723,7 +736,7 @@ export default function AdminPage() {
               {page==='customers' && <>
                 <div className="toolbar">
                   <div className="search-wrap">{I.search}<input className="search-input" type="text" placeholder="Search customers…" value={custSearch} onChange={e=>setCustSearch(e.target.value)} /></div>
-                  <button className="btn btn-gold btn-sm" onClick={loadCustomers}>{I.refresh} Refresh</button>
+                  <button className="btn btn-gold btn-sm" onClick={()=>reloadCustomers()}>{I.refresh} Refresh</button>
                 </div>
                 <div className="card">
                   <div className="card-hd"><h2>All Customers</h2></div>
@@ -748,18 +761,18 @@ export default function AdminPage() {
                 <div className="toolbar" style={{justifyContent:'space-between'}}>
                   <div style={{fontSize:13,color:'var(--text2)'}}>Select which products appear in each section on the home page</div>
                   <div style={{display:'flex',gap:10}}>
-                    <button className="btn btn-ghost btn-sm" onClick={loadHomepage}>{I.refresh} Refresh</button>
+                    <button className="btn btn-ghost btn-sm" onClick={()=>reloadHp()}>{I.refresh} Refresh</button>
                     <button className="btn btn-gold btn-sm" onClick={saveHomepage} disabled={hpSaving}>{I.save} {hpSaving?'Saving…':'Save Homepage'}</button>
                   </div>
                 </div>
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:20}}>
                   <div className="card"><div className="card-hd"><h2>Most Loved Pieces</h2><span style={{fontSize:12,color:'var(--text2)',fontWeight:400}}>{hpML.length} selected</span></div>
                     <div className="card-body" style={{padding:12}}><div style={{fontSize:12,color:'var(--text2)',marginBottom:12,padding:'0 4px'}}>Check the products you want to show in this section</div>
-                    {hpLoading?<div className="loading-overlay"><div className="spin"/></div>:<HpSection items={hpItems} selected={hpML} cfg={cfg} onToggle={id=>setHpML(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id])} />}</div>
+                    {hpLoading?<div className="loading-overlay"><div className="spin"/></div>:<HpSection items={hpItemsList} selected={hpML} onToggle={id=>setHpML(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id])} />}</div>
                   </div>
                   <div className="card"><div className="card-hd"><h2>New Arrivals</h2><span style={{fontSize:12,color:'var(--text2)',fontWeight:400}}>{hpNA.length} selected</span></div>
                     <div className="card-body" style={{padding:12}}><div style={{fontSize:12,color:'var(--text2)',marginBottom:12,padding:'0 4px'}}>Check the products you want to show in this section</div>
-                    {hpLoading?<div className="loading-overlay"><div className="spin"/></div>:<HpSection items={hpItems} selected={hpNA} cfg={cfg} onToggle={id=>setHpNA(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id])} />}</div>
+                    {hpLoading?<div className="loading-overlay"><div className="spin"/></div>:<HpSection items={hpItemsList} selected={hpNA} onToggle={id=>setHpNA(p=>p.includes(id)?p.filter(x=>x!==id):[...p,id])} />}</div>
                   </div>
                 </div>
               </>}
@@ -768,7 +781,7 @@ export default function AdminPage() {
               {page==='offers' && <>
                 <div className="toolbar" style={{justifyContent:'space-between'}}>
                   <div style={{fontSize:13,color:'var(--text2)'}}>Manage coupon codes in ERPNext → Accounts → Coupon Code</div>
-                  <button className="btn btn-gold btn-sm" onClick={loadOffers}>{I.refresh} Refresh</button>
+                  <button className="btn btn-gold btn-sm" onClick={()=>reloadOffers()}>{I.refresh} Refresh</button>
                 </div>
                 <div className="card" style={{marginBottom:20}}>
                   <div className="card-hd"><h2>Create Coupon Code</h2></div>
@@ -808,33 +821,23 @@ export default function AdminPage() {
               {/* ── SETTINGS ── */}
               {page==='settings' && <>
                 <div className="settings-section">
-                  <h2>ERPNext Connection</h2>
-                  <p className="desc">Your current ERPNext connection details. Changes take effect immediately.</p>
-                  <form onSubmit={saveSettings}>
+                  <h2>Account</h2>
+                  <p className="desc">Logged in as <strong>{currentUser}</strong></p>
+                  <button className="btn btn-danger" type="button" onClick={logout} style={{marginTop:12}}>{I.logout} Sign Out</button>
+                </div>
+                <div className="settings-section">
+                  <h2>Catalog Settings</h2>
+                  <p className="desc">Default settings for product management.</p>
+                  <form onSubmit={e=>{ e.preventDefault(); localStorage.setItem('hs_item_group', itemGroup); toast('Settings saved','success'); }}>
                     <div className="form-grid">
-                      <div className="form-group full"><label className="form-label">ERPNext URL</label><input className="form-input" type="url" value={cfg.url} onChange={e=>setCfg(p=>({...p,url:e.target.value}))} /></div>
-                      <div className="form-group"><label className="form-label">API Key</label><input className="form-input" type="text" value={cfg.key} onChange={e=>setCfg(p=>({...p,key:e.target.value}))} /></div>
-                      <div className="form-group"><label className="form-label">API Secret</label><input className="form-input" type="password" value={cfg.secret} onChange={e=>setCfg(p=>({...p,secret:e.target.value}))} /></div>
-                      <div className="form-group"><label className="form-label">Item Group</label><input className="form-input" type="text" value={cfg.group} onChange={e=>setCfg(p=>({...p,group:e.target.value}))} /></div>
-                      <div className="form-group"><label className="form-label">Company Name</label><input className="form-input" type="text" value={cfg.company} onChange={e=>setCfg(p=>({...p,company:e.target.value}))} /></div>
+                      <div className="form-group"><label className="form-label">Default Item Group</label><input className="form-input" type="text" value={itemGroup} onChange={e=>setItemGroup(e.target.value)} placeholder="Jewelry" /></div>
                     </div>
-                    <div style={{marginTop:20,display:'flex',gap:10}}>
-                      <button className="btn btn-gold" type="submit">Save Changes</button>
-                      <button className="btn btn-outline" type="button" onClick={testConn}>Test Connection</button>
-                    </div>
+                    <div style={{marginTop:16}}><button className="btn btn-gold" type="submit">Save Settings</button></div>
                   </form>
                 </div>
                 <div className="settings-section">
-                  <h2>Quick Help</h2>
-                  <p className="desc">How to set up ERPNext API access</p>
-                  <ol style={{fontSize:13,color:'var(--text2)',paddingLeft:18,lineHeight:2}}>
-                    <li>Log in to your ERPNext instance</li>
-                    <li>Click your name (top-right) → <strong>My Settings</strong></li>
-                    <li>Scroll to <strong>API Access</strong> section</li>
-                    <li>Click <strong>Generate Keys</strong></li>
-                    <li>Copy the API Key and API Secret here</li>
-                  </ol>
-                  <p style={{fontSize:12,color:'var(--text3)',marginTop:12}}>Custom fields needed on Item DocType: <code>custom_is_featured</code> (Check), <code>custom_material</code> (Data), <code>custom_short_description</code> (Small Text)</p>
+                  <h2>Custom Fields Required on Item</h2>
+                  <p style={{fontSize:12,color:'var(--text3)',marginTop:8}}><code>custom_is_featured</code> (Check) · <code>custom_material</code> (Data) · <code>custom_short_description</code> (Small Text) · <code>custom_item_images</code> (Small Text)</p>
                 </div>
               </>}
 
@@ -966,4 +969,3 @@ export default function AdminPage() {
     </div>
   );
 }
-

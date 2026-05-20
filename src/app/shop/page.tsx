@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
@@ -68,6 +68,13 @@ function ShopContent() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
   const addItem = useCart(s => s.addItem);
+  const updateQty = useCart(s => s.updateQty);
+  const cartItems = useCart(s => s.items);
+  const cartQtyMap = useMemo(() => {
+    const m: Record<string, number> = {};
+    cartItems.forEach(i => { m[i.id] = i.qty; });
+    return m;
+  }, [cartItems]);
 
 
   // Cursor sparkle (4-point star diamonds)
@@ -139,24 +146,6 @@ function ShopContent() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // 3D card tilt
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      const card = (e.target as Element)?.closest?.('.product-card') as HTMLElement | null;
-      if (!card) return;
-      const rect = card.getBoundingClientRect();
-      const cx = (e.clientX - rect.left) / rect.width - 0.5;
-      const cy = (e.clientY - rect.top) / rect.height - 0.5;
-      card.style.transform = `perspective(800px) rotateY(${cx*7}deg) rotateX(${-cy*7}deg) translateZ(4px)`;
-    };
-    const onLeave = (e: MouseEvent) => {
-      const card = (e.target as Element)?.closest?.('.product-card') as HTMLElement | null;
-      if (card) card.style.transform = '';
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseleave', onLeave, true);
-    return () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseleave', onLeave, true); };
-  }, []);
 
 
   // Filter + sort
@@ -318,32 +307,45 @@ function ShopContent() {
                 const metaLine = [weight, cat].filter(Boolean).join(' · ');
                 const isWished = wishIds.has(id);
                 const isAdded = addedIds.has(id);
+                const cartQty = cartQtyMap[id] || 0;
                 const delayClass = `reveal-delay-${(idx % 4)+1}`;
                 return (
                   <article key={id} className={`product-card reveal ${delayClass}`} data-category={cat} data-id={id} role="listitem">
                     <div className="product-img-wrap">
                       <img src={img} alt={name} loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />
-                      {badge && <span className="product-badge">{badge}</span>}
+                      {/* badge: cart indicator takes priority over promo label */}
+                      {cartQty > 0
+                        ? <span className="card-cart-badge"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> {cartQty}</span>
+                        : badge && <span className="product-badge">{badge}</span>
+                      }
                       <button className={`product-wish${isWished ? ' wished' : ''}`} aria-label={`${isWished ? 'Remove' : 'Add'} ${name} to wishlist`}
                         onClick={e => { e.stopPropagation(); toggleWish(item); }}>
                         <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
                       </button>
                       <div className="product-actions">
-                        <button className={`product-action-btn pa-primary${isAdded ? ' cart-added' : ''}`} onClick={() => handleAdd(item)}>
-                          {isAdded ? 'Added ✓' : 'Add to Cart'}
-                        </button>
+                        {cartQty > 0 ? (
+                          <div className="prod-stepper" onClick={e => e.stopPropagation()}>
+                            <button className="prod-stepper-btn" aria-label="Remove one" onClick={() => updateQty(id, cartQty - 1)}>−</button>
+                            <span className="prod-stepper-count">{cartQty}</span>
+                            <button className="prod-stepper-btn" aria-label="Add one" onClick={() => addItem({ id, name, category: cat, price, image: img })}>+</button>
+                          </div>
+                        ) : (
+                          <button className={`product-action-btn pa-primary${isAdded ? ' cart-added' : ''}`} onClick={() => handleAdd(item)}>
+                            {isAdded ? 'Added ✓' : 'Add to Cart'}
+                          </button>
+                        )}
                         <button className="product-action-btn pa-secondary" onClick={e => { e.stopPropagation(); openQV(item); }}>
                           Quick View
                         </button>
                       </div>
                     </div>
                     <div className="product-info">
+                      {metaLine && <p className="product-meta">{metaLine}</p>}
                       <h3 className="product-name">{name}</h3>
-                      <p className="product-meta">{metaLine}</p>
                       <div className="product-price">
                         <span className="price-current">{price > 0 ? `$${price.toLocaleString('en-US')}` : 'Price on request'}</span>
+                        <div className="product-rating"><span className="stars">★★★★★</span></div>
                       </div>
-                      <div className="product-rating"><span className="stars">★★★★★</span></div>
                     </div>
                   </article>
                 );
@@ -387,8 +389,10 @@ function ShopContent() {
         const price = itemPrice(qvProduct as Parameters<typeof itemPrice>[0]);
         const imgs = itemImages(qvProduct as Parameters<typeof itemImages>[0], 4);
         const cat = itemCategory(qvProduct as Parameters<typeof itemCategory>[0]);
+        const img = itemImage(qvProduct as Parameters<typeof itemImage>[0]);
         const weight = itemWeight(qvProduct);
         const priceStr = price > 0 ? `$${price.toLocaleString('en-US')}` : 'Price on request';
+        const qvCartQty = cartQtyMap[id] || 0;
         return (
           <div id="qvOverlay" style={{ display:'flex',position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',backdropFilter:'blur(5px)',zIndex:1000,alignItems:'center',justifyContent:'center',padding:'16px' }}
             onClick={e => { if (e.target === e.currentTarget) closeQV(); }}>
@@ -416,9 +420,17 @@ function ShopContent() {
                 <div style={{ fontSize:'20px',fontWeight:600,color:'#2c2c2c',margin:'16px 0' }}>{priceStr}</div>
                 <div style={{ fontSize:'12px',color:'#737373',marginBottom:'8px' }}>{[weight, id].filter(Boolean).join(' · ')}</div>
                 <div style={{ display:'flex',flexDirection:'column',gap:'12px',marginTop:'24px',marginBottom:'24px' }}>
-                  <button onClick={handleQVAdd} style={{ background: qvAdded ? '#2eaa6e' : '#2c2c2c',color:'#fff',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'none',cursor:'pointer',transition:'background 0.3s',fontFamily:'inherit' }}>
-                    {qvAdded ? 'Added ✓' : 'Add to Cart'}
-                  </button>
+                  {qvCartQty > 0 ? (
+                    <div style={{ display:'flex',alignItems:'center',border:'1.5px solid #2c2c2c',overflow:'hidden' }}>
+                      <button onClick={() => updateQty(id, qvCartQty - 1)} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>−</button>
+                      <span style={{ flex:1,textAlign:'center',fontSize:'14px',fontWeight:700,color:'#2c2c2c' }}>{qvCartQty} in cart</span>
+                      <button onClick={() => addItem({ id, name, category: cat, price, image: img })} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>+</button>
+                    </div>
+                  ) : (
+                    <button onClick={handleQVAdd} style={{ background: qvAdded ? '#2eaa6e' : '#2c2c2c',color:'#fff',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'none',cursor:'pointer',transition:'background 0.3s',fontFamily:'inherit' }}>
+                      {qvAdded ? 'Added ✓' : 'Add to Cart'}
+                    </button>
+                  )}
                   <Link to="/cart" style={{ border:'1px solid #2c2c2c',color:'#2c2c2c',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',textAlign:'center',textDecoration:'none',display:'block' }}>
                     View Cart
                   </Link>
@@ -480,38 +492,57 @@ function ShopContent() {
         .products-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:28px; }
 
         /* PRODUCT CARD */
-        .product-card { cursor:pointer; will-change:transform; transition:box-shadow 0.35s var(--ease-out); }
-        .product-card:hover { box-shadow:0 24px 56px rgba(0,0,0,0.14),0 0 0 1px rgba(0,89,105,0.18); }
-        .product-img-wrap { position:relative; overflow:hidden; aspect-ratio:3/4; background:var(--surface); }
-        .product-img-wrap img { width:100%; height:100%; object-fit:cover; transition:transform 0.6s var(--ease-out); }
-        .product-card:hover .product-img-wrap img { transform:scale(1.07); }
-        .product-badge { position:absolute; top:14px; left:14px; background:var(--gold); color:#fff; font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:4px 10px; }
-        .product-wish { position:absolute; top:12px; right:12px; width:36px; height:36px; background:rgba(255,255,255,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:0; transform:scale(0.5); transition:opacity 0.2s,transform 0.4s cubic-bezier(0.34,1.56,0.64,1); border:none; cursor:pointer; }
-        .product-card:hover .product-wish { opacity:1; transform:scale(1); }
-        .product-wish:hover { transform:scale(1.12)!important; }
-        .product-wish svg { width:18px; height:18px; fill:none; stroke:var(--gold); stroke-width:1.8; }
-        .product-wish:hover svg,.product-wish.wished svg { fill:var(--gold); }
+        .product-card { cursor:pointer; background:#fff; border:1px solid rgba(0,0,0,0.07); transition:box-shadow 0.3s ease,border-color 0.3s ease; }
+        .product-card:hover { box-shadow:0 8px 40px rgba(0,0,0,0.10); border-color:rgba(0,89,105,0.15); }
+
+        /* Image */
+        .product-img-wrap { position:relative; overflow:hidden; aspect-ratio:3/4; background:#f5f2ee; }
+        .product-img-wrap img { width:100%; height:100%; object-fit:cover; transition:transform 0.7s cubic-bezier(0.22,1,0.36,1); }
+        .product-card:hover .product-img-wrap img { transform:scale(1.05); }
+
+        /* Badge */
+        .product-badge { position:absolute; top:12px; left:12px; background:rgba(255,255,255,0.90); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); color:#005969; font-size:9px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; padding:4px 9px; border-radius:2px; }
+        .card-cart-badge { position:absolute; top:10px; left:10px; background:#005969; color:#fff; font-size:10px; font-weight:700; padding:3px 8px 3px 6px; border-radius:99px; display:flex; align-items:center; gap:4px; pointer-events:none; z-index:3; line-height:1; box-shadow:0 2px 10px rgba(0,89,105,0.35); }
+
+        /* In-card stepper */
+        .prod-stepper { flex:1; display:flex; align-items:center; height:42px; border:1.5px solid #005969; border-radius:4px; overflow:hidden; background:#fff; }
+        .prod-stepper-btn { width:42px; min-width:42px; height:100%; display:flex; align-items:center; justify-content:center; background:#005969; color:#fff; border:none; font-size:20px; font-weight:300; cursor:pointer; transition:background 0.15s,transform 0.08s; line-height:1; padding:0; font-family:inherit; flex-shrink:0; user-select:none; }
+        .prod-stepper-btn:hover { background:#003d4a; }
+        .prod-stepper-btn:active { transform:scale(0.85); }
+        .prod-stepper-count { flex:1; display:flex; align-items:center; justify-content:center; background:#fff; font-size:14px; font-weight:700; color:#005969; user-select:none; border-left:1px solid #b8dde3; border-right:1px solid #b8dde3; }
+
+        /* Wishlist — always visible, subtle until interacted */
+        .product-wish { position:absolute; top:12px; right:12px; width:34px; height:34px; background:rgba(255,255,255,0.88); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:0.7; transition:opacity 0.2s,transform 0.25s cubic-bezier(0.34,1.56,0.64,1),background 0.2s; border:none; cursor:pointer; touch-action:manipulation; }
+        .product-wish:hover { opacity:1; transform:scale(1.12); background:rgba(255,255,255,0.98); }
+        .product-wish.wished { opacity:1; }
+        .product-wish svg { width:15px; height:15px; fill:none; stroke:#1a1a1a; stroke-width:1.8; }
         .product-wish.wished svg { fill:#e04040; stroke:#e04040; }
-        .product-actions { position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.96); padding:14px; transform:translateY(100%); transition:transform 0.35s var(--ease-out); display:flex; gap:10px; }
+
+        /* Actions panel */
+        .product-actions { position:absolute; bottom:0; left:0; right:0; background:rgba(255,255,255,0.97); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); padding:12px 14px; transform:translateY(100%); transition:transform 0.32s cubic-bezier(0.22,1,0.36,1); display:flex; gap:8px; border-top:1px solid rgba(0,0,0,0.06); }
         .product-card:hover .product-actions { transform:translateY(0); }
-        .product-action-btn { flex:1; padding:10px; font-size:11px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; transition:background 0.2s,color 0.2s,border-color 0.2s; cursor:pointer; border:none; font-family:var(--font-body); }
+
+        /* Action buttons */
+        .product-action-btn { flex:1; padding:11px 8px; font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; transition:background 0.2s,color 0.2s,border-color 0.2s; cursor:pointer; border:none; font-family:var(--font-body); touch-action:manipulation; }
         .product-action-btn.pa-primary { background:var(--gold); color:#fff; }
         .product-action-btn.pa-primary:hover { background:var(--gold-dark); }
         .product-action-btn.pa-primary.cart-added { background:#2eaa6e; }
-        .product-action-btn.pa-secondary { border:1.5px solid var(--border); color:var(--text-dark); background:transparent; }
+        .product-action-btn.pa-secondary { border:1px solid #d8d8d8; color:#555; background:transparent; flex:1; }
         .product-action-btn.pa-secondary:hover { border-color:var(--gold); color:var(--gold); }
-        .product-info { padding:18px 4px 4px; }
-        .product-name { font-family:var(--font-head); font-size:16px; font-weight:700; color:var(--text-dark); margin-bottom:5px; transition:color 0.25s; }
+
+        /* Product info */
+        .product-info { padding:14px 0 18px; }
+        .product-meta { font-size:10px; font-weight:600; color:var(--text-light); margin-bottom:6px; letter-spacing:0.1em; text-transform:uppercase; }
+        .product-name { font-family:var(--font-head); font-size:15px; font-weight:700; color:var(--text-dark); margin-bottom:10px; line-height:1.4; transition:color 0.2s; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .product-card:hover .product-name { color:var(--gold-dark); }
-        .product-meta { font-size:12px; color:var(--text-light); margin-bottom:10px; }
-        .product-price { display:flex; align-items:center; gap:10px; }
-        .price-current { font-size:17px; font-weight:600; color:var(--text-dark); }
-        .product-rating { display:flex; align-items:center; gap:5px; margin-top:8px; }
-        .stars { color:#f5a623; font-size:12px; letter-spacing:1px; }
+        .product-price { display:flex; align-items:center; justify-content:space-between; }
+        .price-current { font-size:16px; font-weight:600; color:var(--text-dark); font-variant-numeric:tabular-nums; }
+        .product-rating { display:flex; align-items:center; }
+        .stars { color:#c9a84c; font-size:11px; letter-spacing:0.5px; }
 
         /* SKELETON */
         .skeleton-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:28px; }
-        .skeleton-card { border-radius:4px; overflow:hidden; }
+        .skeleton-card { overflow:hidden; border:1px solid rgba(0,0,0,0.06); }
         .skeleton-img { aspect-ratio:3/4; background:#f0ebe4; position:relative; overflow:hidden; }
         .skeleton-info { padding:16px 0 8px; display:flex; flex-direction:column; gap:10px; }
         .skeleton-line { height:14px; border-radius:4px; background:#f0ebe4; position:relative; overflow:hidden; }

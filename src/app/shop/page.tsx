@@ -507,7 +507,7 @@ function ShopContent() {
         .prod-stepper-btn:active { transform:scale(0.85); }
         .prod-stepper-count { flex:1; display:flex; align-items:center; justify-content:center; background:#fff; font-size:14px; font-weight:700; color:#005969; user-select:none; border-left:1px solid #b8dde3; border-right:1px solid #b8dde3; }
 
-        /* Wishlist — always visible, subtle until interacted */
+        /* Wishlist - always visible, subtle until interacted */
         .product-wish { position:absolute; top:12px; right:12px; width:34px; height:34px; background:rgba(255,255,255,0.88); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:0.7; transition:opacity 0.2s,transform 0.25s cubic-bezier(0.34,1.56,0.64,1),background 0.2s; border:none; cursor:pointer; touch-action:manipulation; }
         .product-wish:hover { opacity:1; transform:scale(1.12); background:rgba(255,255,255,0.98); }
         .product-wish.wished { opacity:1; }

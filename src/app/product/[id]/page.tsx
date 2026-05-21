@@ -196,7 +196,7 @@ export default function ProductPage() {
           <div className="divider" />
 
           {cartQty > 0 ? (
-            /* In-cart stepper — replaces qty selector + add button */
+            /* In-cart stepper - replaces qty selector + add button */
             <div className="incart-stepper">
               <button className="incart-btn" onClick={() => updateQty(itemId, cartQty - 1)}>−</button>
               <div className="incart-mid">
@@ -268,7 +268,7 @@ export default function ProductPage() {
         /* ── Gallery: thumbs LEFT | main image RIGHT ── */
         .gallery { display:flex;flex-direction:row;gap:10px;height:100%;min-height:0;overflow:hidden; }
 
-        /* Thumbnail strip — vertical column on left */
+        /* Thumbnail strip - vertical column on left */
         .thumb-row { display:flex;flex-direction:column;gap:7px;width:66px;flex-shrink:0;overflow-y:auto;scrollbar-width:none;padding:2px 0; }
         .thumb-row::-webkit-scrollbar { display:none; }
         .thumb { width:62px;height:62px;border-radius:7px;border:2px solid transparent;overflow:hidden;cursor:pointer;background:#f0f8f9;transition:border-color .2s,opacity .2s;flex-shrink:0;opacity:.7; }
@@ -276,7 +276,7 @@ export default function ProductPage() {
         .thumb.active { border-color:#005969;box-shadow:0 0 0 1px #005969;opacity:1; }
         .thumb img { width:100%;height:100%;object-fit:cover; }
 
-        /* Main image — takes all remaining width */
+        /* Main image - takes all remaining width */
         .main-img-wrap { flex:1;min-width:0;border-radius:12px;overflow:hidden;background:#f0f8f9;border:1px solid #ddeef1;cursor:zoom-in;position:relative;height:100%; }
         .main-img-wrap.zoomed { cursor:zoom-out; }
         .main-img { width:100%;height:100%;object-fit:contain;transition:transform .5s ease; }
@@ -327,7 +327,7 @@ export default function ProductPage() {
         .btn-wish:hover { border-color:#005969;color:#005969;background:#f0f8f9; }
         .btn-wish.wishlisted { border-color:#005969;color:#005969;background:#e0f2f4; }
 
-        /* Trust — 2x2 grid, compact */
+        /* Trust - 2x2 grid, compact */
         .trust-row { display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding:10px 12px;background:#f0f8f9;border-radius:8px;border:1px solid #ddeef1;flex-shrink:0; }
         .trust-item { display:flex;align-items:center;gap:7px;font-size:11px;color:#6b8b91; }
 

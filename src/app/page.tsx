@@ -400,7 +400,7 @@ export default function HomePage() {
         </div>
         <div className="offer-center">
           <div className="offer-tag">Limited Time</div>
-          <p className="offer-eyebrow">Summer Edit — 2025</p>
+          <p className="offer-eyebrow">Summer Edit 2025</p>
           <div className="offer-divider" />
           <div className="offer-percent"><sup>UP TO </sup>30<sup>%</sup></div>
           <p className="offer-off">OFF</p>

@@ -75,7 +75,7 @@ export default function CheckoutPage() {
         ? +(subtotal * couponDoc.discount_percentage / 100).toFixed(2)
         : 0;
       setDiscount(disc);
-      setCouponMsg(`Coupon applied — saving $${disc.toFixed(2)}`);
+      setCouponMsg(`Coupon applied! Saving $${disc.toFixed(2)}`);
     } catch (e: unknown) {
       setCouponMsg((e as Error).message || 'Invalid coupon');
       setDiscount(0);

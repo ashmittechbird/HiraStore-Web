@@ -25,7 +25,7 @@ function iUrl(img?: string): string {
   if (img.startsWith('http')) return img;
   return img;
 }
-function fmtDate(d?: string) { if (!d) return '—'; return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function fmtDate(d?: string) { if (!d) return '-'; return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
 function sBadgeCls(s?: string) { const m: Record<string,string> = {'Completed':'badge-green','Draft':'badge-gray','To Deliver and Bill':'badge-amber','To Bill':'badge-blue','To Deliver':'badge-blue','Cancelled':'badge-red'}; return m[s||'']||'badge-gray'; }
 function parseRemarks(r?: string) {
   if (!r) return {};
@@ -119,7 +119,7 @@ function OrderDetailBody({ order, addr }: { order: SalesOrder; addr: Addr|null }
     <div>
       <div style={{ marginBottom:16, paddingBottom:16, borderBottom:'1px solid var(--border)' }}>
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, fontSize:13 }}>
-          <div><span style={{ color:'var(--text3)', fontSize:11, textTransform:'uppercase', letterSpacing:'.08em' }}>Customer</span><div style={{ fontWeight:500, marginTop:2 }}>{order.customer||'—'}</div></div>
+          <div><span style={{ color:'var(--text3)', fontSize:11, textTransform:'uppercase', letterSpacing:'.08em' }}>Customer</span><div style={{ fontWeight:500, marginTop:2 }}>{order.customer||'-'}</div></div>
           <div><span style={{ color:'var(--text3)', fontSize:11, textTransform:'uppercase', letterSpacing:'.08em' }}>Date</span><div style={{ marginTop:2 }}>{fmtDate(order.transaction_date)}</div></div>
           {order.contact_email && <div><span style={{ color:'var(--text3)', fontSize:11, textTransform:'uppercase', letterSpacing:'.08em' }}>Email</span><div style={{ marginTop:2 }}>{order.contact_email}</div></div>}
           {order.contact_mobile && <div><span style={{ color:'var(--text3)', fontSize:11, textTransform:'uppercase', letterSpacing:'.08em' }}>Phone</span><div style={{ marginTop:2 }}>{order.contact_mobile}</div></div>}
@@ -144,7 +144,7 @@ function OrderDetailBody({ order, addr }: { order: SalesOrder; addr: Addr|null }
         <div style={{ marginBottom:16, paddingBottom:16, borderBottom:'1px solid var(--border)' }}>
           <div style={{ fontSize:11, fontWeight:600, textTransform:'uppercase', letterSpacing:'.1em', color:'var(--text3)', marginBottom:8 }}>Payment</div>
           <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-            {paymentId && <span style={{ background:'var(--green-bg)', color:'var(--green)', padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:500 }}>Payment — {paymentId}</span>}
+            {paymentId && <span style={{ background:'var(--green-bg)', color:'var(--green)', padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:500 }}>Payment: {paymentId}</span>}
             {coupon && <span style={{ background:'var(--amber-bg)', color:'var(--amber)', padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:500 }}>Coupon: {coupon}</span>}
           </div>
         </div>
@@ -216,12 +216,12 @@ function CustomerDetailBody({ data }: { data: { name:string; email:string; order
               <div key={o.name} style={{ background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:8, padding:'12px 14px', marginBottom:8 }}>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:6 }}>
                   <span style={{ fontWeight:600, fontSize:13 }}>{o.name}</span>
-                  <span className={`badge ${sBadgeCls(o.status)}`}>{o.status||'—'}</span>
+                  <span className={`badge ${sBadgeCls(o.status)}`}>{o.status||'-'}</span>
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6, fontSize:12, color:'var(--text2)' }}>
                   <div>Date: {fmtDate(o.transaction_date)}</div>
                   <div style={{ fontVariantNumeric:'tabular-nums', fontSize:15, color:'var(--text)', fontWeight:600 }}>${(o.grand_total||0).toFixed(2)}</div>
-                  {p.paymentId && <div style={{ gridColumn:'1/-1' }}><span style={{ background:'var(--green-bg)', color:'var(--green)', padding:'2px 8px', borderRadius:4, fontSize:11, fontWeight:500 }}>Payment — {p.paymentId}</span></div>}
+                  {p.paymentId && <div style={{ gridColumn:'1/-1' }}><span style={{ background:'var(--green-bg)', color:'var(--green)', padding:'2px 8px', borderRadius:4, fontSize:11, fontWeight:500 }}>Payment: {p.paymentId}</span></div>}
                   {p.coupon && <div style={{ gridColumn:'1/-1' }}>Coupon: {p.coupon}</div>}
                 </div>
               </div>
@@ -675,13 +675,13 @@ export default function AdminPage() {
                     <div className="card-hd"><h2>Recent Orders</h2><button className="btn btn-ghost btn-sm" onClick={()=>setPage('orders')}>View all</button></div>
                     {dashLoading?<div className="loading-overlay"><div className="spin"/><p>Loading…</p></div>:recentOrders.length===0?<div className="empty"><div className="empty-icon">{I.order}</div><h3>No orders yet</h3></div>:(
                       <div className="tbl-wrap"><table><thead><tr><th>Order</th><th>Status</th><th>Amount</th></tr></thead><tbody>
-                        {recentOrders.map(o=><tr key={o.name}><td className="td-name" style={{fontSize:12}}>{o.name}</td><td><span className={`badge ${sBadgeCls(o.status)}`}>{o.status||'—'}</span></td><td style={{fontVariantNumeric:'tabular-nums',fontSize:15}}>${(o.grand_total||0).toFixed(2)}</td></tr>)}
+                        {recentOrders.map(o=><tr key={o.name}><td className="td-name" style={{fontSize:12}}>{o.name}</td><td><span className={`badge ${sBadgeCls(o.status)}`}>{o.status||'-'}</span></td><td style={{fontVariantNumeric:'tabular-nums',fontSize:15}}>${(o.grand_total||0).toFixed(2)}</td></tr>)}
                       </tbody></table></div>
                     )}
                   </div>
                   <div className="card">
                     <div className="card-hd"><h2>Quick Add Product</h2></div>
-                    <div className="card-body"><p style={{fontSize:13,color:'var(--text3)',marginBottom:18}}>Add a new product to your catalog — it will appear on the shop immediately.</p><button className="btn btn-gold" onClick={openAdd}>{I.plus} Add New Product</button></div>
+                    <div className="card-body"><p style={{fontSize:13,color:'var(--text3)',marginBottom:18}}>Add a new product to your catalog. It will appear on the shop immediately.</p><button className="btn btn-gold" onClick={openAdd}>{I.plus} Add New Product</button></div>
                   </div>
                 </div>
               </>}
@@ -723,7 +723,7 @@ export default function AdminPage() {
                       <tr key={p.name}>
                         <td><img className="td-img" src={iUrl(p.image)} alt="" onError={e=>{(e.target as HTMLImageElement).src=iUrl();}} /></td>
                         <td><div className="td-name">{p.item_name||p.name}</div><div className="td-sub">{p.custom_material||''}</div></td>
-                        <td><span className="badge badge-gray">{p.item_group||'—'}</span></td>
+                        <td><span className="badge badge-gray">{p.item_group||'-'}</span></td>
                         <td style={{fontVariantNumeric:'tabular-nums',fontSize:15}}>${(p.standard_rate||0).toFixed(2)}</td>
                         <td>{p.custom_is_featured?<span className="badge badge-amber">★ Featured</span>:<span className="badge badge-gray">Standard</span>}</td>
                         <td><div style={{display:'flex',gap:6}}><button className="btn btn-outline btn-sm" onClick={()=>openEdit(p)}>Edit</button><button className="btn btn-danger btn-sm" onClick={()=>delProd(p)}>Delete</button></div></td>
@@ -747,10 +747,10 @@ export default function AdminPage() {
                       const delivered=(o.per_delivered||0)>=100;
                       return <tr key={o.name}>
                         <td style={{fontFamily:'ui-monospace,monospace',fontSize:11,color:'var(--text2)',letterSpacing:'.01em'}}>{o.name}</td>
-                        <td><div style={{fontWeight:500,fontSize:13}}>{o.customer||'—'}</div>{(o.contact_mobile||o.contact_email)&&<div style={{fontSize:11,color:'var(--text3)'}}>{o.contact_mobile||o.contact_email}</div>}</td>
+                        <td><div style={{fontWeight:500,fontSize:13}}>{o.customer||'-'}</div>{(o.contact_mobile||o.contact_email)&&<div style={{fontSize:11,color:'var(--text3)'}}>{o.contact_mobile||o.contact_email}</div>}</td>
                         <td style={{color:'var(--text3)',fontSize:12}}>{fmtDate(o.transaction_date)}</td>
                         <td style={{fontSize:12,fontWeight:600,color:'var(--text)',fontVariantNumeric:'tabular-nums'}}>${(o.grand_total||0).toFixed(2)}</td>
-                        <td><span className={`badge ${sBadgeCls(o.status)}`}>{(o.status||'—').replace('To Deliver and Bill','Pending').replace('To Deliver','Dispatch').replace('To Bill','Billing')}</span></td>
+                        <td><span className={`badge ${sBadgeCls(o.status)}`}>{(o.status||'-').replace('To Deliver and Bill','Pending').replace('To Deliver','Dispatch').replace('To Bill','Billing')}</span></td>
                         <td><button className="btn btn-outline btn-sm" onClick={()=>viewOrder(o.name)}>{I.eye} Items</button></td>
                         <td>{delivered?<span className="badge badge-green">Shipped</span>:o.status==='Cancelled'?<span className="badge badge-red">Cancelled</span>:<button className="btn btn-gold btn-sm" onClick={()=>shipOrder(o.name)}>{I.truck} Ship</button>}</td>
                         <td><select className="status-select" value={o.status||''} onChange={e=>updateStatus(o.name,e.target.value)}>{STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select></td>
@@ -773,10 +773,10 @@ export default function AdminPage() {
                     <tbody>{filteredCusts.map(c=>(
                       <tr key={c.name}>
                         <td className="td-name">{c.customer_name||c.name}</td>
-                        <td style={{fontSize:12,color:'var(--text2)'}}>{c.email_id||'—'}</td>
-                        <td style={{fontSize:12,color:'var(--text2)'}}>{c.mobile_no||'—'}</td>
+                        <td style={{fontSize:12,color:'var(--text2)'}}>{c.email_id||'-'}</td>
+                        <td style={{fontSize:12,color:'var(--text2)'}}>{c.mobile_no||'-'}</td>
                         <td><span style={{fontSize:11,background:'var(--blue-bg)',color:'var(--blue)',padding:'2px 8px',borderRadius:99}}>{c.customer_type||'Individual'}</span></td>
-                        <td style={{fontSize:12,color:'var(--text3)'}}>{c.creation?new Date(c.creation).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'—'}</td>
+                        <td style={{fontSize:12,color:'var(--text3)'}}>{c.creation?new Date(c.creation).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):'-'}</td>
                         <td><button className="btn btn-outline btn-sm" onClick={()=>viewCust(c.customer_name||c.name,c.email_id||'')}>{I.eye} View</button></td>
                       </tr>
                     ))}</tbody></table></div>
@@ -835,9 +835,9 @@ export default function AdminPage() {
                     <tbody>{allOffers.map(o=>{const today=new Date().toISOString().split('T')[0]; const expired=!!(o.valid_upto&&o.valid_upto<today);return(
                       <tr key={o.name}>
                         <td><span style={{fontFamily:'monospace',fontSize:14,fontWeight:700,color:'var(--gold)',background:'var(--gold-xl)',padding:'3px 10px',borderRadius:6}}>{o.coupon_code}</span></td>
-                        <td style={{fontWeight:600}}>{o.discount_percentage?o.discount_percentage+'%':'—'}</td>
+                        <td style={{fontWeight:600}}>{o.discount_percentage?o.discount_percentage+'%':'-'}</td>
                         <td>{o.minimum_amount?'$'+o.minimum_amount:'Any'}</td>
-                        <td style={{fontSize:12,color:'var(--text2)'}}>{o.valid_upto||'—'}</td>
+                        <td style={{fontSize:12,color:'var(--text2)'}}>{o.valid_upto||'-'}</td>
                         <td><span style={{fontSize:11,padding:'2px 8px',borderRadius:99,background:expired?'var(--red-bg)':'var(--green-bg)',color:expired?'var(--red)':'var(--green)'}}>{expired?'Expired':'Active'}</span></td>
                         <td><button style={{display:'flex',alignItems:'center',gap:4,padding:'4px 8px',fontSize:12,borderRadius:6,background:'var(--red-bg)',color:'var(--red)',border:'none',cursor:'pointer'}} onClick={()=>delCoupon(o.name)}>{I.trash} Delete</button></td>
                       </tr>);
@@ -901,7 +901,7 @@ export default function AdminPage() {
                     onDrop={e=>{e.preventDefault();(e.currentTarget as HTMLElement).style.borderColor='';const file=e.dataTransfer.files[0];if(file&&file.type.startsWith('image/')){const r2=new FileReader();r2.onload=ev=>setPf(p=>({...p,imageFile:file,imagePreview:ev.target?.result as string}));r2.readAsDataURL(file);}}}>
                     {pf.imagePreview
                       ? <img src={pf.imagePreview} alt="Preview" className="img-preview" style={{display:'block'}} />
-                      : <div><div className="upload-icon">{I.upload}</div><p><strong>Click to upload</strong> or drag and drop</p><p style={{fontSize:11,marginTop:4}}>JPG, PNG, WebP — max 5MB</p></div>
+                      : <div><div className="upload-icon">{I.upload}</div><p><strong>Click to upload</strong> or drag and drop</p><p style={{fontSize:11,marginTop:4}}>JPG, PNG, WebP, max 5MB</p></div>
                     }
                   </div>
                   <input type="file" id="adm-img-in" accept="image/*" style={{display:'none'}} onChange={e=>{const file=e.target.files?.[0];if(!file)return;const r2=new FileReader();r2.onload=ev=>setPf(p=>({...p,imageFile:file,imagePreview:ev.target?.result as string}));r2.readAsDataURL(file);}} />

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
-import { useFrappePostCall } from 'frappe-react-sdk';
+import { useFrappePostCall, useFrappeAuth } from 'frappe-react-sdk';
 
 export default function CartPage() {
   const { items, removeItem, updateQty, clearCart, totalItems, totalPrice } = useCart();
@@ -12,6 +12,7 @@ export default function CartPage() {
   const [removing, setRemoving] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const { currentUser } = useFrappeAuth();
   const { call: frappeGetList } = useFrappePostCall<{ message: any[] }>('frappe.client.get_list');
   const { call: frappeGet } = useFrappePostCall<{ message: any }>('frappe.client.get');
 
@@ -42,7 +43,7 @@ export default function CartPage() {
         ? +(subtotal * couponDoc.discount_percentage / 100).toFixed(2)
         : 0;
       setDiscount(disc);
-      setCouponMsg(`✓ Coupon applied! You save $${disc.toFixed(2)}`);
+      setCouponMsg(`Coupon applied! You save $${disc.toFixed(2)}`);
     } catch (e: unknown) {
       setCouponMsg((e as Error).message || 'Invalid coupon');
       setDiscount(0);
@@ -59,7 +60,7 @@ export default function CartPage() {
   }
 
   function handleCheckout() {
-    // Save coupon/discount to session storage for checkout
+    if (!currentUser) { navigate('/login?return=/checkout'); return; }
     if (discount > 0) {
       sessionStorage.setItem('hs_coupon', JSON.stringify({ code: coupon, discount }));
     }
@@ -138,7 +139,7 @@ export default function CartPage() {
               </button>
             </div>
             {couponMsg && (
-              <div className={`promo-message${couponMsg.startsWith('✓') ? ' success' : ' error'}`}>{couponMsg}</div>
+              <div className={`promo-message${couponMsg.startsWith('Coupon applied') ? ' success' : ' error'}`}>{couponMsg}</div>
             )}
           </div>
 

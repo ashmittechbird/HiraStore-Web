@@ -41,9 +41,10 @@ export default function AccountPage() {
   }, [currentUser, authLoading]);
 
   async function handleLogout() {
+    try { await fetch('/api/method/logout', { credentials: 'include' }); } catch {}
     await logout();
     setWishlistUser(null);
-    navigate('/');
+    window.location.href = '/store/';
   }
 
   function copyCode(code: string) {

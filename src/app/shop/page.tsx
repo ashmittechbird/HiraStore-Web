@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { useFrappeGetDocList } from 'frappe-react-sdk';
@@ -54,9 +54,15 @@ function ShopContent() {
   const [category, setCategory] = useState(initialCat);
   const [search, setSearch] = useState(initialSearch);
   const [sort, setSort] = useState('default');
-  const dataSource = allProducts.length > 0 ? 'live' : 'local';
+  const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [displayed, setDisplayed] = useState<Product[]>([]);
+
+  // Sync category when URL params change (navbar links)
+  useEffect(() => {
+    const cat = searchParams.get('cat') || 'All';
+    setCategory(cat);
+  }, [searchParams]);
   const wishlistItems = useWishlist(s => s.items);
   const wishToggle = useWishlist(s => s.toggle);
   const wishIds = new Set(wishlistItems.map(x => x.id));
@@ -226,12 +232,6 @@ function ShopContent() {
             {loading ? 'Loading products…' : `${allProducts.length} handcrafted sterling silver pieces`}
           </p>
         </div>
-        <div>
-          <span className={`data-source-badge ${dataSource}`}>
-            <span className="dot" />
-            {dataSource === 'live' ? 'Live · Frappe ERPNext' : 'Offline · Local catalog'}
-          </span>
-        </div>
       </div>
 
       {/* Toolbar */}
@@ -288,7 +288,7 @@ function ShopContent() {
           </div>
         ) : displayed.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-state-icon">💎</div>
+            <div className="empty-state-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#005969" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
             <h3>No products found</h3>
             <p>Try a different search term or category filter.</p>
             <button onClick={() => { setCategory('All'); setSearch(''); }}>Clear Filters</button>
@@ -310,7 +310,7 @@ function ShopContent() {
                 const cartQty = cartQtyMap[id] || 0;
                 const delayClass = `reveal-delay-${(idx % 4)+1}`;
                 return (
-                  <article key={id} className={`product-card reveal ${delayClass}`} data-category={cat} data-id={id} role="listitem">
+                  <article key={id} className={`product-card reveal ${delayClass}`} data-category={cat} data-id={id} role="listitem" onClick={() => navigate('/product/' + encodeURIComponent(id))} style={{ cursor: 'pointer' }}>
                     <div className="product-img-wrap">
                       <img src={img} alt={name} loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />
                       {/* badge: cart indicator takes priority over promo label */}
@@ -325,12 +325,12 @@ function ShopContent() {
                       <div className="product-actions">
                         {cartQty > 0 ? (
                           <div className="prod-stepper" onClick={e => e.stopPropagation()}>
-                            <button className="prod-stepper-btn" aria-label="Remove one" onClick={() => updateQty(id, cartQty - 1)}>−</button>
+                            <button className="prod-stepper-btn" aria-label="Remove one" onClick={e => { e.stopPropagation(); updateQty(id, cartQty - 1); }}>−</button>
                             <span className="prod-stepper-count">{cartQty}</span>
-                            <button className="prod-stepper-btn" aria-label="Add one" onClick={() => addItem({ id, name, category: cat, price, image: img })}>+</button>
+                            <button className="prod-stepper-btn" aria-label="Add one" onClick={e => { e.stopPropagation(); addItem({ id, name, category: cat, price, image: img }); }}>+</button>
                           </div>
                         ) : (
-                          <button className={`product-action-btn pa-primary${isAdded ? ' cart-added' : ''}`} onClick={() => handleAdd(item)}>
+                          <button className={`product-action-btn pa-primary${isAdded ? ' cart-added' : ''}`} onClick={e => { e.stopPropagation(); handleAdd(item); }}>
                             {isAdded ? 'Added ✓' : 'Add to Cart'}
                           </button>
                         )}
@@ -462,12 +462,6 @@ function ShopContent() {
         .breadcrumb-sep { opacity:0.4; }
         .page-title { font-family:var(--font-head); font-size:clamp(32px,4vw,48px); font-weight:800; color:var(--text-dark); line-height:1.1; }
         .page-subtitle { font-size:15px; color:var(--text-light); margin-top:8px; }
-        .data-source-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:0.05em; }
-        .data-source-badge.live { background:#e8f5e9; color:#2e7d32; }
-        .data-source-badge.local { background:#fff8e1; color:#f57f17; }
-        .data-source-badge .dot { width:7px; height:7px; border-radius:50%; }
-        .data-source-badge.live .dot { background:#4caf50; }
-        .data-source-badge.local .dot { background:#ffa000; }
 
         /* TOOLBAR */
         .shop-toolbar { max-width:1296px; margin:0 auto 24px; padding:0 48px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
@@ -531,7 +525,7 @@ function ShopContent() {
         .product-action-btn.pa-secondary:hover { border-color:var(--gold); color:var(--gold); }
 
         /* Product info */
-        .product-info { padding:14px 0 18px; }
+        .product-info { padding:14px 12px 18px; }
         .product-meta { font-size:10px; font-weight:600; color:var(--text-light); margin-bottom:6px; letter-spacing:0.1em; text-transform:uppercase; }
         .product-name { font-family:var(--font-head); font-size:15px; font-weight:700; color:var(--text-dark); margin-bottom:10px; line-height:1.4; transition:color 0.2s; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .product-card:hover .product-name { color:var(--gold-dark); }

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useFrappeGetDocList } from 'frappe-react-sdk';
-import { itemImage, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
+import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 
@@ -10,6 +10,8 @@ const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=2000&q=85',
   'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=2000&q=85',
 ];
+
+const BADGE_CYCLE = ['New', 'Bestseller', '', 'Limited', 'Trending', '', ''];
 
 const CATEGORIES = [
   { name: 'Necklaces', img: 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=400&q=85', cat: 'Necklaces' },
@@ -67,17 +69,27 @@ function useReveal() {
   }, []);
 }
 
-function ProductCard({ item, onAddToCart }: { item: Product; onAddToCart: (item: Product) => void }) {
+function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart: (item: Product) => void; badge?: string }) {
   const [added, setAdded] = useState(false);
   const [popping, setPopping] = useState(false);
+  const [qvOpen, setQvOpen] = useState(false);
+  const [qvIdx, setQvIdx] = useState(0);
+  const [qvAdded, setQvAdded] = useState(false);
+  const navigate = useNavigate();
   const wishToggle = useWishlist(s => s.toggle);
   const wishHas = useWishlist(s => s.has);
+  const updateQty = useCart(s => s.updateQty);
+  const cartItems = useCart(s => s.items);
+  const addItemDirect = useCart(s => s.addItem);
   const imgSrc = itemImage(item as Parameters<typeof itemImage>[0]);
+  const imgs = itemImages(item as Parameters<typeof itemImages>[0], 4);
   const price = itemPrice(item as Parameters<typeof itemPrice>[0]);
   const name = itemName(item as Parameters<typeof itemName>[0]);
   const category = itemCategory(item as Parameters<typeof itemCategory>[0]);
   const id = itemId(item as Parameters<typeof itemId>[0]);
   const wished = wishHas(id);
+  const cartQty = cartItems.find(i => i.id === id)?.qty || 0;
+  const priceStr = price > 0 ? `$${Number(price).toLocaleString('en-US')}` : 'Price on request';
 
   function handleAdd() {
     if (added) return;
@@ -92,36 +104,111 @@ function ProductCard({ item, onAddToCart }: { item: Product; onAddToCart: (item:
     setTimeout(() => setPopping(false), 400);
   }
 
+  function handleQVAdd() {
+    onAddToCart(item);
+    setQvAdded(true);
+    setTimeout(() => setQvAdded(false), 1600);
+  }
+
   return (
-    <div className="product-card">
-      <div className="product-img-wrap">
-        <img src={imgSrc} alt={name} loading="lazy" />
-        <button
-          className={`product-wish${wished ? ' wished' : ''}${popping ? ' popping' : ''}`}
-          onClick={handleWish}
-          aria-label="Wishlist"
-        >
-          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-        </button>
-        <div className="product-actions">
-          <button className="product-action-btn pa-primary" onClick={handleAdd}>
-            {added ? 'Added ✓' : 'Add to Cart'}
+    <>
+      <div className="product-card" onClick={() => navigate(`/product/${encodeURIComponent(id)}`)} style={{ cursor: 'pointer' }}>
+        <div className="product-img-wrap">
+          <img src={imgSrc} alt={name} loading="lazy" />
+          {cartQty > 0
+            ? <span className="card-cart-badge"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> {cartQty}</span>
+            : badge && <span className="product-badge">{badge}</span>
+          }
+          <button
+            className={`product-wish${wished ? ' wished' : ''}${popping ? ' popping' : ''}`}
+            onClick={e => { e.stopPropagation(); handleWish(); }}
+            aria-label="Wishlist"
+          >
+            <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
           </button>
-          <Link to={`/product/${encodeURIComponent(id)}`} className="product-action-btn pa-secondary">
-            Quick View
-          </Link>
+          <div className="product-actions">
+            {cartQty > 0 ? (
+              <div className="prod-stepper" onClick={e => e.stopPropagation()}>
+                <button className="prod-stepper-btn" aria-label="Remove one" onClick={e => { e.stopPropagation(); updateQty(id, cartQty - 1); }}>−</button>
+                <span className="prod-stepper-count">{cartQty}</span>
+                <button className="prod-stepper-btn" aria-label="Add one" onClick={e => { e.stopPropagation(); addItemDirect({ id, name, category, price, image: imgSrc }); }}>+</button>
+              </div>
+            ) : (
+              <button className={`product-action-btn pa-primary${added ? ' cart-added' : ''}`} onClick={e => { e.stopPropagation(); handleAdd(); }}>
+                {added ? 'Added ✓' : 'Add to Cart'}
+              </button>
+            )}
+            <button className="product-action-btn pa-secondary" onClick={e => { e.stopPropagation(); setQvOpen(true); setQvIdx(0); setQvAdded(false); }}>
+              Quick View
+            </button>
+          </div>
+        </div>
+        <div className="product-info">
+          <p className="product-meta">{category || 'Jewellery'}</p>
+          <h3 className="product-name">{name}</h3>
+          <div className="product-price">
+            <span className="price-current">{priceStr}</span>
+            <div className="product-rating"><span className="stars">★★★★★</span></div>
+          </div>
         </div>
       </div>
-      <div className="product-info">
-        <h3 className="product-name">{name}</h3>
-        <p className="product-meta">{category || '925 Silver'}</p>
-        <div className="product-price">${Number(price).toLocaleString('en-US')}</div>
-      </div>
-    </div>
+
+      {qvOpen && (
+        <div style={{ display:'flex',position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',backdropFilter:'blur(5px)',zIndex:1000,alignItems:'center',justifyContent:'center',padding:'16px' }}
+          onClick={() => setQvOpen(false)}>
+          <div style={{ background:'#fff',maxWidth:'900px',width:'100%',maxHeight:'90vh',overflowY:'auto',position:'relative',display:'grid',gridTemplateColumns:'1fr 1fr' }}
+            onClick={e => e.stopPropagation()}>
+            <button onClick={() => setQvOpen(false)} style={{ position:'absolute',top:'16px',right:'16px',background:'rgba(255,255,255,0.9)',border:'none',width:'32px',height:'32px',borderRadius:'50%',cursor:'pointer',zIndex:10,display:'flex',alignItems:'center',justifyContent:'center' }}>
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="#2c2c2c" strokeWidth="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div style={{ display:'flex',flexDirection:'column',background:'#faf9f7',minHeight:'340px' }}>
+              <div style={{ flex:1,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center' }}>
+                <img src={imgs[qvIdx]} alt={name} style={{ width:'100%',height:'100%',objectFit:'cover',transition:'opacity 0.2s' }} key={qvIdx} />
+              </div>
+              {imgs.length > 1 && (
+                <div style={{ display:'flex',gap:'6px',padding:'10px',background:'#fff',borderTop:'1px solid #f0f0f0' }}>
+                  {imgs.map((src, i) => (
+                    <div key={i} onClick={() => setQvIdx(i)} style={{ width:'52px',height:'52px',flexShrink:0,cursor:'pointer',overflow:'hidden',border:`2px solid ${i === qvIdx ? '#2c2c2c' : 'transparent'}`,transition:'border-color 0.2s',background:'#faf9f7' }}>
+                      <img src={src} alt={`${name} ${i+1}`} style={{ width:'100%',height:'100%',objectFit:'cover' }} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div style={{ padding:'40px',display:'flex',flexDirection:'column',justifyContent:'center',gap:0 }}>
+              <div style={{ fontSize:'10px',letterSpacing:'0.2em',textTransform:'uppercase',color:'#737373',marginBottom:'12px' }}>{category}</div>
+              <h2 style={{ fontFamily:'Playfair Display,serif',fontSize:'28px',fontWeight:400,color:'#2c2c2c',marginBottom:'8px',lineHeight:1.2 }}>{name}</h2>
+              <div style={{ fontSize:'20px',fontWeight:600,color:'#2c2c2c',margin:'16px 0' }}>{priceStr}</div>
+              <div style={{ display:'flex',flexDirection:'column',gap:'12px',marginTop:'24px',marginBottom:'24px' }}>
+                {cartQty > 0 ? (
+                  <div style={{ display:'flex',alignItems:'center',border:'1.5px solid #2c2c2c',overflow:'hidden' }}>
+                    <button onClick={() => updateQty(id, cartQty - 1)} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>−</button>
+                    <span style={{ flex:1,textAlign:'center',fontSize:'14px',fontWeight:700,color:'#2c2c2c' }}>{cartQty} in cart</span>
+                    <button onClick={() => addItemDirect({ id, name, category, price, image: imgSrc })} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>+</button>
+                  </div>
+                ) : (
+                  <button onClick={handleQVAdd} style={{ background: qvAdded ? '#2eaa6e' : '#2c2c2c',color:'#fff',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'none',cursor:'pointer',transition:'background 0.3s',fontFamily:'inherit' }}>
+                    {qvAdded ? 'Added ✓' : 'Add to Cart'}
+                  </button>
+                )}
+                <button onClick={() => { setQvOpen(false); sessionStorage.setItem('hs_buynow', JSON.stringify([{ id, name, category, price, image: imgSrc, qty: 1 }])); navigate('/checkout'); }} style={{ background:'transparent',color:'#2c2c2c',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'2px solid #2c2c2c',cursor:'pointer',transition:'background .2s,color .2s',fontFamily:'inherit' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background='#2c2c2c'; (e.currentTarget as HTMLButtonElement).style.color='#fff'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background='transparent'; (e.currentTarget as HTMLButtonElement).style.color='#2c2c2c'; }}>
+                  Buy Now
+                </button>
+              </div>
+              <Link to={`/product/${encodeURIComponent(id)}`} style={{ fontSize:'12px',color:'#737373',textDecoration:'underline',textUnderlineOffset:'4px',textAlign:'center' }}>
+                View Full Details
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
-const HP_FIELDS = ['name','item_name','item_group','standard_rate','image','disabled'];
+const HP_FIELDS = ['name','item_name','item_group','standard_rate','image','custom_item_images','weight_per_unit','disabled'];
 
 export default function HomePage() {
   const [heroIdx, setHeroIdx] = useState(0);
@@ -184,7 +271,7 @@ export default function HomePage() {
       {/* Trust Bar */}
       <div className="trust-bar">
         {[
-          { icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>, text: 'BIS Hallmarked' },
+          { icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>, text: 'Premium Quality' },
           { icon: <><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>, text: 'Skin Friendly' },
           { icon: <><rect x="1" y="3" width="13" height="13"/><polygon points="13 3 20 3 23 6 23 16 13 16 13 3"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/></>, text: 'Free Shipping' },
           { icon: <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>, text: 'Cash on Delivery' },
@@ -228,8 +315,8 @@ export default function HomePage() {
                     <div className="product-img-wrap" style={{ background: '#eaeaea', animation: 'shimmer 1.5s infinite' }} />
                   </div>
                 ))
-              : mostLoved.map(item => (
-                  <ProductCard key={itemId(item as Parameters<typeof itemId>[0])} item={item} onAddToCart={handleAdd} />
+              : mostLoved.map((item, idx) => (
+                  <ProductCard key={itemId(item as Parameters<typeof itemId>[0])} item={item} onAddToCart={handleAdd} badge={BADGE_CYCLE[idx % BADGE_CYCLE.length]} />
                 ))
             }
           </div>
@@ -265,8 +352,8 @@ export default function HomePage() {
                     <div className="product-img-wrap" style={{ background: '#eaeaea' }} />
                   </div>
                 ))
-              : newArrivals.map(item => (
-                  <ProductCard key={itemId(item as Parameters<typeof itemId>[0])} item={item} onAddToCart={handleAdd} />
+              : newArrivals.map((item, idx) => (
+                  <ProductCard key={itemId(item as Parameters<typeof itemId>[0])} item={item} onAddToCart={handleAdd} badge={BADGE_CYCLE[idx % BADGE_CYCLE.length]} />
                 ))
             }
           </div>
@@ -318,7 +405,7 @@ export default function HomePage() {
           <div className="offer-percent"><sup>UP TO </sup>30<sup>%</sup></div>
           <p className="offer-off">OFF</p>
           <h2 className="offer-headline">Adorn Yourself<br />for Less</h2>
-          <p className="offer-subtext">Handcrafted sterling silver &amp; gemstone pieces, now at our best prices of the season.</p>
+          <p className="offer-subtext">Handcrafted artificial jewellery pieces, now at our best prices of the season.</p>
           <div className="offer-code-wrap">
             <span className="offer-code-label">Use Code</span>
             <span className="offer-code">HIRA30</span>
@@ -426,30 +513,46 @@ export default function HomePage() {
         .cat-name { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-main); }
 
         /* Products Grid */
-        .products-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 40px 24px; }
-        .product-card { position: relative; display: flex; flex-direction: column; }
-        .product-img-wrap { position: relative; aspect-ratio: 4/5; overflow: hidden; background: var(--surface); margin-bottom: 20px; }
-        .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s var(--ease-out); }
-        .product-card:hover .product-img-wrap img { transform: scale(1.06); }
+        .products-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 28px; }
+        .product-card { background: #fff; border: 1px solid rgba(0,0,0,0.07); transition: box-shadow 0.3s ease, border-color 0.3s ease; }
+        .product-card:hover { box-shadow: 0 8px 40px rgba(0,0,0,0.10); border-color: rgba(0,89,105,0.15); }
+        .product-img-wrap { position: relative; aspect-ratio: 3/4; overflow: hidden; background: #f5f2ee; }
+        .product-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s cubic-bezier(0.22,1,0.36,1); }
+        .product-card:hover .product-img-wrap img { transform: scale(1.05); }
 
-        .product-wish { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.9); border-radius: 50%; opacity: 0; transform: translateY(-5px); transition: all 0.3s var(--ease-out); }
-        .product-card:hover .product-wish { opacity: 1; transform: translateY(0); }
-        .product-wish svg { width: 16px; height: 16px; fill: none; stroke: var(--text-main); stroke-width: 1.5; transition: fill 0.2s; }
+        .product-badge { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,0.90); backdrop-filter: blur(6px); color: #005969; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 9px; border-radius: 2px; }
+        .card-cart-badge { position: absolute; top: 10px; left: 10px; background: #005969; color: #fff; font-size: 10px; font-weight: 700; padding: 3px 8px 3px 6px; border-radius: 99px; display: flex; align-items: center; gap: 4px; pointer-events: none; z-index: 3; line-height: 1; box-shadow: 0 2px 10px rgba(0,89,105,0.35); }
+
+        .prod-stepper { flex: 1; display: flex; align-items: center; height: 42px; border: 1.5px solid #005969; border-radius: 4px; overflow: hidden; background: #fff; }
+        .prod-stepper-btn { width: 42px; min-width: 42px; height: 100%; display: flex; align-items: center; justify-content: center; background: #005969; color: #fff; border: none; font-size: 20px; font-weight: 300; cursor: pointer; transition: background 0.15s, transform 0.08s; line-height: 1; padding: 0; font-family: inherit; flex-shrink: 0; user-select: none; }
+        .prod-stepper-btn:hover { background: #003d4a; }
+        .prod-stepper-btn:active { transform: scale(0.85); }
+        .prod-stepper-count { flex: 1; display: flex; align-items: center; justify-content: center; background: #fff; font-size: 14px; font-weight: 700; color: #005969; user-select: none; border-left: 1px solid #b8dde3; border-right: 1px solid #b8dde3; }
+
+        .product-wish { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; background: rgba(255,255,255,0.88); backdrop-filter: blur(6px); border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0.7; transition: opacity 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1), background 0.2s; border: none; cursor: pointer; touch-action: manipulation; }
+        .product-wish:hover { opacity: 1; transform: scale(1.12); background: rgba(255,255,255,0.98); }
+        .product-wish.wished { opacity: 1; }
+        .product-wish svg { width: 15px; height: 15px; fill: none; stroke: #1a1a1a; stroke-width: 1.8; }
         .product-wish.wished svg { fill: #e04040; stroke: #e04040; }
         .product-wish.popping { animation: pop 0.4s var(--ease-spring); }
         @keyframes pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
 
-        .product-actions { position: absolute; bottom: 0; left: 0; width: 100%; display: flex; transform: translateY(100%); transition: transform 0.4s var(--ease-out); }
+        .product-actions { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.97); backdrop-filter: blur(10px); padding: 12px 14px; transform: translateY(100%); transition: transform 0.32s cubic-bezier(0.22,1,0.36,1); display: flex; gap: 8px; border-top: 1px solid rgba(0,0,0,0.06); }
         .product-card:hover .product-actions { transform: translateY(0); }
-        .product-action-btn { flex: 1; padding: 14px 10px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; transition: background 0.3s; border-radius: 0; text-align: center; }
-        .pa-primary { background: var(--text-main); color: #fff; }
-        .pa-primary:hover { background: var(--accent-gold); }
-        .pa-secondary { background: rgba(255,255,255,0.95); color: var(--text-main); }
-        .pa-secondary:hover { background: #fff; color: var(--accent-gold); }
-        .product-info { display: flex; flex-direction: column; gap: 6px; text-align: center; }
-        .product-name { font-family: var(--font-head); font-size: 16px; font-weight: 500; color: var(--text-main); }
-        .product-meta { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; }
-        .product-price { font-size: 14px; font-weight: 600; color: var(--text-main); margin-top: 4px; }
+        .product-action-btn { flex: 1; padding: 11px 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s, color 0.2s, border-color 0.2s; cursor: pointer; border: none; font-family: inherit; touch-action: manipulation; }
+        .pa-primary { background: #005969; color: #fff; }
+        .pa-primary:hover { background: #003d4a; }
+        .pa-primary.cart-added { background: #2eaa6e; }
+        .pa-secondary { border: 1px solid #d8d8d8; color: #555; background: transparent; }
+        .pa-secondary:hover { border-color: #005969; color: #005969; }
+        .product-info { padding: 14px 12px 18px; }
+        .product-name { font-family: var(--font-head); font-size: 15px; font-weight: 700; color: var(--text-main); margin-bottom: 10px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; transition: color 0.2s; }
+        .product-card:hover .product-name { color: #003d4a; }
+        .product-meta { font-size: 10px; font-weight: 600; color: var(--text-light); margin-bottom: 6px; letter-spacing: 0.1em; text-transform: uppercase; }
+        .product-price { display: flex; align-items: center; justify-content: space-between; }
+        .price-current { font-size: 16px; font-weight: 600; color: var(--text-main); }
+        .product-rating { display: flex; align-items: center; }
+        .stars { color: #c9a84c; font-size: 11px; letter-spacing: 0.5px; }
 
         /* Philosophy */
         .philosophy-section { padding: 120px 20px; text-align: center; background: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }

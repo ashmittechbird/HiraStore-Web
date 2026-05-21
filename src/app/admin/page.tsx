@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import {
   useFrappeAuth, useFrappeGetDocList, useFrappeCreateDoc,
   useFrappeUpdateDoc, useFrappeDeleteDoc, useFrappePostCall,
@@ -31,7 +31,8 @@ function parseRemarks(r?: string) {
   if (!r) return {};
   const pay = r.match(/Square Payment ID:\s*([^\s|]+)/i) || r.match(/Payment ID:\s*([^\s|]+)/i);
   const coup = r.match(/Coupon:\s*([^|]+)/i);
-  return { paymentId: pay?.[1], coupon: coup?.[1]?.trim() };
+  const addr = r.match(/Address:\s*([^|]+)/i);
+  return { paymentId: pay?.[1], coupon: coup?.[1]?.trim(), address: addr?.[1]?.trim() };
 }
 
 // ─── ICONS ────────────────────────────────────────────────────────────
@@ -112,7 +113,7 @@ function HpSection({ items, selected, onToggle }: { items: Item[]; selected: str
 }
 
 function OrderDetailBody({ order, addr }: { order: SalesOrder; addr: Addr|null }) {
-  const { paymentId, coupon } = parseRemarks(order.remarks);
+  const { paymentId, coupon, address: remarksAddr } = parseRemarks(order.remarks);
   const items = order.items || [];
   return (
     <div>
@@ -124,16 +125,18 @@ function OrderDetailBody({ order, addr }: { order: SalesOrder; addr: Addr|null }
           {order.contact_mobile && <div><span style={{ color:'var(--text3)', fontSize:11, textTransform:'uppercase', letterSpacing:'.08em' }}>Phone</span><div style={{ marginTop:2 }}>{order.contact_mobile}</div></div>}
         </div>
       </div>
-      {addr && (
+      {(addr || remarksAddr) && (
         <div style={{ marginBottom:16, paddingBottom:16, borderBottom:'1px solid var(--border)' }}>
           <div style={{ fontSize:11, fontWeight:600, textTransform:'uppercase', letterSpacing:'.1em', color:'var(--text3)', marginBottom:8 }}>Shipping Address</div>
           <div style={{ background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:8, padding:'12px 14px', fontSize:13 }}>
             <div style={{ fontWeight:500 }}>{order.customer}</div>
-            {addr.address_line1 && <div style={{ color:'var(--text2)', marginTop:2 }}>{addr.address_line1}</div>}
-            {addr.address_line2 && <div style={{ color:'var(--text2)' }}>{addr.address_line2}</div>}
-            <div style={{ color:'var(--text2)' }}>{[addr.city, addr.state, addr.pincode].filter(Boolean).join(', ')}</div>
-            <div style={{ color:'var(--text2)' }}>{addr.country||''}</div>
-            {addr.phone && <div style={{ color:'var(--text3)', fontSize:12, marginTop:4 }}>📞 {addr.phone}</div>}
+            {addr ? <>
+              {addr.address_line1 && <div style={{ color:'var(--text2)', marginTop:2 }}>{addr.address_line1}</div>}
+              {addr.address_line2 && <div style={{ color:'var(--text2)' }}>{addr.address_line2}</div>}
+              <div style={{ color:'var(--text2)' }}>{[addr.city, addr.state, addr.pincode].filter(Boolean).join(', ')}</div>
+              <div style={{ color:'var(--text2)' }}>{addr.country||''}</div>
+              {addr.phone && <div style={{ color:'var(--text3)', fontSize:12, marginTop:4 }}>{addr.phone}</div>}
+            </> : <div style={{ color:'var(--text2)', marginTop:2 }}>{remarksAddr}</div>}
           </div>
         </div>
       )}
@@ -155,13 +158,13 @@ function OrderDetailBody({ order, addr }: { order: SalesOrder; addr: Addr|null }
             <tr key={i} style={{ borderBottom:'1px solid var(--border)' }}>
               <td style={{ padding:10, fontWeight:500, fontSize:13 }}>{item.item_name||item.item_code}</td>
               <td style={{ padding:10, textAlign:'center', color:'var(--text2)' }}>{item.qty}</td>
-              <td style={{ padding:10, textAlign:'right', fontFamily:'Cormorant Garamond,serif' }}>${(item.rate||0).toFixed(2)}</td>
-              <td style={{ padding:10, textAlign:'right', fontFamily:'Cormorant Garamond,serif', fontWeight:600 }}>${(item.amount||0).toFixed(2)}</td>
+              <td style={{ padding:10, textAlign:'right', fontVariantNumeric:'tabular-nums' }}>${(item.rate||0).toFixed(2)}</td>
+              <td style={{ padding:10, textAlign:'right', fontVariantNumeric:'tabular-nums', fontWeight:600 }}>${(item.amount||0).toFixed(2)}</td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div style={{ textAlign:'right', padding:'14px 10px 0', fontFamily:'Cormorant Garamond,serif', fontSize:20, fontWeight:600, borderTop:'2px solid var(--border)', marginTop:4 }}>
+      <div style={{ textAlign:'right', padding:'14px 10px 0', fontVariantNumeric:'tabular-nums', fontSize:20, fontWeight:600, borderTop:'2px solid var(--border)', marginTop:4 }}>
         Total: ${(order.grand_total||0).toFixed(2)}
       </div>
     </div>
@@ -176,7 +179,7 @@ function CustomerDetailBody({ data }: { data: { name:string; email:string; order
       <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:20 }}>
         {[['Total Orders',data.orders.length],['Total Spent','$'+totalSpent.toFixed(0)],['Completed',completed]].map(([l,v]) => (
           <div key={l as string} style={{ background:'var(--surface2)', border:'1px solid var(--border)', borderRadius:10, padding:14, textAlign:'center' }}>
-            <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:26, fontWeight:600 }}>{v}</div>
+            <div style={{ fontVariantNumeric:'tabular-nums', fontSize:26, fontWeight:600 }}>{v}</div>
             <div style={{ fontSize:11, color:'var(--text3)', textTransform:'uppercase', letterSpacing:'.08em' }}>{l}</div>
           </div>
         ))}
@@ -217,7 +220,7 @@ function CustomerDetailBody({ data }: { data: { name:string; email:string; order
                 </div>
                 <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:6, fontSize:12, color:'var(--text2)' }}>
                   <div>Date: {fmtDate(o.transaction_date)}</div>
-                  <div style={{ fontFamily:'Cormorant Garamond,serif', fontSize:15, color:'var(--text)', fontWeight:600 }}>${(o.grand_total||0).toFixed(2)}</div>
+                  <div style={{ fontVariantNumeric:'tabular-nums', fontSize:15, color:'var(--text)', fontWeight:600 }}>${(o.grand_total||0).toFixed(2)}</div>
                   {p.paymentId && <div style={{ gridColumn:'1/-1' }}><span style={{ background:'var(--green-bg)', color:'var(--green)', padding:'2px 8px', borderRadius:4, fontSize:11, fontWeight:500 }}>Payment — {p.paymentId}</span></div>}
                   {p.coupon && <div style={{ gridColumn:'1/-1' }}>Coupon: {p.coupon}</div>}
                 </div>
@@ -308,10 +311,9 @@ export default function AdminPage() {
     'Item', authed ? { fields: ITEM_FIELDS, limit: 500 } : undefined
   );
 
-  const ORDER_FIELDS = ['name','customer','transaction_date','grand_total','status','contact_phone','shipping_address_name','per_delivered'];
-  const { data: allOrders = [], isLoading: ordersLoading, mutate: reloadOrders } = useFrappeGetDocList<SalesOrder>(
-    'Sales Order', authed ? { fields: ORDER_FIELDS, limit: 500, orderBy: { field: 'transaction_date', order: 'desc' } } : undefined
-  );
+  const ORDER_FIELDS = ['name','customer','transaction_date','grand_total','status','contact_mobile','contact_email','shipping_address_name','per_delivered'];
+  const [allOrders, setAllOrders] = useState<SalesOrder[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(false);
 
   const CUST_FIELDS = ['name','customer_name','customer_type','email_id','mobile_no','creation'];
   const { data: allCustomers = [], isLoading: custLoading, mutate: reloadCustomers } = useFrappeGetDocList<Customer>(
@@ -342,6 +344,27 @@ export default function AdminPage() {
 
   // Ref to avoid stale closure in effects
   const frappeGetRef = useRef(frappeGet);
+  const reloadOrders = useCallback(async () => {
+    if (!authed) return;
+    setOrdersLoading(true);
+    try {
+      const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || 'fetch';
+      const res = await fetch('/api/method/frappe.client.get_list', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf },
+        body: JSON.stringify({
+          doctype: 'Sales Order',
+          fields: ORDER_FIELDS,
+          limit: 500,
+          order_by: 'transaction_date desc',
+        }),
+      });
+      const data = await res.json();
+      setAllOrders(data.message || []);
+    } catch { setAllOrders([]); }
+    setOrdersLoading(false);
+  }, [authed]);
   frappeGetRef.current = frappeGet;
 
   // ── DERIVED DATA ──
@@ -356,6 +379,8 @@ export default function AdminPage() {
   const offersLoading = offersListLoading || (couponList.length > 0 && allOffers.length === 0);
 
   // ── EFFECTS ──
+  useEffect(() => { reloadOrders(); }, [reloadOrders]);
+
   useEffect(() => {
     if (!hpItemsList.length) return;
     setHpML(hpItemsList.filter(i => i.custom_is_featured).map(i => i.name));
@@ -394,7 +419,10 @@ export default function AdminPage() {
     setLoginLoading(false);
   }
 
-  function logout() { sdkLogout(); }
+  async function logout() {
+    try { await fetch('/api/method/logout', { method: 'GET', credentials: 'include' }); } catch {}
+    await sdkLogout();
+  }
 
   function openAdd() { setEditingId(null); setPf(defaultPf); setProdModal(true); }
   function openEdit(item: Item) {
@@ -577,7 +605,7 @@ export default function AdminPage() {
               <img src="https://wearparts.norework.in/wp-content/uploads/2023/09/Hira-1.png" alt="Hira Store" style={{ height:60, filter:'brightness(0) invert(1)', margin:'0 auto 10px', display:'block' }} />
               <div className="adm-login-sub">Admin Dashboard</div>
             </div>
-            <div className="adm-login-field"><label>Email</label><input type="email" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} placeholder="admin@example.com" autoComplete="username" required /></div>
+            <div className="adm-login-field"><label>Username / Email</label><input type="text" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} placeholder="Administrator" autoComplete="username" required /></div>
             <div className="adm-login-field"><label>Password</label><input type="password" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)} placeholder="Your password" autoComplete="current-password" required /></div>
             <button className="adm-login-btn" type="submit" disabled={loginLoading}>{loginLoading?'Signing in…':'Sign In'}</button>
             {loginErr && <div className="adm-login-err">{loginErr}</div>}
@@ -647,7 +675,7 @@ export default function AdminPage() {
                     <div className="card-hd"><h2>Recent Orders</h2><button className="btn btn-ghost btn-sm" onClick={()=>setPage('orders')}>View all</button></div>
                     {dashLoading?<div className="loading-overlay"><div className="spin"/><p>Loading…</p></div>:recentOrders.length===0?<div className="empty"><div className="empty-icon">{I.order}</div><h3>No orders yet</h3></div>:(
                       <div className="tbl-wrap"><table><thead><tr><th>Order</th><th>Status</th><th>Amount</th></tr></thead><tbody>
-                        {recentOrders.map(o=><tr key={o.name}><td className="td-name" style={{fontSize:12}}>{o.name}</td><td><span className={`badge ${sBadgeCls(o.status)}`}>{o.status||'—'}</span></td><td style={{fontFamily:'Cormorant Garamond,serif',fontSize:15}}>${(o.grand_total||0).toFixed(2)}</td></tr>)}
+                        {recentOrders.map(o=><tr key={o.name}><td className="td-name" style={{fontSize:12}}>{o.name}</td><td><span className={`badge ${sBadgeCls(o.status)}`}>{o.status||'—'}</span></td><td style={{fontVariantNumeric:'tabular-nums',fontSize:15}}>${(o.grand_total||0).toFixed(2)}</td></tr>)}
                       </tbody></table></div>
                     )}
                   </div>
@@ -696,7 +724,7 @@ export default function AdminPage() {
                         <td><img className="td-img" src={iUrl(p.image)} alt="" onError={e=>{(e.target as HTMLImageElement).src=iUrl();}} /></td>
                         <td><div className="td-name">{p.item_name||p.name}</div><div className="td-sub">{p.custom_material||''}</div></td>
                         <td><span className="badge badge-gray">{p.item_group||'—'}</span></td>
-                        <td style={{fontFamily:'Cormorant Garamond,serif',fontSize:15}}>${(p.standard_rate||0).toFixed(2)}</td>
+                        <td style={{fontVariantNumeric:'tabular-nums',fontSize:15}}>${(p.standard_rate||0).toFixed(2)}</td>
                         <td>{p.custom_is_featured?<span className="badge badge-amber">★ Featured</span>:<span className="badge badge-gray">Standard</span>}</td>
                         <td><div style={{display:'flex',gap:6}}><button className="btn btn-outline btn-sm" onClick={()=>openEdit(p)}>Edit</button><button className="btn btn-danger btn-sm" onClick={()=>delProd(p)}>Delete</button></div></td>
                       </tr>
@@ -718,12 +746,12 @@ export default function AdminPage() {
                     <tbody>{filteredOrders.map(o=>{
                       const delivered=(o.per_delivered||0)>=100;
                       return <tr key={o.name}>
-                        <td className="td-name" style={{fontSize:12}}>{o.name}</td>
-                        <td><div style={{fontWeight:500,fontSize:13}}>{o.customer||'—'}</div>{o.contact_phone&&<div style={{fontSize:11,color:'var(--text3)'}}>{o.contact_phone}</div>}</td>
+                        <td style={{fontFamily:'ui-monospace,monospace',fontSize:11,color:'var(--text2)',letterSpacing:'.01em'}}>{o.name}</td>
+                        <td><div style={{fontWeight:500,fontSize:13}}>{o.customer||'—'}</div>{(o.contact_mobile||o.contact_email)&&<div style={{fontSize:11,color:'var(--text3)'}}>{o.contact_mobile||o.contact_email}</div>}</td>
                         <td style={{color:'var(--text3)',fontSize:12}}>{fmtDate(o.transaction_date)}</td>
-                        <td style={{fontFamily:'Cormorant Garamond,serif',fontSize:15}}>${(o.grand_total||0).toFixed(2)}</td>
-                        <td><span className={`badge ${sBadgeCls(o.status)}`}>{o.status||'—'}</span></td>
-                        <td><button className="btn btn-outline btn-sm" onClick={()=>viewOrder(o.name)}>{I.eye} View Items</button></td>
+                        <td style={{fontSize:12,fontWeight:600,color:'var(--text)',fontVariantNumeric:'tabular-nums'}}>${(o.grand_total||0).toFixed(2)}</td>
+                        <td><span className={`badge ${sBadgeCls(o.status)}`}>{(o.status||'—').replace('To Deliver and Bill','Pending').replace('To Deliver','Dispatch').replace('To Bill','Billing')}</span></td>
+                        <td><button className="btn btn-outline btn-sm" onClick={()=>viewOrder(o.name)}>{I.eye} Items</button></td>
                         <td>{delivered?<span className="badge badge-green">Shipped</span>:o.status==='Cancelled'?<span className="badge badge-red">Cancelled</span>:<button className="btn btn-gold btn-sm" onClick={()=>shipOrder(o.name)}>{I.truck} Ship</button>}</td>
                         <td><select className="status-select" value={o.status||''} onChange={e=>updateStatus(o.name,e.target.value)}>{STATUSES.map(s=><option key={s} value={s}>{s}</option>)}</select></td>
                       </tr>;
@@ -945,7 +973,7 @@ export default function AdminPage() {
           <div className="modal confirm-modal">
             <div className="modal-body" style={{textAlign:'center',padding:'32px 26px'}}>
               <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#c03838" strokeWidth="1.5" style={{margin:'0 auto'}}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              <h3 style={{fontFamily:'Cormorant Garamond,serif',fontSize:20,marginTop:12}}>{confirmDlg.title}</h3>
+              <h3 style={{fontVariantNumeric:'tabular-nums',fontSize:20,marginTop:12}}>{confirmDlg.title}</h3>
               <p style={{fontSize:14,color:'var(--text2)',marginTop:8}}>{confirmDlg.msg}</p>
             </div>
             <div className="modal-footer">

@@ -72,7 +72,15 @@ export default function PaymentPage() {
   async function initSquare() {
     if (!squareConfig || !cardContainerRef.current) return;
     try {
-      const payments = await window.Square?.payments(squareConfig.app_id, squareConfig.location_id);
+      if (!window.Square) {
+        setError('Square payment SDK failed to load. Please refresh the page.');
+        return;
+      }
+      const payments = await window.Square.payments(squareConfig.app_id, squareConfig.location_id);
+      if (!payments) {
+        setError('Could not initialize Square payments. Check your App ID and Location ID.');
+        return;
+      }
       const card = await payments.card();
       await card.attach(cardContainerRef.current);
       cardRef.current = card;

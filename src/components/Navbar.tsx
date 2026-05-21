@@ -22,10 +22,10 @@ export default function Navbar() {
         <div className="marquee-inner">
           <span>Free Shipping on orders over $15</span>
           <span>1 Year Warranty</span>
-          <span>100% Hallmarked Silver</span>
+          <span>Premium Quality Jewellery</span>
           <span>Free Shipping on orders over $15</span>
           <span>1 Year Warranty</span>
-          <span>100% Hallmarked Silver</span>
+          <span>Premium Quality Jewellery</span>
         </div>
       </div>
 

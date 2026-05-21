@@ -15,12 +15,18 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Buy Now: single item bypassing cart
+  const [buyNowItems] = useState<typeof items | null>(() => {
+    try { return JSON.parse(sessionStorage.getItem('hs_buynow') || 'null'); } catch { return null; }
+  });
+  const effectiveItems = buyNowItems ?? items;
+
   const { currentUser, isLoading: authLoading } = useFrappeAuth();
   const { data: userDoc } = useFrappeGetDoc<FrappeUser>('User', currentUser ?? undefined);
   const { call: frappeGetList } = useFrappePostCall<{ message: any[] }>('frappe.client.get_list');
   const { call: frappeGet } = useFrappePostCall<{ message: any }>('frappe.client.get');
 
-  const subtotal = totalPrice();
+  const subtotal = effectiveItems.reduce((s, i) => s + i.price * i.qty, 0);
   const total = subtotal - discount;
 
   useEffect(() => {
@@ -87,11 +93,12 @@ export default function CheckoutPage() {
     // Save address for next time
     localStorage.setItem('hs_saved_address', JSON.stringify({ address, city, state, zip, phone }));
     // Save checkout data for payment page
-    sessionStorage.setItem('hs_checkout', JSON.stringify({ customer: form, cart: items, couponCode: coupon, discount }));
+    sessionStorage.setItem('hs_checkout', JSON.stringify({ customer: form, cart: effectiveItems, couponCode: coupon, discount }));
+    if (buyNowItems) sessionStorage.removeItem('hs_buynow');
     navigate('/payment');
   }
 
-  if (items.length === 0) {
+  if (effectiveItems.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '80px 24px' }}>
         <h2>Your cart is empty</h2>
@@ -162,9 +169,9 @@ export default function CheckoutPage() {
         {/* Order Summary */}
         <div className="order-col">
           <div className="card">
-            <div className="card-head"><h2>Order Summary</h2><p>{items.length} item{items.length !== 1 ? 's' : ''}</p></div>
+            <div className="card-head"><h2>Order Summary</h2><p>{effectiveItems.length} item{effectiveItems.length !== 1 ? 's' : ''}</p></div>
             <div className="summary-items">
-              {items.map(item => (
+              {effectiveItems.map(item => (
                 <div key={item.id} className="sum-item">
                   <div className="sum-img">
                     <img src={item.image} alt={item.name} />

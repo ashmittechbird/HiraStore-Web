@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useFrappeGetDoc } from 'frappe-react-sdk';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
@@ -22,6 +22,7 @@ export default function ProductPage() {
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [toast, setToast] = useState('');
+  const navigate = useNavigate();
   const wishToggle = useWishlist(s => s.toggle);
   const wishHas = useWishlist(s => s.has);
   const addItem = useCart(s => s.addItem);
@@ -49,6 +50,19 @@ export default function ProductPage() {
     setAdded(true);
     showToast('Added to cart!');
     setTimeout(() => setAdded(false), 2000);
+  }
+
+  function handleBuyNow() {
+    if (!item) return;
+    sessionStorage.setItem('hs_buynow', JSON.stringify([{
+      id: itemId,
+      name: itemName(item as Parameters<typeof itemName>[0]),
+      category: itemCategory(item as Parameters<typeof itemCategory>[0]),
+      price: itemPrice(item as Parameters<typeof itemPrice>[0]),
+      image: itemImage(item as Parameters<typeof itemImage>[0]),
+      qty,
+    }]));
+    navigate('/checkout');
   }
 
   function toggleWishlist() {
@@ -206,6 +220,9 @@ export default function ProductPage() {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
                 {added ? <>Added to Cart <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></> : 'Add to Cart'}
               </button>
+              <button className="btn-buy-now" onClick={handleBuyNow}>
+                Buy Now
+              </button>
             </>
           )}
 
@@ -217,7 +234,7 @@ export default function ProductPage() {
           {/* Trust */}
           <div className="trust-row">
             {[
-              { icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, text: 'BIS Hallmarked Silver' },
+              { icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, text: 'Premium Quality' },
               { icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="1" y="3" width="13" height="13"/><polygon points="13 3 20 3 23 6 23 16 13 16 13 3"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/></svg>, text: 'Free shipping over $15' },
               { icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>, text: '30-day returns' },
               { icon: <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="20 6 9 17 4 12"/></svg>, text: '1 year warranty' },
@@ -262,7 +279,7 @@ export default function ProductPage() {
         /* Main image — takes all remaining width */
         .main-img-wrap { flex:1;min-width:0;border-radius:12px;overflow:hidden;background:#f0f8f9;border:1px solid #ddeef1;cursor:zoom-in;position:relative;height:100%; }
         .main-img-wrap.zoomed { cursor:zoom-out; }
-        .main-img { width:100%;height:100%;object-fit:cover;transition:transform .5s ease; }
+        .main-img { width:100%;height:100%;object-fit:contain;transition:transform .5s ease; }
         .main-img-wrap:hover .main-img { transform:scale(1.04); }
         .main-img-wrap.zoomed .main-img { transform:scale(1.55); }
         .zoom-hint { position:absolute;bottom:10px;right:12px;background:rgba(255,255,255,.85);backdrop-filter:blur(4px);border-radius:6px;padding:5px 8px;pointer-events:none;opacity:.8;display:flex;align-items:center; }
@@ -297,6 +314,8 @@ export default function ProductPage() {
         .btn-add { width:100%;padding:13px 24px;background:#005969;color:#fff;font-size:14px;font-weight:500;border:none;border-radius:8px;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;flex-shrink:0; }
         .btn-add:hover { background:#003d4a; }
         .btn-add.added { background:#16a34a; }
+        .btn-buy-now { width:100%;padding:13px 24px;background:#fff;color:#005969;font-size:14px;font-weight:600;border:2px solid #005969;border-radius:8px;cursor:pointer;transition:background .2s,color .2s;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;flex-shrink:0;letter-spacing:0.03em; }
+        .btn-buy-now:hover { background:#005969;color:#fff; }
         .incart-stepper { display:flex;align-items:stretch;border:2px solid #005969;border-radius:10px;overflow:hidden;margin-bottom:8px;height:48px;background:#fff;flex-shrink:0; }
         .incart-btn { width:48px;min-width:48px;display:flex;align-items:center;justify-content:center;background:#005969;color:#fff;border:none;font-size:22px;font-weight:300;cursor:pointer;transition:background .15s;line-height:1;font-family:inherit;user-select:none;flex-shrink:0; }
         .incart-btn:hover { background:#003d4a; }

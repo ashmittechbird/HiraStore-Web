@@ -31,7 +31,7 @@ export default function AboutPage() {
         <div className="about-hero-content">
           <div className="about-hero-eyebrow">The Hira Store</div>
           <h1 className="about-hero-title">Crafted with<br />Devotion.</h1>
-          <p className="about-hero-subtitle">Est. 2020 &nbsp;·&nbsp; 925 Sterling Silver &nbsp;·&nbsp; BIS Hallmarked</p>
+          <p className="about-hero-subtitle">Est. 2020 &nbsp;·&nbsp; Premium Artificial Jewellery</p>
         </div>
         <div className="about-hero-scroll">
           <div className="about-hero-scroll-line" />
@@ -96,7 +96,7 @@ export default function AboutPage() {
             { num: '500', sup: '+', label: 'Unique Designs' },
             { num: '25', sup: 'K+', label: 'Happy Customers' },
             { num: '5', sup: '+', label: 'Years Crafting' },
-            { num: '100', sup: '%', label: 'BIS Hallmarked' },
+            { num: '100', sup: '%', label: 'Quality Assured' },
           ].map((s, i) => (
             <div key={s.label} className={`about-stat reveal${i > 0 ? ` reveal-delay-${i}` : ''}`}>
               <div className="about-stat-number">{s.num}<em>{s.sup}</em></div>
@@ -150,7 +150,7 @@ export default function AboutPage() {
               {
                 icon: <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>,
                 title: 'Uncompromising Quality',
-                text: 'Every piece is crafted from BIS-hallmarked 925 sterling silver — rigorously tested, hypoallergenic, and built to retain its brilliance for years. We don\'t cut corners, because neither should your jewels.',
+                text: 'Every piece is carefully crafted and rigorously quality-checked — hypoallergenic, skin-safe, and built to retain its brilliance for years. We don\'t cut corners, because neither should your jewels.',
               },
               {
                 icon: <><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>,
@@ -192,7 +192,7 @@ export default function AboutPage() {
             {[
               { num: '01', title: 'Design', desc: 'Every piece begins as a sketch — refined until it captures the perfect balance of tradition and modern sensibility.' },
               { num: '02', title: 'Craft', desc: 'Skilled artisans bring the design to life using time-honoured techniques passed down through generations of craftsmen.' },
-              { num: '03', title: 'Polish', desc: 'Each piece is inspected, polished, and hallmarked to BIS standards before it earns the right to carry the Hira name.' },
+              { num: '03', title: 'Polish', desc: 'Each piece is inspected and polished to our highest standards before it earns the right to carry the Hira name.' },
               { num: '04', title: 'Yours', desc: 'Packaged with care and delivered to your door — ready to become part of your story and daily expression.' },
             ].map((step, i) => (
               <div key={step.num} className={`about-process-step reveal${i > 0 ? ` reveal-delay-${i}` : ''}`}>
@@ -234,7 +234,7 @@ export default function AboutPage() {
             Wear the story.<br /><em>Every single day.</em>
           </h2>
           <p className="about-cta-subtitle reveal reveal-delay-1">
-            Explore 500+ handcrafted designs in 925 sterling silver —
+            Explore 500+ handcrafted jewellery designs —
             each one crafted with passion, made for your world.
           </p>
           <Link to="/shop" className="about-cta-btn reveal reveal-delay-2">

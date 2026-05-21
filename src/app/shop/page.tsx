@@ -229,7 +229,7 @@ function ShopContent() {
           </nav>
           <h1 className="page-title">The Full Collection</h1>
           <p className="page-subtitle" id="pageSubtitle">
-            {loading ? 'Loading products…' : `${allProducts.length} handcrafted sterling silver pieces`}
+            {loading ? 'Loading products…' : `${allProducts.length} handcrafted jewellery pieces`}
           </p>
         </div>
       </div>
@@ -431,9 +431,11 @@ function ShopContent() {
                       {qvAdded ? 'Added ✓' : 'Add to Cart'}
                     </button>
                   )}
-                  <Link to="/cart" style={{ border:'1px solid #2c2c2c',color:'#2c2c2c',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',textAlign:'center',textDecoration:'none',display:'block' }}>
-                    View Cart
-                  </Link>
+                  <button onClick={() => { closeQV(); sessionStorage.setItem('hs_buynow', JSON.stringify([{ id, name, category: cat, price, image: img, qty: 1 }])); navigate('/checkout'); }} style={{ background:'transparent',color:'#2c2c2c',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'2px solid #2c2c2c',cursor:'pointer',transition:'background .2s,color .2s',fontFamily:'inherit' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background='#2c2c2c'; (e.currentTarget as HTMLButtonElement).style.color='#fff'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background='transparent'; (e.currentTarget as HTMLButtonElement).style.color='#2c2c2c'; }}>
+                    Buy Now
+                  </button>
                 </div>
                 <Link to={`/product/${encodeURIComponent(id)}`} style={{ fontSize:'12px',color:'#737373',textDecoration:'underline',textUnderlineOffset:'4px',textAlign:'center' }}>
                   View Full Details

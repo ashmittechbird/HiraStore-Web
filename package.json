@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build && yarn deploy",
     "build:frappe": "VITE_CATALOG_BASE=/assets/hira/catalog_images vite build --base /assets/hira/hirastore/",
-    "deploy": "rm -rf ../hirastore/public/store/assets/* && mkdir -p ../hirastore/public/store/assets ../hirastore/public/store/site-images ../hirastore/public/store/catalog_images ../hirastore/www/store && cp -r dist/assets/. ../hirastore/public/store/assets/ && cp -r dist/site-images/. ../hirastore/public/store/site-images/ && cp -r dist/catalog_images/. ../hirastore/public/store/catalog_images/ && cp dist/index.html ../hirastore/www/store/index.html",
+    "deploy": "rm -rf ../hirastore/public/store/assets/* && mkdir -p ../hirastore/public/store/assets ../hirastore/public/store/site-images ../hirastore/public/store/catalog_images ../hirastore/www/store && cp -r dist/assets/. ../hirastore/public/store/assets/ && cp -r dist/site-images/. ../hirastore/public/store/site-images/ && cp -r dist/catalog_images/. ../hirastore/public/store/catalog_images/ && cp dist/favicon.ico ../hirastore/public/store/favicon.ico && cp dist/favicon.png ../hirastore/public/store/favicon.png && cp dist/index.html ../hirastore/www/store/index.html",
     "preview": "vite preview"
   },
   "dependencies": {

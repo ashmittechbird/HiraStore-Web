@@ -14,8 +14,10 @@ function getBackendUrl(): string {
 
 const backend = getBackendUrl()
 
-export default defineConfig({
-  base: '/store/',
+export default defineConfig(({ command }) => ({
+  // Dev server runs the app at /store/; production assets are served by Frappe
+  // from apps/hirastore/hirastore/public/store/ at /assets/hirastore/store/.
+  base: command === 'build' ? '/assets/hirastore/store/' : '/store/',
   plugins: [react()],
   resolve: {
     alias: {
@@ -31,4 +33,4 @@ export default defineConfig({
       '/catalog_images': { target: backend, changeOrigin: true },
     },
   },
-})
+}))

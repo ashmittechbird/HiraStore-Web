@@ -101,7 +101,7 @@ export default function CartPage() {
               {items.map(item => (
                 <div key={item.id} className={`cart-item${removing === item.id ? ' removing' : ''}`}>
                   <div className="item-image">
-                    <img src={item.image || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=200'} alt={item.name} />
+                    <img src={item.image || `${import.meta.env.BASE_URL}site-images/product-fallback.jpg`} alt={item.name} />
                   </div>
                   <div className="item-body">
                     <div className="item-meta">
@@ -296,5 +296,27 @@ const cartStyles = `
   .clear-link { display:block;width:100%;text-align:center;font-size:11px;color:#6b8b91;text-transform:uppercase;letter-spacing:.08em;text-decoration:underline;background:none;border:none;cursor:pointer;transition:color .2s;padding:4px 0; }
   .clear-link:hover { color:#c0392b; }
 
-  @media(max-width:768px) { .cart-wrapper{grid-template-columns:1fr;padding:24px 16px} .order-summary{position:static} .cart-item{grid-template-columns:80px 1fr} .item-price-col{display:none} }
+  @media(max-width:768px) {
+    .cart-wrapper { grid-template-columns:1fr; padding:20px 16px; gap:24px; }
+    .order-summary { position:static; }
+    .cart-hero { padding:36px 20px 32px; }
+    .cart-hero h1 { font-size:32px; }
+
+    .cart-item { grid-template-columns:88px 1fr; grid-template-rows:auto auto; }
+    .item-image { grid-row:1/3; width:88px; }
+    .item-body { grid-column:2; grid-row:1; padding:12px 12px 6px; }
+    .item-price-col {
+      grid-column:2; grid-row:2;
+      display:flex; flex-direction:row; align-items:center; justify-content:space-between;
+      padding:0 12px 12px; min-width:unset;
+    }
+    .item-unit-price { display:none; }
+    .item-total-price { font-size:18px; }
+
+    .promo-section { flex-direction:column; gap:8px; padding:14px 16px; }
+    .promo-input { width:100%; }
+    .promo-apply { width:100%; height:44px; }
+
+    .item-controls { flex-wrap:wrap; gap:10px; }
+  }
 `;

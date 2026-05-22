@@ -26,7 +26,7 @@ export default function AboutPage() {
     <>
       {/* ① Cinematic Hero */}
       <section className="about-hero">
-        <img className="about-hero-img" src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=2000&q=85" alt="Hira Store Fine Jewelry" />
+        <img className="about-hero-img" src="/store/site-images/hero-necklace-1.jpg" alt="Hira Store Fine Jewelry" />
         <div className="about-hero-overlay" />
         <div className="about-hero-content">
           <div className="about-hero-eyebrow">The Hira Store</div>
@@ -81,10 +81,10 @@ export default function AboutPage() {
         </div>
         <div className="about-story-images reveal reveal-delay-1">
           <div className="about-story-img-main">
-            <img src="https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=900&q=85" alt="Hira Jewelry Craftsmanship" loading="lazy" />
+            <img src="/store/site-images/cat-earrings.jpg" alt="Hira Jewelry Craftsmanship" loading="lazy" />
           </div>
           <div className="about-story-img-accent">
-            <img src="https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=500&q=85" alt="Silver Pendant Detail" loading="lazy" />
+            <img src="/store/site-images/cat-necklaces.jpg" alt="Silver Pendant Detail" loading="lazy" />
           </div>
         </div>
       </section>
@@ -109,7 +109,7 @@ export default function AboutPage() {
       {/* ⑤ Heritage - Dark Section */}
       <section className="about-heritage">
         <div className="about-heritage-img">
-          <img src="https://images.unsplash.com/photo-1613945407943-59cd755fd69e?w=1200&q=85" alt="Hira Heritage Jewelry" loading="lazy" />
+          <img src="/store/site-images/heritage-craft.jpg" alt="Hira Heritage Jewelry" loading="lazy" />
           <div className="about-heritage-img-overlay" />
         </div>
         <div className="about-heritage-content">
@@ -226,7 +226,7 @@ export default function AboutPage() {
 
       {/* ⑨ Shop CTA */}
       <section className="about-cta-section">
-        <img className="about-cta-bg" src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=2000&q=85" alt="" aria-hidden="true" loading="lazy" />
+        <img className="about-cta-bg" src="/store/site-images/hero-necklace-2.jpg" alt="" aria-hidden="true" loading="lazy" />
         <div className="about-cta-overlay" />
         <div className="about-cta-content">
           <p className="about-cta-eyebrow reveal">The Collection</p>

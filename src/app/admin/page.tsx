@@ -256,6 +256,21 @@ export default function AdminPage() {
   const { currentUser, login, logout: sdkLogout, isLoading: authLoading } = useFrappeAuth();
   const authed = !authLoading && !!currentUser;
 
+  // Admin role check
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminChecked, setAdminChecked] = useState(false);
+
+  useEffect(() => {
+    if (!authed || !currentUser) { setIsAdmin(false); setAdminChecked(true); return; }
+    if (currentUser === 'Administrator') { setIsAdmin(true); setAdminChecked(true); return; }
+    fetch(`/api/method/frappe.client.get_list?doctype=Has Role&filters=[["parent","=","${currentUser}"],["role","=","System Manager"]]&limit=1`, {
+      headers: { 'X-Frappe-CSRF-Token': 'fetch' },
+    })
+      .then(r => r.json())
+      .then(res => { setIsAdmin((res.message?.length ?? 0) > 0); setAdminChecked(true); })
+      .catch(() => { setIsAdmin(false); setAdminChecked(true); });
+  }, [authed, currentUser]);
+
   // Login state
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -613,8 +628,18 @@ export default function AdminPage() {
         </div>
       )}
 
+      {/* ACCESS DENIED */}
+      {authed && adminChecked && !isAdmin && (
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100vh', background:'#fff', flexDirection:'column', gap:16 }}>
+          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#e11d48" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <h2 style={{ fontFamily:'Playfair Display,serif', fontSize:24, color:'#1a1a1a', fontWeight:400 }}>Access Denied</h2>
+          <p style={{ fontSize:14, color:'#737373' }}>You do not have permission to access the admin panel.</p>
+          <button onClick={() => sdkLogout()} style={{ marginTop:8, padding:'10px 28px', background:'#1a1a1a', color:'#fff', border:'none', borderRadius:4, fontSize:13, cursor:'pointer' }}>Sign Out</button>
+        </div>
+      )}
+
       {/* APP */}
-      {authed && (
+      {isAdmin && (
         <div className="adm-app">
           {sbOpen && <div className="sb-overlay" onClick={()=>setSbOpen(false)} />}
 

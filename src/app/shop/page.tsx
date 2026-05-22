@@ -367,7 +367,7 @@ function ShopContent() {
       {/* Heritage / Our Story */}
       <section className="heritage-section">
         <div className="heritage-img-wrap">
-          <img src="https://images.unsplash.com/photo-1613945407943-59cd755fd69e?w=1000&q=85" alt="Handcrafted Jewelry from Rajasthan" />
+          <img src="/store/site-images/heritage-craft.jpg" alt="Handcrafted Jewelry from Rajasthan" />
         </div>
         <div className="heritage-content">
           <h2 className="heritage-title">Roots in Rajasthan,<br/>Crafted for the World</h2>
@@ -608,6 +608,11 @@ function ShopContent() {
           .products-grid,.skeleton-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
           .product-name { font-size:14px; }
           .price-current { font-size:15px; }
+          .product-actions { transform:translateY(0); gap:6px; padding:10px; }
+          .product-action-btn { padding:9px 4px; font-size:10px; }
+          .prod-stepper { height:36px; }
+          .prod-stepper-btn { width:32px; min-width:32px; font-size:17px; }
+          .prod-stepper-count { font-size:13px; }
         }
       `}</style>
     </>

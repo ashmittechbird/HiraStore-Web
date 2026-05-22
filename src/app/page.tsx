@@ -5,35 +5,37 @@ import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 
+const SI = `${import.meta.env.BASE_URL}site-images`;
+
 const HERO_IMAGES = [
-  'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=2000&q=85',
-  'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=2000&q=85',
-  'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=2000&q=85',
+  `${SI}/hero-necklace-1.jpg`,
+  `${SI}/hero-bracelet.jpg`,
+  `${SI}/hero-necklace-2.jpg`,
 ];
 
 const BADGE_CYCLE = ['New', 'Bestseller', '', 'Limited', 'Trending', '', ''];
 
 const CATEGORIES = [
-  { name: 'Necklaces', img: 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=400&q=85', cat: 'Necklaces' },
-  { name: 'Earrings',  img: 'https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=400&q=85', cat: 'Earrings' },
-  { name: 'Rings',     img: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&q=85', cat: 'Rings' },
-  { name: 'Bracelets', img: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&q=85', cat: 'Bracelets' },
-  { name: 'Gift Sets', img: 'https://images.unsplash.com/photo-1598560917807-1bae44bd2be8?w=400&q=85', cat: 'GiftSets' },
+  { name: 'Necklaces', img: `${SI}/cat-necklaces.jpg`,    cat: 'Necklaces' },
+  { name: 'Earrings',  img: `${SI}/cat-earrings.jpg`,     cat: 'Earrings' },
+  { name: 'Rings',     img: `${SI}/product-fallback.jpg`, cat: 'Rings' },
+  { name: 'Bracelets', img: `${SI}/hero-bracelet.jpg`,    cat: 'Bracelets' },
+  { name: 'Gift Sets', img: `${SI}/cat-giftsets.jpg`,     cat: 'GiftSets' },
 ];
 
 const TESTIMONIALS = [
-  { name: 'Anuska Ananya, 24', text: 'Hira Store is my go-to place for jewellery. I love that I can wear their jewellery to work, dates, parties and brunches. It goes with everything and makes my outfits look stylish and trendy.', img: 'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=500&q=80', rot: '-4deg' },
-  { name: 'Priya Singh, 34',   text: 'I had trouble finding jewellery that suited my minimalist style, but Hira\'s sleek and elegant designs were exactly what I was looking for. They have pieces for every style and occasion.', img: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=500&q=80', rot: '2deg' },
-  { name: 'Avni Sharma, 27',   text: 'Me and my friends love Hira\'s unique designs. Their pieces add a pop of colour to my outfits. The jewellery is stylish, modern and a breath of fresh air.', img: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=500&q=80', rot: '-2deg' },
-  { name: 'Meera Kapoor, 31',  text: 'I gifted a Hira necklace to my sister and she absolutely loved it. The packaging was beautiful and the quality is stunning. Will definitely be ordering again!', img: 'https://images.unsplash.com/photo-1573408301185-9519f94816b5?w=500&q=80', rot: '3deg' },
-  { name: 'Riya Mehta, 29',    text: 'The craftsmanship is absolutely beautiful. Every piece I\'ve bought from Hira Store feels so luxurious and special. My friends always ask me where I got my jewellery from!', img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&q=80', rot: '-3deg' },
+  { name: 'Anuska Ananya, 24', text: 'Hira Store is my go-to place for jewellery. I love that I can wear their jewellery to work, dates, parties and brunches. It goes with everything and makes my outfits look stylish and trendy.', img: `${SI}/testimonial-1.jpg`, rot: '-4deg' },
+  { name: 'Priya Singh, 34',   text: 'I had trouble finding jewellery that suited my minimalist style, but Hira\'s sleek and elegant designs were exactly what I was looking for. They have pieces for every style and occasion.', img: `${SI}/hero-bracelet.jpg`, rot: '2deg' },
+  { name: 'Avni Sharma, 27',   text: 'Me and my friends love Hira\'s unique designs. Their pieces add a pop of colour to my outfits. The jewellery is stylish, modern and a breath of fresh air.', img: `${SI}/hero-necklace-2.jpg`, rot: '-2deg' },
+  { name: 'Meera Kapoor, 31',  text: 'I gifted a Hira necklace to my sister and she absolutely loved it. The packaging was beautiful and the quality is stunning. Will definitely be ordering again!', img: `${SI}/testimonial-1.jpg`, rot: '3deg' },
+  { name: 'Riya Mehta, 29',    text: 'The craftsmanship is absolutely beautiful. Every piece I\'ve bought from Hira Store feels so luxurious and special. My friends always ask me where I got my jewellery from!', img: `${SI}/testimonial-5.jpg`, rot: '-3deg' },
 ];
 
 const UGC_IMAGES = [
-  'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&q=80',
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80',
-  'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&q=80',
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&q=80',
+  `${SI}/ugc-1.jpg`,
+  `${SI}/ugc-2.jpg`,
+  `${SI}/ugc-3.jpg`,
+  `${SI}/ugc-4.jpg`,
 ];
 
 interface Product {
@@ -367,7 +369,7 @@ export default function HomePage() {
       <section className="section">
         <div className="promo-grid">
           <Link to="/shop?cat=Bridal" className="promo-card reveal">
-            <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=800&q=85" alt="Bridal Edit" />
+            <img src={`${SI}/hero-necklace-1.jpg`} alt="Bridal Edit" />
             <div className="promo-content">
               <h3 className="promo-title">The Bridal Edit</h3>
               <span className="promo-link">
@@ -379,7 +381,7 @@ export default function HomePage() {
             </div>
           </Link>
           <Link to="/shop?cat=Gifts" className="promo-card reveal reveal-delay-2">
-            <img src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=85" alt="Gifting" />
+            <img src={`${SI}/hero-necklace-2.jpg`} alt="Gifting" />
             <div className="promo-content">
               <h3 className="promo-title">Gifts of Love</h3>
               <span className="promo-link">
@@ -396,7 +398,7 @@ export default function HomePage() {
       {/* Offer Banner */}
       <section className="offer-banner reveal">
         <div className="offer-model offer-model-left">
-          <img src="https://images.unsplash.com/photo-1611085583191-a3b181a88401?w=900&q=90" alt="Model wearing earrings" />
+          <img src={`${SI}/offer-model-left.jpg`} alt="Model wearing earrings" />
         </div>
         <div className="offer-center">
           <div className="offer-tag">Limited Time</div>
@@ -413,7 +415,7 @@ export default function HomePage() {
           <Link to="/shop" className="offer-cta">Shop the Sale</Link>
         </div>
         <div className="offer-model offer-model-right">
-          <img src="https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=900&q=90" alt="Model wearing necklace" />
+          <img src={`${SI}/hero-necklace-1.jpg`} alt="Model wearing necklace" />
         </div>
       </section>
 
@@ -645,23 +647,40 @@ export default function HomePage() {
           .offer-percent { font-size: 72px; }
         }
         @media (max-width: 768px) {
-          .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-          .products-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-          .trust-bar { flex-direction: column; align-items: flex-start; gap: 24px; }
-          .section { padding: 60px 20px; }
-          .section-alt { padding: 60px 20px; }
-          .ig-grid { grid-template-columns: repeat(2, 1fr); }
+          .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
+          .products-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
+          .trust-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 24px 20px; align-items: center; justify-items: center; }
+          .trust-item { flex-direction: column; gap: 8px; text-align: center; }
+          .section { padding: 40px 16px; }
+          .section-alt { padding: 40px 16px; }
+          .section-header { margin-bottom: 36px; padding: 0 !important; }
+          .ig-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
           .polaroid-card { width: 200px; }
           .testimonials-track { gap: 24px; padding: 10px 30px 40px; }
+          .btn-outline-center { margin-top: 32px; padding: 13px 28px; }
+          .promo-grid { grid-template-columns: 1fr; gap: 16px; }
+          .promo-card { aspect-ratio: 3/2; }
+          .philosophy-section { padding: 72px 20px; }
         }
         @media (max-width: 480px) {
           .cat-grid { grid-template-columns: repeat(2, 1fr); }
-          .products-grid { grid-template-columns: 1fr 1fr; gap: 20px 12px; }
+          .products-grid { grid-template-columns: 1fr 1fr; gap: 12px 8px; }
           .offer-banner { grid-template-rows: 220px auto 220px; }
           .offer-model { min-height: 220px; }
           .offer-center { padding: 36px 20px; }
           .offer-code-wrap { flex-direction: column; gap: 4px; text-align: center; }
           .offer-subtext { max-width: 100%; }
+          .section { padding: 32px 12px; }
+          .section-alt { padding: 32px 12px; }
+          .trust-bar { grid-template-columns: 1fr 1fr; gap: 16px; padding: 20px 12px; }
+          .product-actions { transform: translateY(0); gap: 6px; padding: 10px 10px; }
+          .product-action-btn { padding: 9px 4px; font-size: 10px; }
+          .prod-stepper { height: 36px; }
+          .prod-stepper-btn { width: 32px; min-width: 32px; font-size: 17px; }
+          .prod-stepper-count { font-size: 13px; }
+          .product-info { padding: 10px 8px 14px; }
+          .product-name { font-size: 13px; }
+          .price-current { font-size: 14px; }
         }
       `}</style>
     </>

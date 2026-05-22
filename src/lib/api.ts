@@ -1,11 +1,15 @@
 // Catalog images base — override at build time for Frappe deployment
 // e.g. VITE_CATALOG_BASE=/assets/hira/catalog_images npm run build:frappe
-const CATALOG_BASE = (import.meta.env.VITE_CATALOG_BASE as string) || '/catalog_images';
+const CATALOG_BASE = (import.meta.env.VITE_CATALOG_BASE as string) || `${import.meta.env.BASE_URL}catalog_images`;
 
 const ERP_BASE = '';
 
-export function itemImage(item: { image?: string }) {
-  if (!item.image) return 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=700&q=85';
+export function itemImage(item: { image?: string; name?: string; product_id?: string }) {
+  if (!item.image) {
+    const id = item.name || item.product_id;
+    if (id) return `${CATALOG_BASE}/${id}.jpeg`;
+    return `${import.meta.env.BASE_URL}site-images/product-fallback.jpg`;
+  }
   if (item.image.startsWith('http')) return item.image;
   if (item.image.startsWith('/files/')) return `${ERP_BASE}${item.image}`;
   return `${CATALOG_BASE}/${item.image}`;

@@ -131,9 +131,14 @@ export default function Navbar() {
         .mobile-nav-links li a { display: block; padding: 12px 24px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; border-bottom: 1px solid var(--surface); }
 
         @media (max-width: 768px) {
-          .nav { padding: 0 20px; }
+          .nav { padding: 0 16px; height: 60px; }
           .nav-links { display: none; }
           .hamburger { display: flex; }
+          .nav-right { gap: 4px; }
+          .nav-logo img { height: 38px; }
+          .nav-icon { width: 36px; height: 36px; }
+          .nav-icon svg { width: 18px; height: 18px; }
+          .announcement { font-size: 10px; padding: 8px 0; }
         }
       `}</style>
     </>

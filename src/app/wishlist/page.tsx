@@ -168,7 +168,14 @@ export default function WishlistPage() {
 
         @media(max-width:1024px) { .products-grid { grid-template-columns:repeat(3,1fr); } }
         @media(max-width:768px) { .products-grid { grid-template-columns:repeat(2,1fr); gap:16px; } .wl-container { padding:0 20px 60px; } .wl-header { padding:32px 20px 20px; } }
-        @media(max-width:480px) { .products-grid { grid-template-columns:repeat(2,1fr); gap:12px; } }
+        @media(max-width:480px) {
+          .products-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
+          .product-actions { transform:translateY(0); gap:6px; padding:10px; }
+          .product-action-btn { padding:9px 4px; font-size:10px; }
+          .prod-stepper { height:36px; }
+          .prod-stepper-btn { width:32px; min-width:32px; font-size:17px; }
+          .prod-stepper-count { font-size:13px; }
+        }
       `}</style>
     </div>
   );

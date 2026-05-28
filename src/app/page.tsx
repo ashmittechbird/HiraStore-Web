@@ -212,10 +212,25 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
 
 const HP_FIELDS = ['name','item_name','item_group','standard_rate','image','custom_item_images','weight_per_unit','disabled'];
 
+function readIgPosts(): string[] {
+  try { return JSON.parse(localStorage.getItem('hs_ig_posts') || '[]'); } catch { return []; }
+}
+
+function igShortcode(url: string): string | null {
+  return url.match(/instagram\.com\/(?:p|reel)\/([A-Za-z0-9_-]+)/)?.[1] ?? null;
+}
+
 export default function HomePage() {
   const [heroIdx, setHeroIdx] = useState(0);
+  const [igPosts, setIgPosts] = useState<string[]>(readIgPosts);
   const addItem = useCart(s => s.addItem);
   useReveal();
+
+  useEffect(() => {
+    const handler = () => setIgPosts(readIgPosts());
+    window.addEventListener('hs_ig_updated', handler);
+    return () => window.removeEventListener('hs_ig_updated', handler);
+  }, []);
 
   const { data: featuredItems = [] } = useFrappeGetDocList<Product>('Item', {
     fields: HP_FIELDS,
@@ -452,20 +467,40 @@ export default function HomePage() {
           <h2 className="section-title">Spotted in Hira</h2>
           <p className="section-desc">Tag @hirastore to be featured</p>
         </div>
-        <div className="ig-grid">
-          {UGC_IMAGES.map((src, i) => (
-            <div key={i} className={`ig-item reveal reveal-delay-${i + 1}`}>
-              <img src={src} alt="UGC" />
-              <div className="ig-overlay">
-                <svg viewBox="0 0 24 24">
-                  <rect x="2" y="2" width="20" height="20" rx="5"/>
-                  <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/>
-                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
-                </svg>
+        {igPosts.length > 0 ? (
+          <div className="ig-embed-grid">
+            {igPosts.map((url, i) => {
+              const sc = igShortcode(url);
+              return sc ? (
+                <div key={i} className="ig-embed-item">
+                  <iframe
+                    src={`https://www.instagram.com/p/${sc}/embed/`}
+                    frameBorder="0"
+                    scrolling="no"
+                    allowTransparency={true}
+                    title={`Instagram post ${i + 1}`}
+                    style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+                  />
+                </div>
+              ) : null;
+            })}
+          </div>
+        ) : (
+          <div className="ig-grid">
+            {UGC_IMAGES.map((src, i) => (
+              <div key={i} className={`ig-item reveal reveal-delay-${i + 1}`}>
+                <img src={src} alt="UGC" />
+                <div className="ig-overlay">
+                  <svg viewBox="0 0 24 24">
+                    <rect x="2" y="2" width="20" height="20" rx="5"/>
+                    <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                  </svg>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <style>{`
@@ -620,6 +655,9 @@ export default function HomePage() {
         .polaroid-text { font-size: 11.5px; color: #555; line-height: 1.6; margin: 0; }
 
         /* Instagram / UGC */
+        .ig-embed-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .ig-embed-item { min-height: 320px; background: #fafafa; border: 1px solid #efefef; overflow: hidden; }
+        .ig-embed-item iframe { min-height: 320px; }
         .ig-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .ig-item { position: relative; aspect-ratio: 1; overflow: hidden; }
         .ig-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease-out); }
@@ -654,6 +692,7 @@ export default function HomePage() {
           .section { padding: 40px 16px; }
           .section-alt { padding: 40px 16px; }
           .section-header { margin-bottom: 36px; padding: 0 !important; }
+          .ig-embed-grid { grid-template-columns: 1fr; }
           .ig-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
           .polaroid-card { width: 200px; }
           .testimonials-track { gap: 24px; padding: 10px 30px 40px; }

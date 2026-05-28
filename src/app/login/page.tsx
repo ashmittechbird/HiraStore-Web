@@ -19,14 +19,14 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    if (!email || !password) { setError('Email and password required'); return; }
+    if (!email || !password) { setError('Username/email and password required'); return; }
     setLoading(true);
     try {
       await login({ username: email, password });
       setWishlistUser(email);
       navigate('/account');
     } catch (err: unknown) {
-      setError((err as Error).message || 'Invalid email or password');
+      setError((err as Error).message || 'Invalid username/email or password');
     }
     setLoading(false);
   }
@@ -42,8 +42,8 @@ export default function LoginPage() {
         <div className="auth-body">
           <form onSubmit={handleSubmit}>
             <div className="field">
-              <label>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" autoComplete="email" />
+              <label>Email or Username</label>
+              <input type="text" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com or username" autoComplete="username" />
             </div>
             <div className="field">
               <label>Password</label>
@@ -51,7 +51,7 @@ export default function LoginPage() {
             </div>
             {error && <div className="auth-error">{error}</div>}
             <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? <><span className="btn-spin" style={{display:'inline-block'}} />Signing in…</> : 'Sign In'}
+              {loading ? <><span className="btn-spin" style={{ display: 'inline-block' }} />Signing in…</> : 'Sign In'}
             </button>
           </form>
           <div className="divider">or</div>

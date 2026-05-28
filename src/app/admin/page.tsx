@@ -284,6 +284,14 @@ export default function AdminPage() {
 
   // Settings
   const [itemGroup, setItemGroup] = useState(() => localStorage.getItem('hs_item_group') || 'Jewelry');
+  const [smInstagram, setSmInstagram] = useState(() => localStorage.getItem('hs_sm_instagram') || '');
+  const [smFacebook, setSmFacebook] = useState(() => localStorage.getItem('hs_sm_facebook') || '');
+  const [smPinterest, setSmPinterest] = useState(() => localStorage.getItem('hs_sm_pinterest') || '');
+  const [smTiktok, setSmTiktok] = useState(() => localStorage.getItem('hs_sm_tiktok') || '');
+  const [smWhatsapp, setSmWhatsapp] = useState(() => localStorage.getItem('hs_sm_whatsapp') || '');
+  const [igPosts, setIgPosts] = useState<string[]>(() => {
+    try { return [...JSON.parse(localStorage.getItem('hs_ig_posts') || '[]'), ...Array(6)].slice(0, 6).map((v: unknown) => (v as string) || ''); } catch { return Array(6).fill(''); }
+  });
 
   // Products state
   const [prodSearch, setProdSearch] = useState('');
@@ -887,6 +895,77 @@ export default function AdminPage() {
                     </div>
                     <div style={{marginTop:16}}><button className="btn btn-gold" type="submit">Save Settings</button></div>
                   </form>
+                </div>
+                <div className="settings-section">
+                  <h2>Social Media Accounts</h2>
+                  <p className="desc">Connect your social media profiles. Links will appear in the footer across your store.</p>
+                  <div style={{display:'flex',flexDirection:'column',gap:12}}>
+                    {([
+                      { key:'instagram', label:'Instagram', val:smInstagram, set:setSmInstagram, ph:'https://instagram.com/yourhandle', color:'#E1306C',
+                        icon:<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg> },
+                      { key:'facebook', label:'Facebook', val:smFacebook, set:setSmFacebook, ph:'https://facebook.com/yourpage', color:'#1877F2',
+                        icon:<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg> },
+                      { key:'pinterest', label:'Pinterest', val:smPinterest, set:setSmPinterest, ph:'https://pinterest.com/yourprofile', color:'#E60023',
+                        icon:<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.04-2.83.18-.77 1.24-5.24 1.24-5.24s-.32-.63-.32-1.57c0-1.47.85-2.57 1.91-2.57.9 0 1.34.68 1.34 1.49 0 .91-.58 2.27-.88 3.53-.25 1.05.52 1.91 1.56 1.91 1.87 0 3.13-2.4 3.13-5.23 0-2.16-1.46-3.67-3.55-3.67-2.42 0-3.84 1.82-3.84 3.7 0 .73.28 1.52.63 1.94.07.08.08.16.06.24l-.24.96c-.04.15-.12.18-.28.11-1.04-.48-1.69-2-1.69-3.22 0-2.62 1.9-5.02 5.48-5.02 2.88 0 5.12 2.05 5.12 4.79 0 2.86-1.8 5.16-4.3 5.16-.84 0-1.63-.44-1.9-.95l-.52 1.93c-.19.71-.69 1.61-1.03 2.15.78.24 1.6.37 2.45.37 5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg> },
+                      { key:'tiktok', label:'TikTok', val:smTiktok, set:setSmTiktok, ph:'https://tiktok.com/@yourhandle', color:'#010101',
+                        icon:<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.73a4.85 4.85 0 01-1.01-.04z"/></svg> },
+                      { key:'whatsapp', label:'WhatsApp', val:smWhatsapp, set:setSmWhatsapp, ph:'https://wa.me/919876543210', color:'#25D366',
+                        icon:<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg> },
+                    ] as {key:string;label:string;val:string;set:(v:string)=>void;ph:string;color:string;icon:React.ReactNode}[]).map(({key,label,val,set,ph,color,icon}) => (
+                      <div key={key} style={{display:'grid',gridTemplateColumns:'190px 1fr auto',gap:12,alignItems:'center',padding:'12px 16px',background:'var(--surface)',borderRadius:10,border:`1.5px solid ${val ? '#b8e8d4' : 'var(--border)'}`}}>
+                        <div style={{display:'flex',alignItems:'center',gap:10}}>
+                          <span style={{width:34,height:34,borderRadius:8,background:color+'22',color,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>{icon}</span>
+                          <div>
+                            <div style={{fontSize:13,fontWeight:600,color:'var(--text)'}}>{label}</div>
+                            {val ? <span className="badge badge-green" style={{marginTop:2}}>Connected</span> : <span style={{fontSize:11,color:'var(--text3)'}}>Not connected</span>}
+                          </div>
+                        </div>
+                        <input className="form-input" type="url" placeholder={ph} value={val} onChange={e=>set(e.target.value)} style={{margin:0}} />
+                        {val && (
+                          <button type="button" onClick={()=>{ set(''); localStorage.removeItem(`hs_sm_${key}`); window.dispatchEvent(new Event('hs_social_updated')); toast(`${label} disconnected`,'info'); }}
+                            style={{background:'var(--red-bg)',color:'var(--red)',border:'none',borderRadius:8,padding:'8px 12px',fontSize:12,cursor:'pointer',whiteSpace:'nowrap',fontWeight:500,fontFamily:'inherit'}}>
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{marginTop:18}}>
+                    <button className="btn btn-gold" type="button" onClick={()=>{
+                      const map:{[k:string]:string} = {instagram:smInstagram,facebook:smFacebook,pinterest:smPinterest,tiktok:smTiktok,whatsapp:smWhatsapp};
+                      Object.entries(map).forEach(([k,v]) => { if(v) localStorage.setItem(`hs_sm_${k}`,v); else localStorage.removeItem(`hs_sm_${k}`); });
+                      window.dispatchEvent(new Event('hs_social_updated'));
+                      toast('Social media links saved','success');
+                    }}>Save Social Links</button>
+                  </div>
+                </div>
+                <div className="settings-section">
+                  <h2>Instagram Posts — Spotted in Hira</h2>
+                  <p className="desc">Paste up to 6 Instagram post URLs. They appear in the "Spotted in Hira" section on the homepage.</p>
+                  <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                    {igPosts.map((url, i) => (
+                      <div key={i} style={{display:'grid',gridTemplateColumns:'64px 1fr auto',gap:10,alignItems:'center'}}>
+                        <span style={{fontSize:12,fontWeight:600,color:'var(--text3)'}}>Post {i + 1}</span>
+                        <input className="form-input" type="url" style={{margin:0}} placeholder="https://www.instagram.com/p/..." value={url}
+                          onChange={e => { const a = [...igPosts]; a[i] = e.target.value; setIgPosts(a); }} />
+                        {url && (
+                          <button type="button"
+                            onClick={() => { const a = [...igPosts]; a[i] = ''; setIgPosts(a); }}
+                            style={{background:'var(--red-bg)',color:'var(--red)',border:'none',borderRadius:8,padding:'8px 10px',fontSize:13,cursor:'pointer',fontFamily:'inherit',lineHeight:1}}>
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{marginTop:18}}>
+                    <button className="btn btn-gold" type="button" onClick={() => {
+                      const filled = igPosts.filter(u => u.trim());
+                      localStorage.setItem('hs_ig_posts', JSON.stringify(filled));
+                      window.dispatchEvent(new Event('hs_ig_updated'));
+                      toast('Instagram posts saved', 'success');
+                    }}>Save Posts</button>
+                  </div>
                 </div>
                 <div className="settings-section">
                   <h2>Custom Fields Required on Item</h2>

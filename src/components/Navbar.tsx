@@ -1,19 +1,33 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { useFrappeAuth } from 'frappe-react-sdk';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const totalItems = useCart(s => s.items.reduce((sum, item) => sum + item.qty, 0));
   const wishCount = useWishlist(s => s.items.length);
+  const { currentUser } = useFrappeAuth();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!currentUser) { setIsAdmin(false); return; }
+    if (currentUser === 'Administrator') { setIsAdmin(true); return; }
+    fetch(`/api/method/frappe.client.get_list?doctype=Has Role&filters=[["parent","=","${currentUser}"],["role","=","System Manager"]]&limit=1`, {
+      credentials: 'include',
+    })
+      .then(r => r.json())
+      .then(d => setIsAdmin(Array.isArray(d.message) && d.message.length > 0))
+      .catch(() => setIsAdmin(false));
+  }, [currentUser]);
 
   return (
     <>
@@ -48,6 +62,12 @@ export default function Navbar() {
         </Link>
 
         <div className="nav-right">
+          {isAdmin && (
+            <Link to="/admin" className="nav-admin-btn" aria-label="Admin Panel">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+              <span>Admin</span>
+            </Link>
+          )}
           <Link to="/account" className="nav-icon" aria-label="Account">
             <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </Link>
@@ -87,6 +107,7 @@ export default function Navbar() {
             <li><Link to="/shop?cat=Rings">Rings</Link></li>
             <li><Link to="/shop?cat=Bracelets">Bracelets</Link></li>
             <li><Link to="/about">Our Story</Link></li>
+            {isAdmin && <li><Link to="/admin" className="mobile-admin-link">Admin Panel</Link></li>}
           </ul>
         </div>
       </div>
@@ -115,6 +136,10 @@ export default function Navbar() {
         .wish-badge { background: #e11d48; }
         .nav-icon.wish-active { color: #e11d48; }
         .nav-icon.wish-active:hover { color: #be123c; }
+        .nav-admin-btn { display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: #005969; color: #fff; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; border-radius: 4px; transition: background 0.2s; }
+        .nav-admin-btn:hover { background: #003d4a; color: #fff; }
+        .nav-admin-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; flex-shrink: 0; }
+        .mobile-admin-link { color: #005969 !important; font-weight: 600 !important; }
 
         .hamburger { display: none; width: 40px; height: 40px; align-items: center; justify-content: center; }
         .hamburger svg { width: 24px; height: 24px; stroke: var(--text-main); stroke-width: 1.5; fill: none; }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useFrappePostCall } from 'frappe-react-sdk';
 
 export default function SignupPage() {
@@ -8,6 +8,9 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const { call, loading } = useFrappePostCall<{ message: string }>('frappe.core.doctype.user.user.sign_up');
+  const location = useLocation();
+  const returnParam = new URLSearchParams(location.search).get('return');
+  const loginHref = returnParam ? `/login?return=${encodeURIComponent(returnParam)}` : '/login';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,7 +40,7 @@ export default function SignupPage() {
               <p style={{ fontSize: '13px', color: '#6b8b91', marginBottom: '24px' }}>
                 We sent a link to <strong>{email}</strong>.<br />Click it to set your password and log in.
               </p>
-              <Link to="/login" className="btn-primary" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>Go to Sign In</Link>
+              <Link to={loginHref} className="btn-primary" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>Go to Sign In</Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit}>
@@ -59,7 +62,7 @@ export default function SignupPage() {
           )}
         </div>
         <div className="auth-footer">
-          Already have an account? <Link to="/login">Sign in</Link>
+          Already have an account? <Link to={loginHref}>Sign in</Link>
         </div>
       </div>
 

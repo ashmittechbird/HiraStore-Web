@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
@@ -44,19 +44,19 @@ function ShopContent() {
   const initialCat = searchParams.get('cat') || 'All';
   const initialSearch = searchParams.get('search') || '';
 
-  const { data: allProducts = [], isLoading: loading } = useFrappeGetDocList<Product>('Item', {
-    fields: ['name','item_name','item_group','standard_rate','custom_short_description','custom_material','custom_is_featured','image','custom_item_images','disabled','weight_per_unit'],
-    filters: [['disabled', '=', 0], ['is_sales_item', '=', 1]],
-    orderBy: { field: 'modified', order: 'desc' },
+  // Stable options reference to prevent SWR refetching on every render.
+  const docListArgs = useMemo(() => ({
+    fields: ['name','item_name','item_group','standard_rate','custom_short_description','custom_material','custom_is_featured','image','custom_item_images','disabled','weight_per_unit'] as any,
+    filters: [['disabled', '=', 0], ['is_sales_item', '=', 1]] as any,
+    orderBy: { field: 'modified' as any, order: 'desc' as const },
     limit: 500,
-  });
-  const [filtered, setFiltered] = useState<Product[]>([]);
+  }), []);
+  const { data: allProducts = [], isLoading: loading } = useFrappeGetDocList<Product>('Item', docListArgs);
   const [category, setCategory] = useState(initialCat);
   const [search, setSearch] = useState(initialSearch);
   const [sort, setSort] = useState('default');
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
-  const [displayed, setDisplayed] = useState<Product[]>([]);
 
   // Sync category when URL params change (navbar links)
   useEffect(() => {
@@ -154,8 +154,8 @@ function ShopContent() {
 
 
 
-  // Filter + sort
-  const applyFilters = useCallback(() => {
+  // Derived: filter + sort. useMemo avoids the setState-in-effect render loop.
+  const filtered = useMemo(() => {
     let result = [...allProducts];
     if (category !== 'All') {
       result = result.filter(p => normalizeCategory(itemCategory(p as Parameters<typeof itemCategory>[0])) === category);
@@ -171,18 +171,16 @@ function ShopContent() {
     if (sort === 'price-asc') result.sort((a,b) => itemPrice(a as Parameters<typeof itemPrice>[0]) - itemPrice(b as Parameters<typeof itemPrice>[0]));
     else if (sort === 'price-desc') result.sort((a,b) => itemPrice(b as Parameters<typeof itemPrice>[0]) - itemPrice(a as Parameters<typeof itemPrice>[0]));
     else if (sort === 'name-asc') result.sort((a,b) => itemName(a as Parameters<typeof itemName>[0]).localeCompare(itemName(b as Parameters<typeof itemName>[0])));
-    setFiltered(result);
-    setPage(0);
-    setDisplayed(result.slice(0, PAGE_SIZE));
+    return result;
   }, [allProducts, category, search, sort]);
 
-  useEffect(() => { applyFilters(); }, [applyFilters]);
+  // Reset pagination when filter inputs change. Depending on `filtered` is intentional
+  // and safe because `filtered` is memoized.
+  useEffect(() => { setPage(0); }, [category, search, sort]);
 
-  function loadMore() {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    setDisplayed(filtered.slice(0, (nextPage+1)*PAGE_SIZE));
-  }
+  const displayed = useMemo(() => filtered.slice(0, (page + 1) * PAGE_SIZE), [filtered, page]);
+
+  function loadMore() { setPage(p => p + 1); }
 
   function handleAdd(item: Product) {
     const id = itemId(item as Parameters<typeof itemId>[0]);
@@ -264,7 +262,7 @@ function ShopContent() {
       {/* Filter Tabs */}
       <div className="shop-filters" role="group" aria-label="Filter by category">
         {CATEGORIES.map(cat => (
-          <button key={cat} className={`filter-btn${category === cat ? ' active' : ''}`} data-cat={cat}
+          <button type="button" key={cat} className={`filter-btn${category === cat ? ' active' : ''}`} data-cat={cat}
             onClick={() => { setCategory(cat); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
             {cat}
           </button>
@@ -291,7 +289,7 @@ function ShopContent() {
             <div className="empty-state-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#005969" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
             <h3>No products found</h3>
             <p>Try a different search term or category filter.</p>
-            <button onClick={() => { setCategory('All'); setSearch(''); }}>Clear Filters</button>
+            <button type="button" onClick={() => { setCategory('All'); setSearch(''); }}>Clear Filters</button>
           </div>
         ) : (
           <>
@@ -312,29 +310,34 @@ function ShopContent() {
                 return (
                   <article key={id} className={`product-card reveal ${delayClass}`} data-category={cat} data-id={id} role="listitem" onClick={() => navigate('/product/' + encodeURIComponent(id))} style={{ cursor: 'pointer' }}>
                     <div className="product-img-wrap">
-                      <img src={img} alt={name} loading="lazy" onError={e => { (e.target as HTMLImageElement).style.display='none'; }} />
+                      <img src={img} alt={name} loading="lazy" onError={e => {
+                        const el = e.target as HTMLImageElement;
+                        const fallback = `${import.meta.env.BASE_URL}site-images/product-fallback.jpg`;
+                        if (el.src.endsWith('product-fallback.jpg')) return;
+                        el.src = fallback;
+                      }} />
                       {/* badge: cart indicator takes priority over promo label */}
                       {cartQty > 0
                         ? <span className="card-cart-badge"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> {cartQty}</span>
                         : badge && <span className="product-badge">{badge}</span>
                       }
-                      <button className={`product-wish${isWished ? ' wished' : ''}`} aria-label={`${isWished ? 'Remove' : 'Add'} ${name} to wishlist`}
+                      <button type="button" className={`product-wish${isWished ? ' wished' : ''}`} aria-label={`${isWished ? 'Remove' : 'Add'} ${name} to wishlist`}
                         onClick={e => { e.stopPropagation(); toggleWish(item); }}>
                         <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
                       </button>
                       <div className="product-actions">
                         {cartQty > 0 ? (
                           <div className="prod-stepper" onClick={e => e.stopPropagation()}>
-                            <button className="prod-stepper-btn" aria-label="Remove one" onClick={e => { e.stopPropagation(); updateQty(id, cartQty - 1); }}>−</button>
+                            <button type="button" className="prod-stepper-btn" aria-label="Remove one" onClick={e => { e.stopPropagation(); updateQty(id, cartQty - 1); }}>−</button>
                             <span className="prod-stepper-count">{cartQty}</span>
-                            <button className="prod-stepper-btn" aria-label="Add one" onClick={e => { e.stopPropagation(); addItem({ id, name, category: cat, price, image: img }); }}>+</button>
+                            <button type="button" className="prod-stepper-btn" aria-label="Add one" onClick={e => { e.stopPropagation(); addItem({ id, name, category: cat, price, image: img }); }}>+</button>
                           </div>
                         ) : (
-                          <button className={`product-action-btn pa-primary${isAdded ? ' cart-added' : ''}`} onClick={e => { e.stopPropagation(); handleAdd(item); }}>
-                            {isAdded ? 'Added ✓' : 'Add to Cart'}
+                          <button type="button" className={`product-action-btn pa-primary${isAdded ? ' cart-added' : ''}`} onClick={e => { e.stopPropagation(); handleAdd(item); }}>
+                            {isAdded ? 'Added' : 'Add to Cart'}
                           </button>
                         )}
-                        <button className="product-action-btn pa-secondary" onClick={e => { e.stopPropagation(); openQV(item); }}>
+                        <button type="button" className="product-action-btn pa-secondary" onClick={e => { e.stopPropagation(); openQV(item); }}>
                           Quick View
                         </button>
                       </div>
@@ -354,7 +357,7 @@ function ShopContent() {
 
             {hasMore && (
               <div className="center-cta">
-                <button className="btn-outline" onClick={loadMore}>
+                <button type="button" className="btn-outline" onClick={loadMore}>
                   Load More
                   <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </button>
@@ -377,7 +380,7 @@ function ShopContent() {
       </section>
 
       {/* Back to Top */}
-      <button className={`back-top${backTop ? ' visible' : ''}`} aria-label="Back to top"
+      <button type="button" className={`back-top${backTop ? ' visible' : ''}`} aria-label="Back to top"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
         <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
       </button>
@@ -397,7 +400,7 @@ function ShopContent() {
           <div id="qvOverlay" style={{ display:'flex',position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',backdropFilter:'blur(5px)',zIndex:1000,alignItems:'center',justifyContent:'center',padding:'16px' }}
             onClick={e => { if (e.target === e.currentTarget) closeQV(); }}>
             <div id="qvBox" style={{ background:'#fff',maxWidth:'900px',width:'100%',maxHeight:'90vh',overflowY:'auto',position:'relative',display:'grid',gridTemplateColumns:'1fr 1fr' }}>
-              <button onClick={closeQV} style={{ position:'absolute',top:'16px',right:'16px',background:'rgba(255,255,255,0.9)',border:'none',width:'32px',height:'32px',borderRadius:'50%',cursor:'pointer',zIndex:10,display:'flex',alignItems:'center',justifyContent:'center' }}>
+              <button type="button" onClick={closeQV} style={{ position:'absolute',top:'16px',right:'16px',background:'rgba(255,255,255,0.9)',border:'none',width:'32px',height:'32px',borderRadius:'50%',cursor:'pointer',zIndex:10,display:'flex',alignItems:'center',justifyContent:'center' }}>
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="#2c2c2c" strokeWidth="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
               <div style={{ display:'flex',flexDirection:'column',background:'#faf9f7',minHeight:'340px' }}>
@@ -422,16 +425,16 @@ function ShopContent() {
                 <div style={{ display:'flex',flexDirection:'column',gap:'12px',marginTop:'24px',marginBottom:'24px' }}>
                   {qvCartQty > 0 ? (
                     <div style={{ display:'flex',alignItems:'center',border:'1.5px solid #2c2c2c',overflow:'hidden' }}>
-                      <button onClick={() => updateQty(id, qvCartQty - 1)} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>−</button>
+                      <button type="button" onClick={() => updateQty(id, qvCartQty - 1)} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>−</button>
                       <span style={{ flex:1,textAlign:'center',fontSize:'14px',fontWeight:700,color:'#2c2c2c' }}>{qvCartQty} in cart</span>
-                      <button onClick={() => addItem({ id, name, category: cat, price, image: img })} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>+</button>
+                      <button type="button" onClick={() => addItem({ id, name, category: cat, price, image: img })} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>+</button>
                     </div>
                   ) : (
-                    <button onClick={handleQVAdd} style={{ background: qvAdded ? '#2eaa6e' : '#2c2c2c',color:'#fff',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'none',cursor:'pointer',transition:'background 0.3s',fontFamily:'inherit' }}>
-                      {qvAdded ? 'Added ✓' : 'Add to Cart'}
+                    <button type="button" onClick={handleQVAdd} style={{ background: qvAdded ? '#2eaa6e' : '#2c2c2c',color:'#fff',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'none',cursor:'pointer',transition:'background 0.3s',fontFamily:'inherit' }}>
+                      {qvAdded ? 'Added' : 'Add to Cart'}
                     </button>
                   )}
-                  <button onClick={() => { closeQV(); sessionStorage.setItem('hs_buynow', JSON.stringify([{ id, name, category: cat, price, image: img, qty: 1 }])); navigate('/checkout'); }} style={{ background:'transparent',color:'#2c2c2c',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'2px solid #2c2c2c',cursor:'pointer',transition:'background .2s,color .2s',fontFamily:'inherit' }}
+                  <button type="button" onClick={() => { closeQV(); sessionStorage.setItem('hs_buynow', JSON.stringify([{ id, name, category: cat, price, image: img, qty: 1 }])); navigate('/checkout'); }} style={{ background:'transparent',color:'#2c2c2c',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'2px solid #2c2c2c',cursor:'pointer',transition:'background .2s,color .2s',fontFamily:'inherit' }}
                     onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background='#2c2c2c'; (e.currentTarget as HTMLButtonElement).style.color='#fff'; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background='transparent'; (e.currentTarget as HTMLButtonElement).style.color='#2c2c2c'; }}>
                     Buy Now

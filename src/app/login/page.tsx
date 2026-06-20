@@ -1,19 +1,31 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useFrappeAuth } from 'frappe-react-sdk';
 import { useWishlist } from '@/store/wishlist';
+
+const SI = `${import.meta.env.BASE_URL}site-images`;
+const HIRA_LOGO = `${import.meta.env.BASE_URL}site-images/hira-logo.png`;
+
+function getSafeReturnPath(search: string): string {
+  const ret = new URLSearchParams(search).get('return');
+  if (ret && ret.startsWith('/') && !ret.startsWith('//')) return ret;
+  return '/account';
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const setWishlistUser = useWishlist(s => s.setUser);
   const { login, currentUser } = useFrappeAuth();
+  const signupHref = location.search ? `/signup${location.search}` : '/signup';
 
   useEffect(() => {
-    if (currentUser) navigate('/account', { replace: true });
+    if (currentUser) navigate(getSafeReturnPath(location.search), { replace: true });
   }, [currentUser]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -24,7 +36,7 @@ export default function LoginPage() {
     try {
       await login({ username: email, password });
       setWishlistUser(email);
-      navigate('/account');
+      navigate(getSafeReturnPath(location.search), { replace: true });
     } catch (err: unknown) {
       setError((err as Error).message || 'Invalid username/email or password');
     }
@@ -32,65 +44,264 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-head">
-          <div className="auth-logo">The Hira Store</div>
-          <h1>Welcome Back</h1>
-          <p>Sign in to your account</p>
+    <div className="hira-auth">
+      {/* LEFT — hero panel */}
+      <aside className="ha-hero" aria-hidden="true">
+        <img className="ha-hero-img" src={`${SI}/hero-necklace-1.jpg`} alt="" />
+        <div className="ha-hero-overlay" />
+        <div className="ha-hero-content">
+          <div className="ha-monogram">H</div>
+          <p className="ha-eyebrow">The Hira Store</p>
+          <h2 className="ha-tagline">Everyday Elegance<br />Redefined.</h2>
+          <p className="ha-blurb">Handcrafted demi-fine jewelry, made for the moments that matter.</p>
         </div>
-        <div className="auth-body">
-          <form onSubmit={handleSubmit}>
-            <div className="field">
-              <label>Email or Username</label>
-              <input type="text" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com or username" autoComplete="username" />
-            </div>
-            <div className="field">
-              <label>Password</label>
-              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" autoComplete="current-password" />
-            </div>
-            {error && <div className="auth-error">{error}</div>}
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? <><span className="btn-spin" style={{ display: 'inline-block' }} />Signing in…</> : 'Sign In'}
+      </aside>
+
+      {/* RIGHT — form */}
+      <main className="ha-form-wrap">
+        <Link to="/" className="ha-back" aria-label="Back to store">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Back to Store
+        </Link>
+
+        <div className="ha-form-inner">
+          <img className="ha-logo" src={HIRA_LOGO} alt="The Hira Store" />
+          <h1 className="ha-title">Welcome Back</h1>
+          <p className="ha-sub">Sign in to continue your story with Hira.</p>
+
+          <form onSubmit={handleSubmit} className="ha-form">
+            <label className="ha-field">
+              <span>Email or Username</span>
+              <input
+                type="text"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                autoComplete="username"
+                autoFocus
+              />
+            </label>
+
+            <label className="ha-field">
+              <span>Password</span>
+              <div className="ha-pwd-wrap">
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="ha-pwd-toggle"
+                  onClick={() => setShowPwd(p => !p)}
+                  aria-label={showPwd ? 'Hide password' : 'Show password'}
+                >
+                  {showPwd ? (
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  )}
+                </button>
+              </div>
+            </label>
+
+            {error && (
+              <div className="ha-error" role="alert">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                {error}
+              </div>
+            )}
+
+            <button type="submit" className="ha-submit" disabled={loading}>
+              {loading ? <><span className="ha-spin" />Signing in…</> : 'Sign In'}
             </button>
           </form>
-          <div className="divider">or</div>
-          <Link to="/" className="guest-btn">← Back to Store</Link>
-        </div>
-        <div className="auth-footer">
-          Don&apos;t have an account? <Link to="/signup">Create one</Link>
-        </div>
-      </div>
 
-      <style>{authStyles}</style>
+          <p className="ha-footer">
+            New here? <Link to={signupHref}>Create an account</Link>
+          </p>
+        </div>
+      </main>
+
+      <style>{styles}</style>
     </div>
   );
 }
 
-const authStyles = `
-  .auth-page { min-height:80vh;display:flex;align-items:center;justify-content:center;padding:48px 24px;background:#f8fbfc; }
-  .auth-card { background:#fff;border-radius:12px;border:1px solid #ddeef1;box-shadow:0 2px 24px rgba(0,26,32,.09);width:100%;max-width:420px;overflow:hidden; }
-  .auth-head { padding:36px 36px 28px;border-bottom:1px solid #ddeef1;text-align:center; }
-  .auth-logo { font-family:'Playfair Display',serif;font-size:1.6rem;color:#005969;margin-bottom:6px; }
-  .auth-head h1 { font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:400;color:#005969;margin-bottom:4px; }
-  .auth-head p { font-size:13px;color:#6b8b91; }
-  .auth-body { padding:28px 36px 32px; }
-  .field { margin-bottom:20px; }
-  .field label { display:block;font-size:12px;font-weight:500;color:#6b8b91;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px; }
-  .field input { width:100%;padding:11px 14px;border:1.5px solid #c8e0e4;border-radius:6px;font-size:14px;color:#334d52;background:#fff;transition:border-color .2s,box-shadow .2s;outline:none; }
-  .field input:focus { border-color:#005969;box-shadow:0 0 0 3px rgba(0,89,105,.08); }
-  .field input::placeholder { color:#6b8b91;font-size:13px; }
-  .auth-error { background:#fff1f1;border:1px solid #fca5a5;border-radius:6px;padding:10px 14px;font-size:13px;color:#c0392b;margin-bottom:18px; }
-  .btn-primary { width:100%;padding:13px 24px;background:#005969;color:#fff;font-size:14px;font-weight:500;border:none;border-radius:6px;cursor:pointer;letter-spacing:.03em;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px; }
-  .btn-primary:hover:not(:disabled) { background:#003d4a; }
-  .btn-primary:disabled { opacity:.6;cursor:not-allowed; }
-  .btn-spin { width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite; }
-  @keyframes spin { to{transform:rotate(360deg)} }
-  .divider { display:flex;align-items:center;gap:12px;margin:20px 0;color:#6b8b91;font-size:12px; }
-  .divider::before,.divider::after { content:'';flex:1;height:1px;background:#c8e0e4; }
-  .guest-btn { width:100%;padding:11px 24px;background:transparent;color:#334d52;font-size:13px;font-weight:400;border:1.5px solid #c8e0e4;border-radius:6px;cursor:pointer;transition:border-color .2s,background .2s;display:block;text-align:center;text-decoration:none; }
-  .guest-btn:hover { border-color:#005969;background:#f0f8f9; }
-  .auth-footer { padding:0 36px 28px;text-align:center;font-size:13px;color:#6b8b91; }
-  .auth-footer a { color:#005969;text-decoration:none;font-weight:500; }
-  .auth-footer a:hover { text-decoration:underline; }
+const styles = `
+  /* Full-bleed overlay — covers navbar + footer so the page is exactly one viewport, no scroll. */
+  .hira-auth {
+    position: fixed; inset: 0; z-index: 9000;
+    display: grid; grid-template-columns: 1.05fr 1fr;
+    background: #fdfbf6;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: #1a1a1a;
+    overflow: hidden;
+  }
+
+  /* LEFT — hero panel */
+  .ha-hero { position: relative; overflow: hidden; }
+  .ha-hero-img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.05); animation: kenburns 22s ease-in-out infinite alternate; }
+  @keyframes kenburns { from { transform: scale(1.05) translate(0,0); } to { transform: scale(1.12) translate(-1%, -1%); } }
+  .ha-hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,40,48,0.50) 0%, rgba(0,40,48,0.30) 50%, rgba(0,40,48,0.65) 100%);
+  }
+  .ha-hero-content {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
+    padding: 56px 56px 60px;
+    color: #fff;
+  }
+  .ha-monogram {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.55);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 500;
+    margin-bottom: 24px;
+    backdrop-filter: blur(6px);
+  }
+  .ha-eyebrow {
+    font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase;
+    color: #c8a97e; font-weight: 600; margin-bottom: 12px;
+  }
+  .ha-tagline {
+    font-family: 'Playfair Display', serif; font-weight: 400;
+    font-size: clamp(1.9rem, 3vw, 2.6rem); line-height: 1.15;
+    color: #fff; margin-bottom: 18px;
+  }
+  .ha-blurb {
+    font-size: 14px; line-height: 1.55; max-width: 340px;
+    color: rgba(255,255,255,0.85);
+  }
+
+  /* RIGHT — form panel */
+  .ha-form-wrap {
+    position: relative;
+    display: flex; flex-direction: column;
+    background: #fdfbf6;
+    overflow-y: auto;
+  }
+  .ha-back {
+    position: absolute; top: 22px; right: 28px;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; color: #6b8b91;
+    text-decoration: none; transition: color .2s;
+    letter-spacing: 0.04em;
+  }
+  .ha-back:hover { color: #005969; }
+
+  .ha-form-inner {
+    width: 100%; max-width: 380px;
+    margin: auto;
+    padding: 56px 32px 40px;
+  }
+  .ha-logo { display: block; height: 42px; margin: 0 auto 26px; filter: contrast(1.2); }
+  .ha-title {
+    font-family: 'Playfair Display', serif; font-weight: 400;
+    font-size: 1.85rem; line-height: 1.1; color: #005969;
+    text-align: center; margin-bottom: 8px;
+  }
+  .ha-sub {
+    text-align: center; font-size: 13px; color: #6b8b91;
+    margin-bottom: 28px;
+  }
+
+  .ha-form { display: flex; flex-direction: column; gap: 16px; }
+  .ha-field { display: block; }
+  .ha-field > span {
+    display: block;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #6b8b91;
+    margin-bottom: 6px;
+  }
+  .ha-field input {
+    width: 100%; box-sizing: border-box;
+    padding: 11px 14px;
+    border: 1.5px solid #e2dccd; border-radius: 8px;
+    background: #fff; font-size: 14px; color: #1a1a1a;
+    font-family: inherit; outline: none;
+    transition: border-color .18s, box-shadow .18s, background .18s;
+  }
+  .ha-field input::placeholder { color: #a8a298; }
+  .ha-field input:focus {
+    border-color: #c8a97e;
+    box-shadow: 0 0 0 3px rgba(200,169,126,0.18);
+    background: #fff;
+  }
+
+  .ha-pwd-wrap { position: relative; }
+  .ha-pwd-wrap input { padding-right: 42px; }
+  .ha-pwd-toggle {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 0; cursor: pointer;
+    color: #6b8b91; border-radius: 6px; transition: color .15s, background .15s;
+  }
+  .ha-pwd-toggle:hover { color: #005969; background: rgba(0,89,105,0.05); }
+
+  .ha-error {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff5f5; border: 1px solid #fecaca; color: #b91c1c;
+    padding: 10px 12px; border-radius: 8px; font-size: 12.5px; line-height: 1.4;
+  }
+
+  .ha-submit {
+    margin-top: 6px;
+    width: 100%; padding: 13px 22px;
+    background: #005969; color: #fff;
+    border: 0; border-radius: 8px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer; transition: background .2s, transform .1s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .ha-submit:hover:not(:disabled) { background: #003d4a; }
+  .ha-submit:active:not(:disabled) { transform: translateY(1px); }
+  .ha-submit:disabled { opacity: .6; cursor: not-allowed; }
+  .ha-spin {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.35); border-top-color: #fff;
+    border-radius: 50%; animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ha-footer {
+    margin-top: 24px;
+    text-align: center; font-size: 13px; color: #6b8b91;
+  }
+  .ha-footer a {
+    color: #005969; text-decoration: none; font-weight: 600;
+    border-bottom: 1px solid transparent; transition: border-color .15s;
+  }
+  .ha-footer a:hover { border-bottom-color: #c8a97e; }
+
+  /* Tablet — collapse to single column with image as a slim band */
+  @media (max-width: 900px) {
+    .hira-auth { grid-template-columns: 1fr; grid-template-rows: 38vh 1fr; }
+    .ha-hero-content { padding: 24px 28px 28px; }
+    .ha-monogram { width: 44px; height: 44px; font-size: 22px; margin-bottom: 14px; }
+    .ha-tagline { font-size: 1.5rem; margin-bottom: 10px; }
+    .ha-blurb { font-size: 13px; max-width: none; }
+    .ha-form-inner { padding: 32px 24px; max-width: 420px; }
+    .ha-logo { height: 34px; margin-bottom: 18px; }
+    .ha-title { font-size: 1.55rem; }
+    .ha-sub { margin-bottom: 22px; }
+  }
+
+  /* Phone — even tighter */
+  @media (max-width: 480px) {
+    .hira-auth { grid-template-rows: 30vh 1fr; }
+    .ha-hero-content { padding: 18px 22px 22px; }
+    .ha-back { top: 12px; right: 14px; }
+    .ha-form-inner { padding: 22px 20px 28px; }
+    .ha-form { gap: 14px; }
+    .ha-title { font-size: 1.4rem; }
+  }
 `;

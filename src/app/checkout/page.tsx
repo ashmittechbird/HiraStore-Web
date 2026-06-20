@@ -22,28 +22,36 @@ export default function CheckoutPage() {
   const effectiveItems = buyNowItems ?? items;
 
   const { currentUser, isLoading: authLoading } = useFrappeAuth();
-  const { data: userDoc } = useFrappeGetDoc<FrappeUser>('User', currentUser ?? undefined);
+  // Only fetch the User doc when currentUser is actually set — avoids GET /api/.../User/undefined noise.
+  const { data: userDoc } = useFrappeGetDoc<FrappeUser>('User', currentUser || undefined);
   const { call: frappeGetList } = useFrappePostCall<{ message: any[] }>('frappe.client.get_list');
   const { call: frappeGet } = useFrappePostCall<{ message: any }>('frappe.client.get');
 
   const subtotal = effectiveItems.reduce((s, i) => s + i.price * i.qty, 0);
-  const total = subtotal - discount;
+  const total = Math.max(0, subtotal - discount);
 
+  // Redirect unauthenticated users
   useEffect(() => {
-    if (!authLoading && !currentUser) { navigate('/login?return=/checkout'); return; }
-    if (currentUser) {
-      setForm(f => ({
-        ...f,
-        fullName: userDoc?.full_name || f.fullName,
-        email: currentUser,
-      }));
-    }
-    // Pre-fill saved address
+    if (!authLoading && !currentUser) navigate('/login?return=/checkout');
+  }, [authLoading, currentUser, navigate]);
+
+  // Pre-fill from Frappe user doc once it resolves
+  useEffect(() => {
+    if (!currentUser) return;
+    const emailLike = /.+@.+\..+/.test(currentUser);
+    setForm(f => ({
+      ...f,
+      fullName: f.fullName || userDoc?.full_name || '',
+      email: f.email || userDoc?.email || (emailLike ? currentUser : ''),
+    }));
+  }, [currentUser, userDoc]);
+
+  // Pre-fill saved address + coupon from previous step — once on mount
+  useEffect(() => {
     try {
       const saved = JSON.parse(localStorage.getItem('hs_saved_address') || '{}');
       setForm(f => ({ ...f, ...saved }));
     } catch { /* ok */ }
-    // Pre-fill coupon from cart page
     try {
       const c = JSON.parse(sessionStorage.getItem('hs_coupon') || 'null');
       if (c) { setCoupon(c.code); setDiscount(c.discount); }
@@ -76,9 +84,11 @@ export default function CheckoutPage() {
         : 0;
       setDiscount(disc);
       setCouponMsg(`Coupon applied! Saving $${disc.toFixed(2)}`);
+      sessionStorage.setItem('hs_coupon', JSON.stringify({ code: coupon.trim(), discount: disc }));
     } catch (e: unknown) {
       setCouponMsg((e as Error).message || 'Invalid coupon');
       setDiscount(0);
+      sessionStorage.removeItem('hs_coupon');
     }
   }
 
@@ -92,8 +102,18 @@ export default function CheckoutPage() {
     setError('');
     // Save address for next time
     localStorage.setItem('hs_saved_address', JSON.stringify({ address, city, state, zip, phone }));
-    // Save checkout data for payment page
-    sessionStorage.setItem('hs_checkout', JSON.stringify({ customer: form, cart: effectiveItems, couponCode: coupon, discount }));
+    // Save checkout data for payment page (clamp discount, include shipping)
+    const safeDiscount = Math.min(discount, subtotal);
+    const shipping = 0;
+    sessionStorage.setItem('hs_checkout', JSON.stringify({
+      customer: form,
+      cart: effectiveItems,
+      couponCode: coupon,
+      discount: safeDiscount,
+      shipping,
+      subtotal,
+      total: Math.max(0, subtotal - safeDiscount + shipping),
+    }));
     if (buyNowItems) sessionStorage.removeItem('hs_buynow');
     navigate('/payment');
   }
@@ -130,7 +150,7 @@ export default function CheckoutPage() {
               <div className="card-body">
                 <div className="field-row">
                   <div className="field-group"><label>Full Name *</label><input value={form.fullName} onChange={e => update('fullName', e.target.value)} placeholder="Your name" /></div>
-                  <div className="field-group"><label>Email *</label><input type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="your@email.com" /></div>
+                  <div className="field-group"><label>Email *</label><input type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="your@email.com" autoComplete="email" /></div>
                 </div>
                 <div className="field-group"><label>Phone *</label><input value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="+1 (555) 000-0000" /></div>
                 <div className="field-group"><label>Address *</label><input value={form.address} onChange={e => update('address', e.target.value)} placeholder="Street address" /></div>
@@ -150,7 +170,7 @@ export default function CheckoutPage() {
                     <input value={coupon} onChange={e => setCoupon(e.target.value)} placeholder="Enter code" />
                     <button type="button" className="btn-coupon" onClick={applyCoupon}>Apply</button>
                   </div>
-                  {couponMsg && <div className={`coupon-msg${couponMsg.startsWith('✓') ? ' ok' : ' err'}`}>{couponMsg}</div>}
+                  {couponMsg && <div className={`coupon-msg${couponMsg.startsWith('Coupon applied') ? ' ok' : ' err'}`}>{couponMsg}</div>}
                 </div>
               </div>
             </div>

@@ -1,0 +1,11 @@
+# robots.txt for The Hira Store
+User-agent: *
+Allow: /store/
+Disallow: /store/admin
+Disallow: /store/payment
+Disallow: /store/order-success
+Disallow: /api/
+
+# Sitemap
+# Sitemap: https://TODO_DOMAIN/sitemap.xml
+# NOTE: Update the Sitemap URL above once the canonical domain is confirmed.

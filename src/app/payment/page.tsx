@@ -8,11 +8,33 @@ declare global {
   }
 }
 
+// Pulls a human-readable message out of a Frappe error response shape.
+function extractFrappeError(data: any): string {
+  try {
+    if (data?._server_messages) {
+      const parsed = JSON.parse(data._server_messages);
+      const first = parsed[0];
+      let msg: string;
+      try { msg = JSON.parse(first).message || first; } catch { msg = first; }
+      return msg.replace(/<[^>]+>/g, '').trim();
+    }
+    if (data?.exception) {
+      const m = data.exception.split(':').slice(1).join(':').trim();
+      if (m) return m;
+    }
+    if (data?.message && typeof data.message === 'string') return data.message;
+  } catch { /* fall through */ }
+  return '';
+}
+
 interface CheckoutData {
   customer: Record<string, string>;
   cart: Array<{ id: string; name: string; image: string; price: number; qty: number; category?: string; item_name?: string; price_usd?: number }>;
   couponCode?: string;
   discount?: number;
+  shipping?: number;
+  subtotal?: number;
+  total?: number;
 }
 
 export default function PaymentPage() {
@@ -25,6 +47,7 @@ export default function PaymentPage() {
   const [squareConfig, setSquareConfig] = useState<{ app_id: string; location_id: string; environment: string } | null>(null);
   const cardRef = useRef<any>(null);
   const cardContainerRef = useRef<HTMLDivElement>(null);
+  const initRanRef = useRef(false);
 
   // Load checkout data from sessionStorage
   useEffect(() => {
@@ -37,35 +60,48 @@ export default function PaymentPage() {
 
   // Fetch Square config from backend
   useEffect(() => {
+    const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || 'fetch';
     fetch('/api/method/square_payment.api.get_config', {
-      headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': 'fetch' },
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf },
     })
-      .then(r => r.json())
-      .then(res => {
-        if (res.message) setSquareConfig(res.message);
+      .then(async r => {
+        const body = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(extractFrappeError(body) || `Payment config error (${r.status})`);
+        return body;
       })
-      .catch(() => setError('Could not load payment config. Please refresh.'));
+      .then(res => {
+        if (!res?.message || !res.message.app_id || !res.message.location_id) {
+          setError('Square is not configured on the server. Please contact support.');
+          return;
+        }
+        setSquareConfig(res.message);
+      })
+      .catch(err => setError('Could not load payment config: ' + (err?.message || err)));
   }, []);
 
-  // Load Square SDK and initialize card form
+  // Load Square SDK and initialize card form — guarded against StrictMode double-fire
   useEffect(() => {
-    if (!squareConfig) return;
-
-    const scriptId = 'square-web-sdk';
-    if (document.getElementById(scriptId)) {
-      initSquare();
-      return;
-    }
+    if (!squareConfig || !cardContainerRef.current || initRanRef.current) return;
 
     const src = squareConfig.environment === 'production'
       ? 'https://web.squarecdn.com/v1/square.js'
       : 'https://sandbox.web.squarecdn.com/v1/square.js';
 
+    const scriptId = 'square-web-sdk-' + (squareConfig.environment === 'production' ? 'prod' : 'sandbox');
+    const existing = document.getElementById(scriptId) as HTMLScriptElement | null;
+
+    const start = () => { initRanRef.current = true; void initSquare(); };
+
+    if (window.Square) { start(); return; }
+    if (existing) { existing.addEventListener('load', start, { once: true }); return; }
+
     const script = document.createElement('script');
     script.id = scriptId;
     script.src = src;
-    script.onload = initSquare;
-    script.onerror = () => setError('Failed to load Square payment SDK.');
+    script.async = true;
+    script.onload = start;
+    script.onerror = () => setError('Failed to load Square payment SDK (network/CSP issue).');
     document.head.appendChild(script);
   }, [squareConfig]);
 
@@ -104,19 +140,22 @@ export default function PaymentPage() {
       }
       const sourceId = result.token;
 
-      // 2. Calculate amount in cents
+      // 2. Use the totals computed at checkout (single source of truth)
       const { cart, customer, couponCode, discount } = checkoutData;
-      const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-      const total = subtotal - (discount || 0);
+      const subtotal = checkoutData.subtotal ?? cart.reduce((s, i) => s + i.price * i.qty, 0);
+      const shipping = checkoutData.shipping ?? 0;
+      const total = checkoutData.total ?? Math.max(0, subtotal - (discount || 0) + shipping);
       const amountCents = Math.round(total * 100);
+      if (amountCents <= 0) throw new Error('Order total must be greater than zero.');
 
       // 3. Call Frappe backend to charge & create order
-      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+      const csrfToken = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || 'fetch';
       const resp = await fetch('/api/method/square_payment.api.process_payment', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'X-Frappe-CSRF-Token': csrfToken || 'fetch',
+          'X-Frappe-CSRF-Token': csrfToken,
         },
         body: JSON.stringify({
           source_id: sourceId,
@@ -125,23 +164,13 @@ export default function PaymentPage() {
           cart_items: JSON.stringify(cart),
           coupon_code: couponCode || '',
           discount: discount || 0,
+          shipping,
         }),
       });
 
-      const data = await resp.json();
-      if (!resp.ok || data.exc) {
-        let msg = 'Payment failed. Please try again.';
-        try {
-          if (data._server_messages) {
-            const parsed = JSON.parse(data._server_messages);
-            const first = parsed[0];
-            try { msg = JSON.parse(first).message || first; } catch { msg = first; }
-            msg = msg.replace(/<[^>]+>/g, '').trim();
-          } else if (data.exception) {
-            msg = data.exception.split(':').slice(1).join(':').trim() || msg;
-          }
-        } catch { /* use default msg */ }
-        throw new Error(msg);
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok || data.exc || !data.message) {
+        throw new Error(extractFrappeError(data) || `Payment failed (HTTP ${resp.status}). Please try again.`);
       }
 
       const { order_id, payment_id } = data.message;
@@ -154,6 +183,10 @@ export default function PaymentPage() {
         paymentId: payment_id,
         customer,
         total,
+        paymentMethod: 'Square (Card)',
+        subtotal,
+        shipping,
+        discount: discount || 0,
       }));
       navigate('/order-success');
 
@@ -165,154 +198,362 @@ export default function PaymentPage() {
 
   if (!checkoutData) return <div style={{ textAlign: 'center', padding: '80px' }}>Loading…</div>;
 
-  const subtotal = checkoutData.cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const total = subtotal - (checkoutData.discount || 0);
+  const subtotal = checkoutData.subtotal ?? checkoutData.cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const shipping = checkoutData.shipping ?? 0;
+  const total = checkoutData.total ?? Math.max(0, subtotal - (checkoutData.discount || 0) + shipping);
+  const itemCount = checkoutData.cart.reduce((s, i) => s + i.qty, 0);
 
   return (
-    <div className="payment-page">
-      {/* Steps */}
-      <div className="steps">
-        <div className="step done"><div className="step-num">✓</div><span>Shipping</span></div>
-        <div className="step-div" />
-        <div className="step active"><div className="step-num">2</div><span>Payment</span></div>
-        <div className="step-div" />
-        <div className="step"><div className="step-num">3</div><span>Confirm</span></div>
-      </div>
+    <div className="hira-pay">
+      {/* Top bar — logo + steps */}
+      <header className="hp-top">
+        <Link to="/" className="hp-brand" aria-label="The Hira Store">
+          <img src={`${import.meta.env.BASE_URL}site-images/hira-logo.png`} alt="" />
+        </Link>
+        <div className="hp-steps" aria-label="Checkout progress">
+          <div className="hp-step done"><span className="hp-num"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg></span><span className="hp-label">Shipping</span></div>
+          <span className="hp-div" />
+          <div className="hp-step active"><span className="hp-num">2</span><span className="hp-label">Payment</span></div>
+          <span className="hp-div" />
+          <div className="hp-step"><span className="hp-num">3</span><span className="hp-label">Confirm</span></div>
+        </div>
+        <Link to="/checkout" className="hp-back" aria-label="Back to shipping">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+          </svg>
+          <span>Back</span>
+        </Link>
+      </header>
 
-      <div className="pay-wrap">
-        <div className="pay-main">
-          <div className="card">
-            <div className="card-head">
-              <h2>Payment Details</h2>
-              <p>Shipping to {checkoutData.customer.city}, {checkoutData.customer.state}</p>
-            </div>
-            <div className="card-body">
-
-              {/* Delivery address */}
-              <div className="address-box">
-                <div className="address-label">Deliver to</div>
-                <div className="address-name">{checkoutData.customer.fullName}</div>
-                <div className="address-line">{checkoutData.customer.address}</div>
-                <div className="address-line">{checkoutData.customer.city}, {checkoutData.customer.state} {checkoutData.customer.zip}</div>
-                <div className="address-line">{checkoutData.customer.phone}</div>
-              </div>
-
-              {/* Square Card Form */}
-              <div className="pm-label">Card Details</div>
-              <div className="square-card-wrap">
-                <div ref={cardContainerRef} id="square-card-container" />
-                {!squareReady && !error && (
-                  <div className="card-loading">
-                    <div className="spinner" />
-                    <span>Loading secure payment form…</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="order-total-display">
-                <span>Order Total</span>
-                <span className="total-amount">${total.toFixed(2)}</span>
-              </div>
-
-              {error && <div className="form-error">{error}</div>}
-
-              <button
-                className="btn-place-order"
-                onClick={handlePlaceOrder}
-                disabled={loading || !squareReady}
-              >
-                {loading ? 'Processing Payment…' : `Pay $${total.toFixed(2)} →`}
-              </button>
-
-              <p className="security-note">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                Secured by Square. Your card details are never stored.
-              </p>
-            </div>
+      {/* Two-column body */}
+      <div className="hp-body">
+        {/* LEFT — payment form */}
+        <section className="hp-form" aria-labelledby="hp-pay-title">
+          <div className="hp-form-head">
+            <p className="hp-eyebrow">Step 2 of 3</p>
+            <h1 id="hp-pay-title">Payment Details</h1>
           </div>
 
-          <Link to="/checkout" className="back-link">← Back to Shipping</Link>
-        </div>
-
-        {/* Order Summary */}
-        <div className="pay-summary">
-          <div className="card">
-            <div className="card-head"><h2>Order Summary</h2></div>
-            <div className="summary-items">
-              {checkoutData.cart.map(item => (
-                <div key={item.id} className="sum-item">
-                  <div className="sum-img">
-                    <img src={item.image} alt={item.name} />
-                    <span className="sum-qty">{item.qty}</span>
-                  </div>
-                  <div className="sum-info">
-                    <div className="sum-name">{item.name}</div>
-                  </div>
-                  <div className="sum-price">${(item.price * item.qty).toFixed(2)}</div>
-                </div>
-              ))}
+          <div className="hp-form-body">
+            {/* Delivery address chip */}
+            <div className="hp-deliver">
+              <div className="hp-deliver-head">
+                <span className="hp-deliver-label">Delivering to</span>
+                <Link to="/checkout" className="hp-deliver-edit">Edit</Link>
+              </div>
+              <div className="hp-deliver-name">{checkoutData.customer.fullName}</div>
+              <div className="hp-deliver-line">
+                {checkoutData.customer.address}, {checkoutData.customer.city}, {checkoutData.customer.state} {checkoutData.customer.zip} · {checkoutData.customer.phone}
+              </div>
             </div>
-            <div className="summary-totals">
-              <div className="total-row"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="total-row"><span>Shipping</span><span>Free</span></div>
-              {(checkoutData.discount || 0) > 0 && (
-                <div className="total-row" style={{ color: '#16a34a' }}>
-                  <span>Discount</span><span>−${checkoutData.discount!.toFixed(2)}</span>
+
+            {/* Square card form */}
+            <div className="hp-section-label">Card Details</div>
+            <div className="hp-square">
+              <div ref={cardContainerRef} id="square-card-container" />
+              {!squareReady && !error && (
+                <div className="hp-loading">
+                  <div className="hp-spin-sm" />
+                  <span>Loading secure payment form…</span>
                 </div>
               )}
-              <div className="total-row grand"><span>Total</span><span>${total.toFixed(2)}</span></div>
             </div>
+
+            {error && (
+              <div className="hp-error" role="alert">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>{error}</span>
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="hp-pay-btn"
+              onClick={handlePlaceOrder}
+              disabled={loading || !squareReady}
+            >
+              {loading ? (
+                <><span className="hp-spin" />Processing Payment…</>
+              ) : (
+                <>Pay ${total.toFixed(2)} <span aria-hidden="true">→</span></>
+              )}
+            </button>
+
+            <p className="hp-secure">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              Secured by Square. Card details are never stored on our servers.
+            </p>
           </div>
-        </div>
+        </section>
+
+        {/* RIGHT — order summary */}
+        <aside className="hp-summary" aria-label="Order summary">
+          <div className="hp-summary-head">
+            <h2>Order Summary</h2>
+            <span className="hp-count">{itemCount} item{itemCount !== 1 ? 's' : ''}</span>
+          </div>
+
+          <div className="hp-items">
+            {checkoutData.cart.map(item => (
+              <div key={item.id} className="hp-item">
+                <div className="hp-item-img">
+                  <img src={item.image} alt={item.name} />
+                  <span className="hp-item-qty">{item.qty}</span>
+                </div>
+                <div className="hp-item-name" title={item.name}>{item.name}</div>
+                <div className="hp-item-price">${(item.price * item.qty).toFixed(2)}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hp-totals">
+            <div className="hp-row"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
+            <div className="hp-row"><span>Shipping</span><span className={shipping === 0 ? 'free' : ''}>{shipping > 0 ? `$${shipping.toFixed(2)}` : 'Free'}</span></div>
+            {(checkoutData.discount || 0) > 0 && (
+              <div className="hp-row discount"><span>Discount</span><span>−${checkoutData.discount!.toFixed(2)}</span></div>
+            )}
+            <div className="hp-row grand"><span>Total</span><span>${total.toFixed(2)}</span></div>
+          </div>
+        </aside>
       </div>
 
-      <style>{`
-        .payment-page { background:#f8fbfc;min-height:80vh; }
-        .steps { display:flex;justify-content:center;gap:0;padding:28px 0 8px;background:#fff;border-bottom:1px solid #ddeef1; }
-        .step { display:flex;align-items:center;gap:8px;font-size:13px;color:#6b8b91;padding:0 20px; }
-        .step.active { color:#005969;font-weight:500; }
-        .step.done { color:#007a8c; }
-        .step-num { width:24px;height:24px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600; }
-        .step.active .step-num { background:#005969;border-color:#005969;color:#fff; }
-        .step-div { width:40px;height:1px;background:#c8e0e4; }
-        .pay-wrap { max-width:1040px;margin:0 auto;padding:40px 24px;display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start; }
-        .card { background:#fff;border-radius:10px;border:1px solid #ddeef1;box-shadow:0 2px 24px rgba(0,26,32,.09); }
-        .card-head { padding:24px 28px 20px;border-bottom:1px solid #ddeef1; }
-        .card-head h2 { font-family:'Playfair Display',serif;font-size:1.4rem;color:#005969;font-weight:400; }
-        .card-head p { font-size:13px;color:#6b8b91;margin-top:4px; }
-        .card-body { padding:24px 28px; }
-        .address-box { background:#f0f8f9;border-radius:8px;padding:16px;margin-bottom:24px; }
-        .address-label { font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b8b91;margin-bottom:8px; }
-        .address-name { font-size:15px;font-weight:600;color:#334d52;margin-bottom:4px; }
-        .address-line { font-size:13px;color:#6b8b91;line-height:1.6; }
-        .pm-label { font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#6b8b91;margin-bottom:12px; }
-        .square-card-wrap { border:1.5px solid #c8e0e4;border-radius:8px;padding:16px;min-height:90px;margin-bottom:20px;background:#fff;position:relative; }
-        .card-loading { display:flex;align-items:center;gap:10px;color:#6b8b91;font-size:13px;padding:8px 0; }
-        .spinner { width:18px;height:18px;border:2px solid #c8e0e4;border-top-color:#005969;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0; }
-        @keyframes spin { to { transform:rotate(360deg); } }
-        .order-total-display { display:flex;justify-content:space-between;align-items:center;padding:16px;background:#f0f8f9;border-radius:8px;margin-bottom:20px; }
-        .order-total-display span:first-child { font-size:14px;color:#6b8b91;font-weight:500; }
-        .total-amount { font-size:22px;font-weight:700;color:#005969;font-family:'Playfair Display',serif; }
-        .form-error { background:#fef2f2;color:#dc2626;padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px; }
-        .btn-place-order { width:100%;padding:16px;background:#005969;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px; }
-        .btn-place-order:hover:not(:disabled) { background:#003d4a; }
-        .btn-place-order:disabled { opacity:.6;cursor:not-allowed; }
-        .security-note { display:flex;align-items:center;gap:8px;font-size:12px;color:#6b8b91;justify-content:center; }
-        .back-link { display:inline-block;margin-top:16px;font-size:13px;color:#6b8b91;transition:color .2s; }
-        .back-link:hover { color:#005969; }
-        .summary-items { padding:16px 24px;border-bottom:1px solid #ddeef1; }
-        .sum-item { display:flex;align-items:center;gap:12px;margin-bottom:16px; }
-        .sum-img { position:relative;width:52px;height:52px;border-radius:8px;overflow:hidden;background:#f0f8f9;flex-shrink:0; }
-        .sum-img img { width:100%;height:100%;object-fit:cover; }
-        .sum-qty { position:absolute;top:-6px;right:-6px;background:#005969;color:#fff;font-size:10px;font-weight:700;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center; }
-        .sum-info { flex:1; }
-        .sum-name { font-size:13px;font-weight:500;color:#334d52;line-height:1.3; }
-        .sum-price { font-size:13px;font-weight:600;color:#334d52; }
-        .summary-totals { padding:16px 24px; }
-        .total-row { display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;color:#6b8b91; }
-        .total-row.grand { font-size:15px;font-weight:700;color:#334d52;border-top:1px solid #ddeef1;padding-top:10px;margin-top:4px; }
-        @media(max-width:768px) { .pay-wrap{grid-template-columns:1fr} .pay-summary{order:-1} }
-      `}</style>
+      <style>{styles}</style>
     </div>
   );
 }
+
+const styles = `
+  /* Cover navbar + footer; own exactly one viewport */
+  .hira-pay {
+    position: fixed; inset: 0; z-index: 9000;
+    display: grid; grid-template-rows: 64px 1fr;
+    background: #fdfbf6;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: #1a1a1a;
+    overflow: hidden;
+  }
+
+  /* TOP BAR */
+  .hp-top {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    padding: 0 28px;
+    background: #fff;
+    border-bottom: 1px solid #eee5d3;
+  }
+  .hp-brand { justify-self: start; display: inline-flex; align-items: center; }
+  .hp-brand img { height: 36px; filter: contrast(1.2); }
+  .hp-back {
+    justify-self: end;
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; font-weight: 500; color: #6b8b91;
+    text-decoration: none; letter-spacing: 0.04em;
+    padding: 6px 12px; border-radius: 6px; transition: color .15s, background .15s;
+  }
+  .hp-back:hover { color: #005969; background: rgba(0,89,105,0.05); }
+
+  .hp-steps {
+    display: inline-flex; align-items: center; gap: 0;
+  }
+  .hp-step {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; color: #a8a298; padding: 0 14px;
+    letter-spacing: 0.04em;
+  }
+  .hp-step .hp-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+  .hp-step.done { color: #c8a97e; }
+  .hp-step.done .hp-num { background: #c8a97e; color: #fff; border-color: #c8a97e; }
+  .hp-step.active { color: #005969; font-weight: 600; }
+  .hp-step.active .hp-num { background: #005969; color: #fff; border-color: #005969; }
+  .hp-div { width: 28px; height: 1px; background: #e2dccd; }
+
+  /* BODY */
+  .hp-body {
+    display: grid; grid-template-columns: 1fr 380px;
+    overflow: hidden;
+  }
+
+  /* LEFT — form */
+  .hp-form {
+    overflow-y: auto;
+    padding: 20px clamp(20px, 5vw, 56px) 18px;
+    background: #fdfbf6;
+  }
+  .hp-form-head { margin-bottom: 14px; }
+  .hp-eyebrow {
+    font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: #c8a97e; font-weight: 600; margin-bottom: 4px;
+  }
+  .hp-form-head h1 {
+    font-family: 'Playfair Display', serif; font-weight: 400;
+    font-size: clamp(1.5rem, 2vw, 1.9rem); color: #005969; line-height: 1.1;
+  }
+  .hp-form-body { max-width: 540px; }
+
+  .hp-deliver {
+    background: #fff; border: 1px solid #eee5d3; border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 14px;
+  }
+  .hp-deliver-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .hp-deliver-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #6b8b91;
+  }
+  .hp-deliver-edit {
+    font-size: 12px; color: #c8a97e; font-weight: 600;
+    text-decoration: none; border-bottom: 1px solid transparent;
+    transition: border-color .15s;
+  }
+  .hp-deliver-edit:hover { border-bottom-color: #c8a97e; }
+  .hp-deliver-name { font-size: 14px; font-weight: 600; color: #1a1a1a; margin-bottom: 2px; }
+  .hp-deliver-line { font-size: 12.5px; color: #6b8b91; line-height: 1.5; }
+
+  .hp-section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #6b8b91;
+    margin-bottom: 8px;
+  }
+  .hp-square {
+    border: 1.5px solid #e2dccd; border-radius: 10px;
+    padding: 14px 16px; background: #fff;
+    min-height: 88px; position: relative;
+    transition: border-color .2s, box-shadow .2s;
+    margin-bottom: 16px;
+  }
+  .hp-square:focus-within {
+    border-color: #c8a97e;
+    box-shadow: 0 0 0 3px rgba(200,169,126,0.18);
+  }
+  .hp-loading {
+    display: flex; align-items: center; gap: 10px;
+    color: #6b8b91; font-size: 13px;
+  }
+  .hp-spin-sm, .hp-spin {
+    width: 16px; height: 16px;
+    border: 2px solid #e2dccd; border-top-color: #005969;
+    border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0;
+  }
+  .hp-spin { border-color: rgba(255,255,255,0.35); border-top-color: #fff; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hp-error {
+    display: flex; align-items: center; gap: 8px;
+    background: #fff5f5; border: 1px solid #fecaca; color: #b91c1c;
+    padding: 10px 12px; border-radius: 8px; font-size: 12.5px;
+    margin-bottom: 14px;
+  }
+
+  .hp-pay-btn {
+    width: 100%; padding: 14px 22px;
+    background: #005969; color: #fff;
+    border: 0; border-radius: 10px;
+    font-family: inherit; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; transition: background .2s, transform .1s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .hp-pay-btn:hover:not(:disabled) { background: #003d4a; }
+  .hp-pay-btn:active:not(:disabled) { transform: translateY(1px); }
+  .hp-pay-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+  .hp-secure {
+    margin-top: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    font-size: 11.5px; color: #6b8b91;
+  }
+
+  /* RIGHT — summary */
+  .hp-summary {
+    background: #fff;
+    border-left: 1px solid #eee5d3;
+    padding: 28px 28px 24px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .hp-summary-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 16px;
+    padding-bottom: 14px; border-bottom: 1px solid #eee5d3;
+  }
+  .hp-summary-head h2 {
+    font-family: 'Playfair Display', serif; font-weight: 400;
+    font-size: 1.25rem; color: #005969;
+  }
+  .hp-count { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: #6b8b91; font-weight: 600; }
+
+  .hp-items {
+    flex: 1; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+    padding-right: 4px;
+  }
+  .hp-items::-webkit-scrollbar { width: 6px; }
+  .hp-items::-webkit-scrollbar-thumb { background: #e2dccd; border-radius: 99px; }
+  .hp-item {
+    display: grid; grid-template-columns: 44px 1fr auto; gap: 10px; align-items: center;
+  }
+  .hp-item-img {
+    position: relative; width: 44px; height: 44px;
+    border-radius: 8px; overflow: hidden; background: #faf6ec;
+  }
+  .hp-item-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hp-item-qty {
+    position: absolute; top: -4px; right: -4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: #005969; color: #fff;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid #fff;
+  }
+  .hp-item-name {
+    font-size: 13px; font-weight: 500; color: #1a1a1a; line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .hp-item-price { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+
+  .hp-totals {
+    margin-top: 16px; padding-top: 16px;
+    border-top: 1px solid #eee5d3;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .hp-row {
+    display: flex; justify-content: space-between;
+    font-size: 13px; color: #6b8b91;
+  }
+  .hp-row .free { color: #16a34a; font-weight: 600; }
+  .hp-row.discount { color: #16a34a; }
+  .hp-row.grand {
+    margin-top: 6px; padding-top: 12px;
+    border-top: 1px solid #eee5d3;
+    font-size: 16px; font-weight: 700; color: #005969;
+    font-family: 'Playfair Display', serif;
+  }
+  .hp-row.grand span:last-child { font-size: 20px; }
+
+  /* Tablet — stack summary above form */
+  @media (max-width: 900px) {
+    .hira-pay { grid-template-rows: 56px 1fr; }
+    .hp-top { padding: 0 18px; }
+    .hp-brand img { height: 28px; }
+    .hp-step .hp-label { display: none; }
+    .hp-div { width: 18px; }
+    .hp-body { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .hp-summary {
+      order: -1;
+      border-left: 0; border-bottom: 1px solid #eee5d3;
+      padding: 16px 18px;
+    }
+    .hp-summary-head { margin-bottom: 10px; padding-bottom: 10px; }
+    .hp-items { max-height: 110px; }
+    .hp-form { padding: 18px 18px 24px; }
+    .hp-form-head { margin-bottom: 14px; }
+    .hp-deliver { padding: 12px 14px; margin-bottom: 14px; }
+  }
+
+  @media (max-width: 480px) {
+    .hp-back span { display: none; }
+  }
+`;

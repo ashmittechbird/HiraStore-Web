@@ -39,6 +39,13 @@ export default function App() {
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/product/:id" element={<Product />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={
+            <div style={{ textAlign: 'center', padding: '120px 24px 80px', minHeight: '60vh' }}>
+              <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '48px', fontWeight: 400, color: '#005969', marginBottom: '16px' }}>Page Not Found</h1>
+              <p style={{ fontSize: '15px', color: '#737373', marginBottom: '32px' }}>The page you are looking for does not exist or has been moved.</p>
+              <a href="/store/" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '14px 32px', background: '#005969', color: '#fff', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase' as any, letterSpacing: '0.1em', textDecoration: 'none' }}>Back to Home</a>
+            </div>
+          } />
         </Routes>
       </main>
       <Footer />

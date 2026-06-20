@@ -10,7 +10,7 @@ A luxury demi-fine jewelry e-commerce storefront built with React + Vite, backed
 |-------|-----------|
 | Frontend | React 18, TypeScript, Vite, React Router v6 |
 | State | Zustand (cart, wishlist) |
-| Backend | Node.js `server.js` — auth API + ERPNext proxy |
+| Backend | Frappe/ERPNext REST API (proxied by Vite in dev) |
 | ERP | Frappe/ERPNext 15 (`hira-bench`, port 8001) |
 | Payment | Square Web Payments SDK (`square_payment` Frappe app) |
 | Styling | Inline CSS-in-JS per component |
@@ -46,8 +46,7 @@ HiraStore/
 │   └── lib/
 │       └── api.ts            # ERPNext item field helpers (image, price, name, etc.)
 ├── catalog_images/           # Local product image assets
-├── server.js                 # Node.js dev server (port 5500)
-├── vite.config.ts
+├── vite.config.ts            # Dev server config + API proxy
 └── package.json
 ```
 
@@ -175,31 +174,22 @@ All product cards across the site share identical behavior:
 
 - Node.js 18+
 - Frappe bench running at `localhost:8001` (hira-bench)
-- ERPNext API key/secret configured in `server.js`
+- ERPNext API key/secret configured in Admin Panel Settings tab
 - `square_payment` Frappe app installed on hira-bench
 
-### Local Development (server.js)
-
-> **Important:** Always run builds from the Linux path, not the Windows (`/mnt/c/...`) path — WSL cannot `chmod` on NTFS.
-
-**Linux build directory:** `/home/frappenew_user/hirastore-build/`
+### Local Development
 
 ```bash
-# 1. Sync source from Windows to Linux build dir
-rsync -av /mnt/c/Users/ashmi/OneDrive/Desktop/HiraStore/src/ /home/frappenew_user/hirastore-build/src/
-rsync -av /mnt/c/Users/ashmi/OneDrive/Desktop/HiraStore/vite.config.ts \
-          /mnt/c/Users/ashmi/OneDrive/Desktop/HiraStore/index.html \
-          /home/frappenew_user/hirastore-build/
+# Install dependencies
+npm install
 
-# 2. Build
-cd /home/frappenew_user/hirastore-build
-npm run build
-
-# 3. Start server
-node server.js
+# Start Vite dev server (proxies API calls to Frappe backend)
+npm run dev
 ```
 
-App runs at: **`http://localhost:5500/store`**
+App runs at: **`http://localhost:8001/store`**
+
+The Vite dev server proxies `/api/*` requests to the Frappe backend configured in `vite.config.ts`.
 
 ### Frappe Build (deploy to hira-bench)
 
@@ -216,23 +206,9 @@ App runs at: **`http://localhost:8001/store`**
 
 ---
 
-## API (server.js)
+## API
 
-`server.js` runs on port 5500 and handles:
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/auth/login` | POST | Frappe session login |
-| `/api/auth/signup` | POST | Creates Frappe User + ERPNext Customer |
-| `/api/auth/logout` | POST | Invalidates session |
-| `/api/auth/me` | GET | Current session info |
-| `/api/orders/create` | POST | Creates ERPNext Sales Order |
-| `/api/customer/orders` | GET | Lists orders for logged-in user |
-| `/api/customer/profile` | POST | Updates shipping address |
-| `/api/homepage/sections` | GET/POST | Curated homepage product lists |
-| `/api/offers` | GET | Active coupon codes |
-| `/api/coupon/validate` | POST | Validates coupon + calculates discount |
-| `/erp/*` | proxy | Passes requests to ERPNext at port 8001 |
+The storefront communicates directly with the Frappe/ERPNext backend via REST API. In development, Vite proxies API requests (configured in `vite.config.ts`). In production, the app is served from Frappe and uses same-origin requests.
 
 ---
 
@@ -240,10 +216,9 @@ App runs at: **`http://localhost:8001/store`**
 
 Access at `/store/admin`. Connects directly to ERPNext using API key/secret stored in `localStorage` (`hs_admin_cfg`).
 
-Default ERPNext credentials (configure in Settings tab):
-- **URL:** `http://127.0.0.1:8001`
-- **API Key:** `df4ffcff00dcb5d`
-- **API Secret:** `054316891a5f19f`
+Configure credentials in the Admin Panel Settings tab. Never commit API keys or secrets to the repository.
+
+> **Security note:** If credentials were previously committed, rotate them immediately.
 
 Features: product CRUD, order management, customer list, coupon codes, homepage curation.
 
@@ -264,9 +239,4 @@ Features: product CRUD, order management, customer list, coupon codes, homepage 
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | `5500` | server.js listen port |
-| `ERP_HOST` | `127.0.0.1` | ERPNext host |
-| `ERP_PORT` | `8001` | ERPNext port |
-| `ERP_API_KEY` | see server.js | ERPNext API key |
-| `ERP_API_SECRET` | see server.js | ERPNext API secret |
 | `VITE_CATALOG_BASE` | `/catalog_images` | Image base URL for Frappe builds |

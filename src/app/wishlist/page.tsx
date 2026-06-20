@@ -65,6 +65,7 @@ export default function WishlistPage() {
                       </span>
                     )}
                     <button
+                      type="button"
                       className="product-wish wished"
                       aria-label={`Remove ${item.name} from wishlist`}
                       onClick={e => { e.stopPropagation(); toggle(item); }}
@@ -74,19 +75,20 @@ export default function WishlistPage() {
                     <div className="product-actions">
                       {cartQty > 0 ? (
                         <div className="prod-stepper" onClick={e => e.stopPropagation()}>
-                          <button className="prod-stepper-btn" aria-label="Remove one" onClick={e => { e.stopPropagation(); updateQty(item.id, cartQty - 1); }}>−</button>
+                          <button type="button" className="prod-stepper-btn" aria-label="Remove one" onClick={e => { e.stopPropagation(); updateQty(item.id, cartQty - 1); }}>−</button>
                           <span className="prod-stepper-count">{cartQty}</span>
-                          <button className="prod-stepper-btn" aria-label="Add one" onClick={e => { e.stopPropagation(); addItem({ id: item.id, name: item.name, category: item.category, price: item.price, image: item.image }); }}>+</button>
+                          <button type="button" className="prod-stepper-btn" aria-label="Add one" onClick={e => { e.stopPropagation(); addItem({ id: item.id, name: item.name, category: item.category, price: item.price, image: item.image }); }}>+</button>
                         </div>
                       ) : (
                         <button
+                          type="button"
                           className={`product-action-btn pa-primary${isAdded ? ' cart-added' : ''}`}
                           onClick={e => { e.stopPropagation(); handleAdd(item); }}
                         >
-                          {isAdded ? 'Added ✓' : 'Add to Cart'}
+                          {isAdded ? 'Added' : 'Add to Cart'}
                         </button>
                       )}
-                      <button className="product-action-btn pa-buy-now" onClick={e => { e.stopPropagation(); sessionStorage.setItem('hs_buynow', JSON.stringify([{ id: item.id, name: item.name, category: item.category, price: item.price, image: item.image, qty: 1 }])); navigate('/checkout'); }}>
+                      <button type="button" className="product-action-btn pa-buy-now" onClick={e => { e.stopPropagation(); sessionStorage.setItem('hs_buynow', JSON.stringify([{ id: item.id, name: item.name, category: item.category, price: item.price, image: item.image, qty: 1 }])); navigate('/checkout'); }}>
                         Buy Now
                       </button>
                     </div>

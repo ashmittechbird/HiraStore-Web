@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useFrappeGetDocList } from 'frappe-react-sdk';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
@@ -20,7 +19,7 @@ const CATEGORIES = [
   { name: 'Earrings',  img: `${SI}/cat-earrings.jpg`,     cat: 'Earrings' },
   { name: 'Rings',     img: `${SI}/product-fallback.jpg`, cat: 'Rings' },
   { name: 'Bracelets', img: `${SI}/hero-bracelet.jpg`,    cat: 'Bracelets' },
-  { name: 'Gift Sets', img: `${SI}/cat-giftsets.jpg`,     cat: 'GiftSets' },
+  { name: 'Gift Sets', img: `${SI}/cat-giftsets.jpg`,     cat: 'Sets' },
 ];
 
 const TESTIMONIALS = [
@@ -122,6 +121,7 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
             : badge && <span className="product-badge">{badge}</span>
           }
           <button
+            type="button"
             className={`product-wish${wished ? ' wished' : ''}${popping ? ' popping' : ''}`}
             onClick={e => { e.stopPropagation(); handleWish(); }}
             aria-label="Wishlist"
@@ -131,16 +131,16 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
           <div className="product-actions">
             {cartQty > 0 ? (
               <div className="prod-stepper" onClick={e => e.stopPropagation()}>
-                <button className="prod-stepper-btn" aria-label="Remove one" onClick={e => { e.stopPropagation(); updateQty(id, cartQty - 1); }}>−</button>
+                <button type="button" className="prod-stepper-btn" aria-label="Remove one" onClick={e => { e.stopPropagation(); updateQty(id, cartQty - 1); }}>−</button>
                 <span className="prod-stepper-count">{cartQty}</span>
-                <button className="prod-stepper-btn" aria-label="Add one" onClick={e => { e.stopPropagation(); addItemDirect({ id, name, category, price, image: imgSrc }); }}>+</button>
+                <button type="button" className="prod-stepper-btn" aria-label="Add one" onClick={e => { e.stopPropagation(); addItemDirect({ id, name, category, price, image: imgSrc }); }}>+</button>
               </div>
             ) : (
-              <button className={`product-action-btn pa-primary${added ? ' cart-added' : ''}`} onClick={e => { e.stopPropagation(); handleAdd(); }}>
-                {added ? 'Added ✓' : 'Add to Cart'}
+              <button type="button" className={`product-action-btn pa-primary${added ? ' cart-added' : ''}`} onClick={e => { e.stopPropagation(); handleAdd(); }}>
+                {added ? 'Added' : 'Add to Cart'}
               </button>
             )}
-            <button className="product-action-btn pa-secondary" onClick={e => { e.stopPropagation(); setQvOpen(true); setQvIdx(0); setQvAdded(false); }}>
+            <button type="button" className="product-action-btn pa-secondary" onClick={e => { e.stopPropagation(); setQvOpen(true); setQvIdx(0); setQvAdded(false); }}>
               Quick View
             </button>
           </div>
@@ -160,7 +160,7 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
           onClick={() => setQvOpen(false)}>
           <div style={{ background:'#fff',maxWidth:'900px',width:'100%',maxHeight:'90vh',overflowY:'auto',position:'relative',display:'grid',gridTemplateColumns:'1fr 1fr' }}
             onClick={e => e.stopPropagation()}>
-            <button onClick={() => setQvOpen(false)} style={{ position:'absolute',top:'16px',right:'16px',background:'rgba(255,255,255,0.9)',border:'none',width:'32px',height:'32px',borderRadius:'50%',cursor:'pointer',zIndex:10,display:'flex',alignItems:'center',justifyContent:'center' }}>
+            <button type="button" onClick={() => setQvOpen(false)} style={{ position:'absolute',top:'16px',right:'16px',background:'rgba(255,255,255,0.9)',border:'none',width:'32px',height:'32px',borderRadius:'50%',cursor:'pointer',zIndex:10,display:'flex',alignItems:'center',justifyContent:'center' }}>
               <svg viewBox="0 0 24 24" width="16" height="16" stroke="#2c2c2c" strokeWidth="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
             <div style={{ display:'flex',flexDirection:'column',background:'#faf9f7',minHeight:'340px' }}>
@@ -184,16 +184,16 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
               <div style={{ display:'flex',flexDirection:'column',gap:'12px',marginTop:'24px',marginBottom:'24px' }}>
                 {cartQty > 0 ? (
                   <div style={{ display:'flex',alignItems:'center',border:'1.5px solid #2c2c2c',overflow:'hidden' }}>
-                    <button onClick={() => updateQty(id, cartQty - 1)} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>−</button>
+                    <button type="button" onClick={() => updateQty(id, cartQty - 1)} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>−</button>
                     <span style={{ flex:1,textAlign:'center',fontSize:'14px',fontWeight:700,color:'#2c2c2c' }}>{cartQty} in cart</span>
-                    <button onClick={() => addItemDirect({ id, name, category, price, image: imgSrc })} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>+</button>
+                    <button type="button" onClick={() => addItemDirect({ id, name, category, price, image: imgSrc })} style={{ width:'48px',height:'48px',background:'#2c2c2c',color:'#fff',border:'none',fontSize:'20px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,transition:'background 0.15s',fontFamily:'inherit' }}>+</button>
                   </div>
                 ) : (
-                  <button onClick={handleQVAdd} style={{ background: qvAdded ? '#2eaa6e' : '#2c2c2c',color:'#fff',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'none',cursor:'pointer',transition:'background 0.3s',fontFamily:'inherit' }}>
-                    {qvAdded ? 'Added ✓' : 'Add to Cart'}
+                  <button type="button" onClick={handleQVAdd} style={{ background: qvAdded ? '#2eaa6e' : '#2c2c2c',color:'#fff',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'none',cursor:'pointer',transition:'background 0.3s',fontFamily:'inherit' }}>
+                    {qvAdded ? 'Added' : 'Add to Cart'}
                   </button>
                 )}
-                <button onClick={() => { setQvOpen(false); sessionStorage.setItem('hs_buynow', JSON.stringify([{ id, name, category, price, image: imgSrc, qty: 1 }])); navigate('/checkout'); }} style={{ background:'transparent',color:'#2c2c2c',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'2px solid #2c2c2c',cursor:'pointer',transition:'background .2s,color .2s',fontFamily:'inherit' }}
+                <button type="button" onClick={() => { setQvOpen(false); sessionStorage.setItem('hs_buynow', JSON.stringify([{ id, name, category, price, image: imgSrc, qty: 1 }])); navigate('/checkout'); }} style={{ background:'transparent',color:'#2c2c2c',padding:'16px',fontSize:'11px',fontWeight:600,textTransform:'uppercase',letterSpacing:'0.1em',border:'2px solid #2c2c2c',cursor:'pointer',transition:'background .2s,color .2s',fontFamily:'inherit' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background='#2c2c2c'; (e.currentTarget as HTMLButtonElement).style.color='#fff'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background='transparent'; (e.currentTarget as HTMLButtonElement).style.color='#2c2c2c'; }}>
                   Buy Now
@@ -232,26 +232,87 @@ export default function HomePage() {
     return () => window.removeEventListener('hs_ig_updated', handler);
   }, []);
 
-  const { data: featuredItems = [] } = useFrappeGetDocList<Product>('Item', {
-    fields: HP_FIELDS,
-    filters: [['custom_is_featured', '=', 1], ['disabled', '=', 0]],
-    limit: 8,
-    orderBy: { field: 'modified', order: 'desc' },
+  const [hpConfig, setHpConfig] = useState<{ ml: string[]; na: string[] } | null>(() => {
+    try { return JSON.parse(localStorage.getItem('hs_homepage_config') || 'null'); } catch { return null; }
   });
-  const { data: recentItems = [] } = useFrappeGetDocList<Product>('Item', {
-    fields: HP_FIELDS,
-    filters: [['disabled', '=', 0]],
-    limit: 8,
-    orderBy: { field: 'modified', order: 'desc' },
-  });
-  const { data: newArrivals = [] } = useFrappeGetDocList<Product>('Item', {
-    fields: HP_FIELDS,
-    filters: [['disabled', '=', 0]],
-    limit: 4,
-    orderBy: { field: 'creation', order: 'desc' },
-  });
+  useEffect(() => {
+    // Fetch from server on mount — server is authoritative.
+    fetch('/files/homepage_config.json?t=' + Date.now(), { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(cfg => {
+        if (cfg && (Array.isArray(cfg.ml) || Array.isArray(cfg.na))) {
+          setHpConfig(cfg);
+          localStorage.setItem('hs_homepage_config', JSON.stringify(cfg));
+        }
+        // If the server returned nothing, keep whatever we already have — don't wipe stored config.
+      })
+      .catch(() => {});
+    // Listen for admin saving in another tab
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'hs_homepage_config' && e.newValue) {
+        try { setHpConfig(JSON.parse(e.newValue)); } catch {}
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
-  const mostLoved = featuredItems.length > 0 ? featuredItems : recentItems;
+  const [allHpItems, setAllHpItems] = useState<Product[]>([]);
+  useEffect(() => {
+    fetch('/api/method/hira.api.products.get_public_items?limit=200', { credentials: 'include' })
+      .then(r => r.json())
+      .then(res => { if (Array.isArray(res.message)) setAllHpItems(res.message); })
+      .catch(() => {});
+  }, []);
+
+  // Match admin's saved IDs against both `name` and `item_code` since public APIs
+  // sometimes reshape Item.name into other fields.
+  function matchesAny(item: Product, ids: string[]): boolean {
+    const candidates = [
+      item.name,
+      (item as Record<string, unknown>).item_code as string | undefined,
+      (item as Record<string, unknown>).id as string | undefined,
+    ].filter(Boolean) as string[];
+    return candidates.some(c => ids.includes(c));
+  }
+
+  // Preserve admin's ordering: render selected items in the order they were ticked.
+  function selectInOrder(ids: string[]): Product[] {
+    const map = new Map<string, Product>();
+    for (const it of allHpItems) {
+      const keys = [
+        it.name,
+        (it as Record<string, unknown>).item_code as string | undefined,
+        (it as Record<string, unknown>).id as string | undefined,
+      ].filter(Boolean) as string[];
+      keys.forEach(k => { if (!map.has(k)) map.set(k, it); });
+    }
+    return ids.map(id => map.get(id)).filter(Boolean) as Product[];
+  }
+
+  const mostLoved = hpConfig?.ml?.length
+    ? selectInOrder(hpConfig.ml).slice(0, 8)
+    : allHpItems.slice(0, 8);
+
+  const newArrivals = hpConfig?.na?.length
+    ? selectInOrder(hpConfig.na).slice(0, 8)
+    : [...allHpItems].sort((a, b) => (b.name || '') > (a.name || '') ? 1 : -1).slice(0, 4);
+
+  // Diagnostic for admins: log when a selection is saved but renders empty (mismatch).
+  useEffect(() => {
+    if (hpConfig && allHpItems.length) {
+      const mlSel = hpConfig.ml || [];
+      const naSel = hpConfig.na || [];
+      const mlMatched = mlSel.filter(id => allHpItems.some(i => matchesAny(i, [id])));
+      const naMatched = naSel.filter(id => allHpItems.some(i => matchesAny(i, [id])));
+      if (mlSel.length && mlMatched.length === 0) {
+        console.warn('[Hira] Homepage "Most Loved" selection found but no items matched.', { saved: mlSel, sampleAvailable: allHpItems.slice(0, 3) });
+      }
+      if (naSel.length && naMatched.length === 0) {
+        console.warn('[Hira] Homepage "New Arrivals" selection found but no items matched.', { saved: naSel, sampleAvailable: allHpItems.slice(0, 3) });
+      }
+    }
+  }, [hpConfig, allHpItems]);
 
   useEffect(() => {
     const t = setInterval(() => setHeroIdx(i => (i + 1) % HERO_IMAGES.length), 6000);
@@ -348,7 +409,7 @@ export default function HomePage() {
         <div className="philosophy-watermark">Hira</div>
         <div className="philosophy-content">
           <blockquote className="philosophy-quote">
-            &ldquo;We believe that elegance is not a luxury reserved for special occasions &mdash; it is a feeling you deserve to carry with you, every day.&rdquo;
+            &ldquo;We believe that elegance is not a luxury reserved for special occasions, it is a feeling you deserve to carry with you, every day.&rdquo;
           </blockquote>
           <div className="philosophy-divider" />
           <div className="philosophy-label">The Hira Store Philosophy</div>
@@ -383,7 +444,7 @@ export default function HomePage() {
       {/* Promo Banners */}
       <section className="section">
         <div className="promo-grid">
-          <Link to="/shop?cat=Bridal" className="promo-card reveal">
+          <Link to="/shop?cat=Sets" className="promo-card reveal">
             <img src={`${SI}/hero-necklace-1.jpg`} alt="Bridal Edit" />
             <div className="promo-content">
               <h3 className="promo-title">The Bridal Edit</h3>
@@ -395,7 +456,7 @@ export default function HomePage() {
               </span>
             </div>
           </Link>
-          <Link to="/shop?cat=Gifts" className="promo-card reveal reveal-delay-2">
+          <Link to="/shop" className="promo-card reveal reveal-delay-2">
             <img src={`${SI}/hero-necklace-2.jpg`} alt="Gifting" />
             <div className="promo-content">
               <h3 className="promo-title">Gifts of Love</h3>

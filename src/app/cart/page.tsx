@@ -18,7 +18,8 @@ export default function CartPage() {
 
   const subtotal = totalPrice();
   const shipping = subtotal >= 15 ? 0 : 5;
-  const total = subtotal - discount + shipping;
+  const safeDiscount = Math.min(discount, subtotal);
+  const total = Math.max(0, subtotal - safeDiscount + shipping);
 
   async function applyCoupon() {
     if (!coupon.trim()) return;
@@ -44,9 +45,11 @@ export default function CartPage() {
         : 0;
       setDiscount(disc);
       setCouponMsg(`Coupon applied! You save $${disc.toFixed(2)}`);
+      sessionStorage.setItem('hs_coupon', JSON.stringify({ code: coupon.trim(), discount: disc }));
     } catch (e: unknown) {
       setCouponMsg((e as Error).message || 'Invalid coupon');
       setDiscount(0);
+      sessionStorage.removeItem('hs_coupon');
     }
     setCouponLoading(false);
   }
@@ -110,11 +113,11 @@ export default function CartPage() {
                     </div>
                     <div className="item-controls">
                       <div className="qty-control">
-                        <button className="qty-btn" onClick={() => updateQty(item.id, item.qty - 1)}>−</button>
+                        <button type="button" className="qty-btn" onClick={() => updateQty(item.id, item.qty - 1)}>−</button>
                         <span className="qty-value">{item.qty}</span>
-                        <button className="qty-btn" onClick={() => updateQty(item.id, item.qty + 1)}>+</button>
+                        <button type="button" className="qty-btn" onClick={() => updateQty(item.id, item.qty + 1)}>+</button>
                       </div>
-                      <button className="remove-btn" onClick={() => handleRemove(item.id)}>Remove</button>
+                      <button type="button" className="remove-btn" onClick={() => handleRemove(item.id)}>Remove</button>
                     </div>
                   </div>
                   <div className="item-price-col">
@@ -134,7 +137,7 @@ export default function CartPage() {
                 onChange={e => setCoupon(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && applyCoupon()}
               />
-              <button className="promo-apply" onClick={applyCoupon} disabled={couponLoading}>
+              <button type="button" className="promo-apply" onClick={applyCoupon} disabled={couponLoading}>
                 {couponLoading ? '…' : 'Apply'}
               </button>
             </div>
@@ -175,9 +178,9 @@ export default function CartPage() {
                   <span className="summary-total-label">Total</span>
                   <span className="summary-total-value">${total.toFixed(2)}</span>
                 </div>
-                <button className="checkout-btn" onClick={handleCheckout}>Proceed to Checkout</button>
+                <button type="button" className="checkout-btn" onClick={handleCheckout}>Proceed to Checkout</button>
                 <Link to="/shop" className="continue-link">← Continue Shopping</Link>
-                <button className="clear-link" onClick={clearCart}>Clear Cart</button>
+                <button type="button" className="clear-link" onClick={clearCart}>Clear Cart</button>
               </div>
             </div>
           </div>

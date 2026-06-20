@@ -13,22 +13,46 @@ function readSocialLinks() {
 
 export default function Footer() {
   const [social, setSocial] = useState(readSocialLinks);
+  const [nlEmail, setNlEmail] = useState('');
+  const [nlMsg, setNlMsg] = useState<{ ok: boolean; text: string } | null>(null);
   useEffect(() => {
     const handler = () => setSocial(readSocialLinks());
     window.addEventListener('hs_social_updated', handler);
     return () => window.removeEventListener('hs_social_updated', handler);
   }, []);
 
+  function handleNewsletter(e: React.FormEvent) {
+    e.preventDefault();
+    setNlMsg(null);
+    const email = nlEmail.trim();
+    if (!/.+@.+\..+/.test(email)) {
+      setNlMsg({ ok: false, text: 'Please enter a valid email.' });
+      return;
+    }
+    try {
+      const key = 'hs_newsletter_subscribers';
+      const list: string[] = JSON.parse(localStorage.getItem(key) || '[]');
+      if (!list.includes(email)) {
+        list.push(email);
+        localStorage.setItem(key, JSON.stringify(list));
+      }
+      setNlMsg({ ok: true, text: 'Thanks! You\'re on the list.' });
+      setNlEmail('');
+    } catch {
+      setNlMsg({ ok: false, text: 'Could not subscribe. Please try again later.' });
+    }
+  }
+
   return (
     <footer>
       <div className="footer-grid">
         <div className="footer-brand">
-          <img src="https://wearparts.norework.in/wp-content/uploads/2023/09/Hira-1.png" alt="The Hira Store" />
+          <img src={`${import.meta.env.BASE_URL}site-images/hira-logo.png`} alt="The Hira Store" />
           <p className="footer-text">Handcrafted fine jewelry designed for every day. Each piece tells a story of elegance and artistry.</p>
           <div className="footer-social">
-            <a href={social.instagram || '#'} aria-label="Instagram" target={social.instagram ? '_blank' : undefined} rel="noopener noreferrer"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg></a>
-            <a href={social.facebook || '#'} aria-label="Facebook" target={social.facebook ? '_blank' : undefined} rel="noopener noreferrer"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>
-            <a href={social.pinterest || '#'} aria-label="Pinterest" target={social.pinterest ? '_blank' : undefined} rel="noopener noreferrer"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.04-2.83.18-.77 1.24-5.24 1.24-5.24s-.32-.63-.32-1.57c0-1.47.85-2.57 1.91-2.57.9 0 1.34.68 1.34 1.49 0 .91-.58 2.27-.88 3.53-.25 1.05.52 1.91 1.56 1.91 1.87 0 3.13-2.4 3.13-5.23 0-2.16-1.46-3.67-3.55-3.67-2.42 0-3.84 1.82-3.84 3.7 0 .73.28 1.52.63 1.94.07.08.08.16.06.24l-.24.96c-.04.15-.12.18-.28.11-1.04-.48-1.69-2-1.69-3.22 0-2.62 1.9-5.02 5.48-5.02 2.88 0 5.12 2.05 5.12 4.79 0 2.86-1.8 5.16-4.3 5.16-.84 0-1.63-.44-1.9-.95l-.52 1.93c-.19.71-.69 1.61-1.03 2.15.78.24 1.6.37 2.45.37 5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg></a>
+            {social.instagram && <a href={social.instagram} aria-label="Instagram" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg></a>}
+            {social.facebook && <a href={social.facebook} aria-label="Facebook" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></a>}
+            {social.pinterest && <a href={social.pinterest} aria-label="Pinterest" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.04-2.83.18-.77 1.24-5.24 1.24-5.24s-.32-.63-.32-1.57c0-1.47.85-2.57 1.91-2.57.9 0 1.34.68 1.34 1.49 0 .91-.58 2.27-.88 3.53-.25 1.05.52 1.91 1.56 1.91 1.87 0 3.13-2.4 3.13-5.23 0-2.16-1.46-3.67-3.55-3.67-2.42 0-3.84 1.82-3.84 3.7 0 .73.28 1.52.63 1.94.07.08.08.16.06.24l-.24.96c-.04.15-.12.18-.28.11-1.04-.48-1.69-2-1.69-3.22 0-2.62 1.9-5.02 5.48-5.02 2.88 0 5.12 2.05 5.12 4.79 0 2.86-1.8 5.16-4.3 5.16-.84 0-1.63-.44-1.9-.95l-.52 1.93c-.19.71-.69 1.61-1.03 2.15.78.24 1.6.37 2.45.37 5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg></a>}
             {social.tiktok && <a href={social.tiktok} aria-label="TikTok" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.73a4.85 4.85 0 01-1.01-.04z"/></svg></a>}
             {social.whatsapp && <a href={social.whatsapp} aria-label="WhatsApp" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></a>}
           </div>
@@ -52,7 +76,7 @@ export default function Footer() {
             <li><Link to="/shop?cat=Earrings">Earrings</Link></li>
             <li><Link to="/shop?cat=Rings">Rings</Link></li>
             <li><Link to="/shop?cat=Bracelets">Bracelets</Link></li>
-            <li><Link to="/shop?cat=GiftSets">Gift Sets</Link></li>
+            <li><Link to="/shop?cat=Sets">Gift Sets</Link></li>
           </ul>
         </div>
 
@@ -61,10 +85,10 @@ export default function Footer() {
           <ul>
             <li><Link to="/about">Our Story</Link></li>
             <li><Link to="/account">My Account</Link></li>
-            <li><a href="#">Shipping Info</a></li>
-            <li><a href="#">Returns</a></li>
-            <li><a href="#">Size Guide</a></li>
-            <li><a href="#">Contact Us</a></li>
+            <li><Link to="/about#shipping">Shipping Info</Link></li>
+            <li><Link to="/about#returns">Returns</Link></li>
+            <li><Link to="/about#size-guide">Size Guide</Link></li>
+            <li><a href="mailto:info@Thehirastore.com">Contact Us</a></li>
           </ul>
         </div>
 
@@ -73,16 +97,19 @@ export default function Footer() {
           <p style={{ fontSize: '13px', color: 'var(--text-light)', marginBottom: '16px' }}>
             Subscribe for exclusive offers, new arrivals and jewelry care tips.
           </p>
-          <form className="newsletter-form" onSubmit={e => e.preventDefault()}>
-            <input type="email" placeholder="your@email.com" />
+          <form className="newsletter-form" onSubmit={handleNewsletter}>
+            <input type="email" placeholder="your@email.com" value={nlEmail} onChange={e => setNlEmail(e.target.value)} required />
             <button type="submit">Subscribe</button>
           </form>
+          {nlMsg && (
+            <div style={{ fontSize: 12, marginTop: 8, color: nlMsg.ok ? '#16a34a' : '#dc2626' }}>{nlMsg.text}</div>
+          )}
         </div>
       </div>
 
       <div className="footer-bottom" style={{ maxWidth: '1300px', margin: '0 auto', marginTop: '60px' }}>
         <span>© {new Date().getFullYear()} The Hira Store. All rights reserved.</span>
-        <span>Handcrafted with ♥</span>
+        <span>Handcrafted with <svg viewBox="0 0 24 24" width="12" height="12" fill="#e11d48" stroke="none" style={{ display: 'inline', verticalAlign: 'middle', margin: '0 2px' }}><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></span>
       </div>
 
       <style>{`

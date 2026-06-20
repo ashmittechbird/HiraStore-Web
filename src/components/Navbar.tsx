@@ -10,6 +10,7 @@ export default function Navbar() {
   const [isAdmin, setIsAdmin] = useState(false);
   const totalItems = useCart(s => s.items.reduce((sum, item) => sum + item.qty, 0));
   const wishCount = useWishlist(s => s.items.length);
+  const setWishlistUser = useWishlist(s => s.setUser);
   const { currentUser } = useFrappeAuth();
 
   useEffect(() => {
@@ -19,9 +20,17 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    setWishlistUser(currentUser ?? null);
+  }, [currentUser, setWishlistUser]);
+
+  useEffect(() => {
     if (!currentUser) { setIsAdmin(false); return; }
     if (currentUser === 'Administrator') { setIsAdmin(true); return; }
-    fetch(`/api/method/frappe.client.get_list?doctype=Has Role&filters=[["parent","=","${currentUser}"],["role","=","System Manager"]]&limit=1`, {
+    const filters = encodeURIComponent(JSON.stringify([
+      ['parent', '=', currentUser],
+      ['role', '=', 'System Manager'],
+    ]));
+    fetch(`/api/method/frappe.client.get_list?doctype=${encodeURIComponent('Has Role')}&filters=${filters}&limit=1`, {
       credentials: 'include',
     })
       .then(r => r.json())
@@ -45,7 +54,7 @@ export default function Navbar() {
 
       <nav className={`nav${scrolled ? ' scrolled' : ''}`} id="navbar">
         <div className="nav-left">
-          <button className="hamburger" aria-label="Menu" onClick={() => setMobileOpen(true)}>
+          <button type="button" className="hamburger" aria-label="Menu" onClick={() => setMobileOpen(true)}>
             <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
           <ul className="nav-links">
@@ -58,7 +67,7 @@ export default function Navbar() {
         </div>
 
         <Link to="/" className="nav-center nav-logo">
-          <img src="https://wearparts.norework.in/wp-content/uploads/2023/09/Hira-1.png" alt="The Hira Store" />
+          <img src={`${import.meta.env.BASE_URL}site-images/hira-logo.png`} alt="The Hira Store" />
         </Link>
 
         <div className="nav-right">
@@ -95,8 +104,8 @@ export default function Navbar() {
         <div className="mobile-nav-overlay" onClick={() => setMobileOpen(false)} />
         <div className="mobile-nav-drawer">
           <div className="mobile-nav-header">
-            <img src="https://wearparts.norework.in/wp-content/uploads/2023/09/Hira-1.png" alt="Hira" style={{ height: '24px' }} />
-            <button className="mobile-nav-close" onClick={() => setMobileOpen(false)}>
+            <img src={`${import.meta.env.BASE_URL}site-images/hira-logo.png`} alt="Hira" style={{ height: '24px' }} />
+            <button type="button" className="mobile-nav-close" onClick={() => setMobileOpen(false)}>
               <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>

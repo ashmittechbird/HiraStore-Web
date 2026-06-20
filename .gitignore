@@ -1,13 +1,157 @@
-.vercel
-node_modules
-dist/
-.next/
-.env.local
+# Organization Standard .gitignore
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+
+# Logs
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment / Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets.json
+credentials.json
+service-account.json
+
+# IDE / Editors
+.vscode/
+.idea/
+*.iml
+
+# Node / React
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+env/
+.venv/
+.pytest_cache/
+.mypy_cache/
+
+# Frappe / ERPNext
+sites/assets
+sites/*/private/files
+sites/*/public/files
+sites/*/logs
+sites/.build
+sites/.cache
+
+# Docker
+docker-data/
+*.tar
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+.cache/
+
+# Build artifacts
+*.zip
+*.tar.gz
+*.rar
+
+# AI tools / Agent generated
+.claude/
+claude-settings.json
+claude_settings.json
+.claude_files/
+.gemini/
+.idx/
+.codex/
+.openai/
+.chatgpt/
+.cursor/
+.cursorignore
+.cursorindexingignore
+.windsurf/
+.codeium/
+.kilocode/
+.cline/
+.roo/
+.continue/
+.aider*
+aider.conf.yml
+.copilot/
+.tabnine/
+.supermaven/
+.amp/
+.devin/
+.pythagora/
+gpt-pilot-debug.log
+gpt-pilot-debug-ste*.log
+.qodo/
+.codiumai/
+.replit
+.upm/
+.zed/
+.omc/
+.pear/
+.bolt/
+.lovable/
+.ai/
+.agents/
+.agent/
+.skills/
+.memory/
+.prompt-cache/
+.llm-cache/
+.context/
+agent-config.json
+agent-config.yaml
+agent-config.yml
+.agentrc
+
+# Testing output
+coverage/
+playwright-report/
+test-results/
+
+# Local development
+.local/
+.history/
+
+# Misc
+*.bak
+*.old
+*.backup
+
+# Website standards auditor output
+audit_findings.json
+gap_identification.md
+fix_summary.md
+media_replacements.json
+lighthouse-report.json
+lighthouse-report.html
+
+# Project-specific
+.vercel
 sessions.json
 .env.local.example
 *AGENTS.md
 *CLAUDE.md
-.agents/
-.claude/
 .trae/

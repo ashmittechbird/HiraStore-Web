@@ -46,7 +46,7 @@ export default function AboutPage() {
           <span className="about-manifesto-gold-mark" aria-hidden="true">&ldquo;</span>
           <p className="about-manifesto-quote reveal">
             We believe that elegance is not a luxury reserved for special<br />
-            occasions &mdash; it is a feeling you deserve to carry with you, every day.
+            occasions, it is a feeling you deserve to carry with you, every day.
           </p>
           <div className="about-manifesto-rule reveal reveal-delay-1" />
           <p className="about-manifesto-attr reveal reveal-delay-2">The Hira Store Philosophy</p>
@@ -119,7 +119,7 @@ export default function AboutPage() {
           </h2>
           <p className="about-heritage-text reveal reveal-delay-1">
             Every Hira piece is a reflection of our deep commitment to quality and
-            sustainability &mdash; ethically sourced metals and gemstones, crafted into
+            sustainability: ethically sourced metals and gemstones, crafted into
             designs that are as meaningful as they are beautiful.
           </p>
           <p className="about-heritage-text reveal reveal-delay-2">
@@ -142,7 +142,7 @@ export default function AboutPage() {
             <h2 className="about-values-title reveal">Built on three pillars.</h2>
             <p className="about-values-desc reveal reveal-delay-1">
               Our commitment to quality, heritage, and responsibility shapes every decision
-              we make &mdash; from sourcing to packaging.
+              we make, from sourcing to packaging.
             </p>
           </div>
           <div className="about-values-grid">
@@ -214,7 +214,7 @@ export default function AboutPage() {
           <span className="about-founder-mark reveal" aria-hidden="true">&ldquo;</span>
           <p className="about-founder-quote reveal">
             I started Hira because I wanted my mother to wear something
-            extraordinary every single day &mdash; not just on celebrations.
+            extraordinary every single day, not just on celebrations.
             She deserved that, and so do you. Every piece we make carries
             that intention: to be worthy of your everyday life.
           </p>

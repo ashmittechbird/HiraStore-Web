@@ -14,6 +14,13 @@ interface Product {
   [key: string]: unknown;
 }
 
+function stripHtml(html: string): string {
+  if (typeof window === 'undefined') return html.replace(/<[^>]+>/g, '');
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return (tmp.textContent || tmp.innerText || '').trim();
+}
+
 export default function ProductPage() {
   const { id = '' } = useParams<{ id: string }>();
   const { data: item, isLoading: loading } = useFrappeGetDoc<Product>('Item', decodeURIComponent(id));
@@ -169,12 +176,12 @@ export default function ProductPage() {
 
           <div className="divider" />
 
-          {item.custom_short_description && (
+          {/* Prefer the short description; fall back to the long one as plain text (HTML stripped to prevent XSS). */}
+          {item.custom_short_description ? (
             <p className="product-desc">{item.custom_short_description as string}</p>
-          )}
-          {item.description && (
-            <p className="product-desc" dangerouslySetInnerHTML={{ __html: item.description as string }} />
-          )}
+          ) : item.description ? (
+            <p className="product-desc">{stripHtml(item.description as string)}</p>
+          ) : null}
 
           {(item.custom_material || item.weight_per_unit || item.weight) && (
             <>
@@ -198,12 +205,12 @@ export default function ProductPage() {
           {cartQty > 0 ? (
             /* In-cart stepper - replaces qty selector + add button */
             <div className="incart-stepper">
-              <button className="incart-btn" onClick={() => updateQty(itemId, cartQty - 1)}>−</button>
+              <button type="button" className="incart-btn" onClick={() => updateQty(itemId, cartQty - 1)}>−</button>
               <div className="incart-mid">
                 <span className="incart-num">{cartQty}</span>
                 <span className="incart-label">in cart</span>
               </div>
-              <button className="incart-btn" onClick={() => { addItem({ id: itemId, name, category, price, image: images[0] }); showToast('Added!'); }}>+</button>
+              <button type="button" className="incart-btn" onClick={() => { addItem({ id: itemId, name, category, price, image: images[0] }); showToast('Added!'); }}>+</button>
             </div>
           ) : (
             /* Qty selector + add button when not in cart */
@@ -211,22 +218,22 @@ export default function ProductPage() {
               <div className="qty-row">
                 <span className="qty-label">Qty</span>
                 <div className="qty-ctrl">
-                  <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
+                  <button type="button" className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
                   <span className="qty-num">{qty}</span>
-                  <button className="qty-btn" onClick={() => setQty(q => Math.min(10, q + 1))}>+</button>
+                  <button type="button" className="qty-btn" onClick={() => setQty(q => Math.min(10, q + 1))}>+</button>
                 </div>
               </div>
-              <button className={`btn-add${added ? ' added' : ''}`} onClick={handleAdd}>
+              <button type="button" className={`btn-add${added ? ' added' : ''}`} onClick={handleAdd}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
                 {added ? <>Added to Cart <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></> : 'Add to Cart'}
               </button>
-              <button className="btn-buy-now" onClick={handleBuyNow}>
+              <button type="button" className="btn-buy-now" onClick={handleBuyNow}>
                 Buy Now
               </button>
             </>
           )}
 
-          <button className={`btn-wish${wished ? ' wishlisted' : ''}`} onClick={toggleWishlist}>
+          <button type="button" className={`btn-wish${wished ? ' wishlisted' : ''}`} onClick={toggleWishlist}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill={wished ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
             {wished ? 'In Wishlist' : 'Add to Wishlist'}
           </button>

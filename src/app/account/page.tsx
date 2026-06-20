@@ -75,6 +75,7 @@ export default function AccountPage() {
               { key: 'offers', label: 'My Offers', icon: <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82zM7 7h.01"/> },
             ] as Array<{ key: 'orders' | 'profile' | 'offers'; label: string; icon: React.ReactNode }>).map(item => (
               <button
+                type="button"
                 key={item.key}
                 className={`side-nav-item${tab === item.key ? ' active' : ''}`}
                 onClick={() => setTab(item.key)}
@@ -83,7 +84,7 @@ export default function AccountPage() {
                 <span className="label">{item.label}</span>
               </button>
             ))}
-            <button className="side-nav-item" onClick={handleLogout}>
+            <button type="button" className="side-nav-item" onClick={handleLogout}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
               <span className="label">Sign Out</span>
             </button>
@@ -148,7 +149,7 @@ export default function AccountPage() {
                 </div>
                 <div className="field">
                   <label>Email Address</label>
-                  <input type="email" defaultValue={currentUser ?? ''} readOnly />
+                  <input type="email" defaultValue={currentUser ?? ''} readOnly autoComplete="email" />
                 </div>
                 <p style={{ fontSize: '12px', color: '#6b8b91', marginTop: '8px' }}>
                   To update your details, please contact support.
@@ -172,7 +173,7 @@ export default function AccountPage() {
                       <div className="offer-title">{offer.title}</div>
                       <div className="offer-desc">{offer.desc}</div>
                       <div className="offer-min">{offer.min}</div>
-                      <button className="copy-btn" onClick={() => copyCode(offer.code)}>
+                      <button type="button" className="copy-btn" onClick={() => copyCode(offer.code)}>
                         {copied === offer.code ? 'Copied!' : 'Copy Code'}
                       </button>
                     </div>

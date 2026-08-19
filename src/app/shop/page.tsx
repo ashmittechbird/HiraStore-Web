@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
-import { useFrappeGetDocList } from '@/lib/frappe';
+import { getStorefrontItems } from '@/lib/backend';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
 import { asset } from '@/lib/config';
 
@@ -47,14 +47,18 @@ function ShopContent() {
   const initialCat = searchParams.get('cat') || 'All';
   const initialSearch = searchParams.get('search') || '';
 
-  // Stable options reference to prevent SWR refetching on every render.
-  const docListArgs = useMemo(() => ({
-    fields: ['name','item_name','item_group','standard_rate','custom_short_description','custom_material','custom_is_featured','image','custom_item_images','disabled','weight_per_unit'] as any,
-    filters: [['disabled', '=', 0], ['is_sales_item', '=', 1]] as any,
-    orderBy: { field: 'modified' as any, order: 'desc' as const },
-    limit: 500,
-  }), []);
-  const { data: allProducts = [], isLoading: loading } = useFrappeGetDocList<Product>('Item', docListArgs);
+  // Guests can't read the Item doctype directly, so the catalogue comes from
+  // the storefront feed, which is whitelisted for guest access.
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let alive = true;
+    getStorefrontItems(500)
+      .then(items => { if (alive) setAllProducts(items as Product[]); })
+      .catch(() => { if (alive) setAllProducts([]); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, []);
   const [category, setCategory] = useState(initialCat);
   const [search, setSearch] = useState(initialSearch);
   const [sort, setSort] = useState('default');

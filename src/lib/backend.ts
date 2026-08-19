@@ -123,8 +123,36 @@ export function resetModeCache(): void {
 
 // ─── Frappe transport ────────────────────────────────────────────────────────
 
-function csrf(): string {
-  return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || 'fetch';
+/**
+ * CSRF token for write requests.
+ *
+ * Frappe's desk reads this out of the bootinfo embedded in the page it serves.
+ * The storefront is served by Vite (or Vercel), so there is no boot to read and
+ * the cookie isn't exposed either — which made every POST fail with
+ * CSRFTokenError. The `hira` app hands the token to the same-origin frontend so
+ * writes work without disabling CSRF protection on the bench.
+ */
+let csrfPromise: Promise<string> | null = null;
+
+async function csrf(): Promise<string> {
+  const fromCookie = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
+  if (fromCookie) return fromCookie;
+
+  if (!csrfPromise) {
+    csrfPromise = fetch('/api/method/hira.api.session.get_csrf_token', {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    })
+      .then(r => (r.ok ? r.json() : null))
+      .then(b => b?.message?.csrf_token || 'fetch')
+      .catch(() => 'fetch');
+  }
+  return csrfPromise;
+}
+
+/** Drop the cached token — the session changed, or the server rejected it. */
+export function resetCsrf(): void {
+  csrfPromise = null;
 }
 
 /** Pull a readable message out of Frappe's error envelope. */
@@ -155,14 +183,21 @@ export function frappeError(data: unknown): string {
 
 class BackendError extends Error {}
 
-async function frappePost(method: string, params: Record<string, unknown>): Promise<any> {
+async function frappePost(method: string, params: Record<string, unknown>, retry = true): Promise<any> {
   const r = await fetch(`/api/method/${method}`, {
     method: 'POST',
     credentials: 'include',
-    headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf() },
+    headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': await csrf() },
     body: JSON.stringify(params),
   });
   const body = await r.json().catch(() => ({}));
+
+  // A stale token after login/logout is normal — fetch a fresh one and retry once.
+  if (!r.ok && body?.exc_type === 'CSRFTokenError' && retry) {
+    resetCsrf();
+    return frappePost(method, params, false);
+  }
+
   if (!r.ok || body?.exc) throw new BackendError(frappeError(body) || `Request failed (${r.status})`);
   return body;
 }
@@ -373,6 +408,11 @@ function demoCall(method: string, params: Row): any {
     }
 
     // ── storefront ──
+    case 'hira.api.products.get_public_item': {
+      const it = db.getItem(String(params.name));
+      if (!it || it.disabled) throw new BackendError('Product not found');
+      return { message: it };
+    }
     case 'hira.api.products.get_public_items': {
       const limit = Number(params.limit || 200);
       return { message: db.allItems().filter(i => !i.disabled).slice(0, limit) };
@@ -612,4 +652,37 @@ export async function getStorefrontItems(limit = 200): Promise<Row[]> {
     order_by: 'modified desc',
     limit,
   });
+}
+
+/**
+ * One product, guest-readable.
+ *
+ * Frappe's Item doctype is not readable by Guest, so a plain `frappe.client.get`
+ * returns nothing for a logged-out shopper. The `hira` app exposes a whitelisted
+ * endpoint over a safe field list; this falls back to the raw doc for benches
+ * without that app, and finally to the bundled catalogue.
+ */
+export async function getStorefrontItem(name: string): Promise<Row | null> {
+  const decoded = decodeURIComponent(name);
+
+  const viaApp = await call('hira.api.products.get_public_item', { name: decoded }, { method: 'GET' })
+    .then(r => r?.message as Row | undefined)
+    .catch(() => undefined);
+  if (viaApp) return viaApp;
+
+  return api.getDoc('Item', decoded).catch(() => null);
+}
+
+/**
+ * Order history for the signed-in shopper.
+ *
+ * Tries this bench's own endpoint first, then the payment app's (the original
+ * deployment served history from there), then the demo store.
+ */
+export async function getMyOrders(): Promise<Row[]> {
+  for (const method of ['hira.api.orders.get_my_orders', 'square_payment.api.get_my_orders']) {
+    const res = await call(method, {}, { method: 'GET' }).catch(() => null);
+    if (Array.isArray(res?.message)) return res.message as Row[];
+  }
+  return [];
 }

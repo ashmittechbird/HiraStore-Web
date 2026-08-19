@@ -10,7 +10,7 @@
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { call, detectMode, currentMode, onModeChange, db } from './backend';
+import { call, detectMode, currentMode, onModeChange, db, resetCsrf } from './backend';
 import type { Mode } from './backend';
 
 // ─── provider ────────────────────────────────────────────────────────────────
@@ -92,6 +92,7 @@ export function useFrappeAuth() {
   const login = useCallback(
     async (creds: { username: string; password: string }) => {
       const res = await call('login', { usr: creds.username, pwd: creds.password });
+      resetCsrf(); // the session changed, so the old token is no longer valid
       await refresh();
       // Frappe's cookie can lag a tick behind the response; trust the response.
       setUser(res?.user || creds.username);
@@ -102,6 +103,7 @@ export function useFrappeAuth() {
 
   const logout = useCallback(async () => {
     await call('logout', {}, { method: 'GET' }).catch(() => {});
+    resetCsrf();
     setUser(null);
   }, [setUser]);
 

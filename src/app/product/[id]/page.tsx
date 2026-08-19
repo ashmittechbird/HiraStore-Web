@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useFrappeGetDoc } from '@/lib/frappe';
+import { getStorefrontItem } from '@/lib/backend';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory } from '@/lib/api';
@@ -23,7 +23,17 @@ function stripHtml(html: string): string {
 
 export default function ProductPage() {
   const { id = '' } = useParams<{ id: string }>();
-  const { data: item, isLoading: loading } = useFrappeGetDoc<Product>('Item', decodeURIComponent(id));
+  const [item, setItem] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    getStorefrontItem(id)
+      .then(doc => { if (alive) setItem(doc as Product | null); })
+      .catch(() => { if (alive) setItem(null); })
+      .finally(() => { if (alive) setLoading(false); });
+    return () => { alive = false; };
+  }, [id]);
   const [activeIdx, setActiveIdx] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const [qty, setQty] = useState(1);

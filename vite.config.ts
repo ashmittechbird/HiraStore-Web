@@ -83,6 +83,11 @@ export default defineConfig(({ command, mode }) => ({
         '/private': proxyOpts,
         '/app': proxyOpts,
         '/assets': proxyOpts,
+        // In dev the storefront is namespaced under /store/, so bare /login is
+        // free for the desk's own sign-in redirect. On Vercel the storefront
+        // sits at the root and owns /login, which is why vercel.json leaves it
+        // out of the proxy there.
+        '/login': proxyOpts,
       }
     })(),
   },

@@ -1,5 +1,8 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { asset } from '@/lib/config';
+
+const SITE_IMAGES = asset('site-images');
 
 function useReveal() {
   useEffect(() => {
@@ -26,7 +29,7 @@ export default function AboutPage() {
     <>
       {/* ① Cinematic Hero */}
       <section className="about-hero">
-        <img className="about-hero-img" src="/store/site-images/hero-necklace-1.jpg" alt="Hira Store Fine Jewelry" />
+        <img className="about-hero-img" src={`${SITE_IMAGES}/hero-necklace-1.jpg`} alt="Hira Store Fine Jewelry" />
         <div className="about-hero-overlay" />
         <div className="about-hero-content">
           <div className="about-hero-eyebrow">The Hira Store</div>
@@ -81,10 +84,10 @@ export default function AboutPage() {
         </div>
         <div className="about-story-images reveal reveal-delay-1">
           <div className="about-story-img-main">
-            <img src="/store/site-images/cat-earrings.jpg" alt="Hira Jewelry Craftsmanship" loading="lazy" />
+            <img src={`${SITE_IMAGES}/cat-earrings.jpg`} alt="Hira Jewelry Craftsmanship" loading="lazy" />
           </div>
           <div className="about-story-img-accent">
-            <img src="/store/site-images/cat-necklaces.jpg" alt="Silver Pendant Detail" loading="lazy" />
+            <img src={`${SITE_IMAGES}/cat-necklaces.jpg`} alt="Silver Pendant Detail" loading="lazy" />
           </div>
         </div>
       </section>
@@ -109,7 +112,7 @@ export default function AboutPage() {
       {/* ⑤ Heritage - Dark Section */}
       <section className="about-heritage">
         <div className="about-heritage-img">
-          <img src="/store/site-images/heritage-craft.jpg" alt="Hira Heritage Jewelry" loading="lazy" />
+          <img src={`${SITE_IMAGES}/heritage-craft.jpg`} alt="Hira Heritage Jewelry" loading="lazy" />
           <div className="about-heritage-img-overlay" />
         </div>
         <div className="about-heritage-content">
@@ -226,7 +229,7 @@ export default function AboutPage() {
 
       {/* ⑨ Shop CTA */}
       <section className="about-cta-section">
-        <img className="about-cta-bg" src="/store/site-images/hero-necklace-2.jpg" alt="" aria-hidden="true" loading="lazy" />
+        <img className="about-cta-bg" src={`${SITE_IMAGES}/hero-necklace-2.jpg`} alt="" aria-hidden="true" loading="lazy" />
         <div className="about-cta-overlay" />
         <div className="about-cta-content">
           <p className="about-cta-eyebrow reveal">The Collection</p>

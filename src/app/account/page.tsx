@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useFrappeAuth, useFrappeGetDoc, useFrappeGetCall } from 'frappe-react-sdk';
+import { useFrappeAuth, useFrappeGetDoc, useFrappeGetCall } from '@/lib/frappe';
 import { useWishlist } from '@/store/wishlist';
+import { HOME_URL } from '@/lib/config';
 
 interface Order { name: string; transaction_date: string; grand_total: number; status: string; }
 interface FrappeUser { full_name?: string; email?: string; }
@@ -41,10 +42,9 @@ export default function AccountPage() {
   }, [currentUser, authLoading]);
 
   async function handleLogout() {
-    try { await fetch('/api/method/logout', { credentials: 'include' }); } catch {}
     await logout();
     setWishlistUser(null);
-    window.location.href = '/store/';
+    window.location.href = HOME_URL;
   }
 
   function copyCode(code: string) {

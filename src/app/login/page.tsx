@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useFrappeAuth } from 'frappe-react-sdk';
+import { useFrappeAuth, useBackendMode } from '@/lib/frappe';
+import { DEMO_CREDENTIALS } from '@/lib/demoDb';
 import { useWishlist } from '@/store/wishlist';
 
 const SI = `${import.meta.env.BASE_URL}site-images`;
@@ -22,6 +23,7 @@ export default function LoginPage() {
   const location = useLocation();
   const setWishlistUser = useWishlist(s => s.setUser);
   const { login, currentUser } = useFrappeAuth();
+  const mode = useBackendMode();
   const signupHref = location.search ? `/signup${location.search}` : '/signup';
 
   useEffect(() => {
@@ -70,6 +72,17 @@ export default function LoginPage() {
           <img className="ha-logo" src={HIRA_LOGO} alt="The Hira Store" />
           <h1 className="ha-title">Welcome Back</h1>
           <p className="ha-sub">Sign in to continue your story with Hira.</p>
+
+          {mode === 'demo' && (
+            <button
+              type="button"
+              className="ha-demo-hint"
+              onClick={() => { setEmail(DEMO_CREDENTIALS.email); setPassword(DEMO_CREDENTIALS.password); }}
+            >
+              <span className="ha-demo-title">Demo store — tap to fill the manager account</span>
+              <span className="ha-demo-line">{DEMO_CREDENTIALS.email} · {DEMO_CREDENTIALS.password}</span>
+            </button>
+          )}
 
           <form onSubmit={handleSubmit} className="ha-form">
             <label className="ha-field">
@@ -245,6 +258,16 @@ const styles = `
     color: #6b8b91; border-radius: 6px; transition: color .15s, background .15s;
   }
   .ha-pwd-toggle:hover { color: #005969; background: rgba(0,89,105,0.05); }
+
+  .ha-demo-hint {
+    display: flex; flex-direction: column; gap: 3px; width: 100%;
+    padding: 11px 14px; margin-bottom: 20px; cursor: pointer; text-align: left;
+    background: #f2fafb; border: 1px dashed #b9d9de; border-radius: 8px;
+    font-family: inherit; transition: border-color .18s, background .18s;
+  }
+  .ha-demo-hint:hover { border-color: #005969; background: #eaf6f8; }
+  .ha-demo-title { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #5b7a80; }
+  .ha-demo-line { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; color: #005969; }
 
   .ha-error {
     display: flex; align-items: center; gap: 8px;

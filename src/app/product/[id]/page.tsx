@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { useFrappeGetDoc } from 'frappe-react-sdk';
+import { useFrappeGetDoc } from '@/lib/frappe';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory } from '@/lib/api';
@@ -61,6 +61,7 @@ export default function ProductPage() {
 
   function handleBuyNow() {
     if (!item) return;
+    const itemId = item.name || item.product_id || decodeURIComponent(id);
     sessionStorage.setItem('hs_buynow', JSON.stringify([{
       id: itemId,
       name: itemName(item as Parameters<typeof itemName>[0]),

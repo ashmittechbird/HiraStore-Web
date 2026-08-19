@@ -1,242 +1,182 @@
 # The Hira Store
 
-A luxury demi-fine jewelry e-commerce storefront built with React + Vite, backed by Frappe/ERPNext for inventory, orders, and customers.
+A luxury demi-fine jewelry storefront built with React + Vite, backed by
+Frappe/ERPNext for inventory, orders and customers.
 
 ---
 
-## Tech Stack
+## Two modes, one build
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18, TypeScript, Vite, React Router v6 |
-| State | Zustand (cart, wishlist) |
-| Backend | Frappe/ERPNext REST API (proxied by Vite in dev) |
-| ERP | Frappe/ERPNext 15 (`hira-bench`, port 8001) |
-| Payment | Square Web Payments SDK (`square_payment` Frappe app) |
-| Styling | Inline CSS-in-JS per component |
-| Deployment | Frappe www pages + React SPA served at `/store/` |
+The storefront detects at runtime whether a Frappe backend is answering and
+adapts. There is no separate "demo build" — the same bundle does both.
 
----
+| | **Frappe mode** | **Demo mode** |
+|---|---|---|
+| Trigger | `/api/method/ping` answers | it doesn't (404, timeout, no backend configured) |
+| Products | live ERPNext `Item` records | 286 pieces bundled from the product catalogue |
+| Accounts | Frappe users + session cookie | accounts kept in the browser |
+| Orders | ERPNext Sales Orders | stored in the browser |
+| Card payment | Square Web Payments SDK | offline form, clearly labelled, no charge |
+| Cash on Delivery | needs a server endpoint | always works |
+| Admin panel | full ERPNext CRUD | full CRUD against the local store |
 
-## Project Structure
+Demo mode exists so the site is never a dead page — a Vercel preview with no
+backend, a laptop off the VPN, or a client walkthrough all still show a
+complete, working store. A quiet **Demo mode** chip appears bottom-left when
+it's active, because orders placed in that state never reach the merchant.
 
-```
-HiraStore/
-├── src/
-│   ├── app/
-│   │   ├── page.tsx          # Homepage — hero, bestsellers, new arrivals
-│   │   ├── shop/             # Full catalog with search, filters, sort
-│   │   ├── product/[id]/     # Product detail — gallery, qty, Add to Cart, Buy Now
-│   │   ├── cart/             # Cart (Zustand + localStorage) with coupon support
-│   │   ├── wishlist/         # Saved items with Add to Cart + Buy Now
-│   │   ├── checkout/         # Shipping address form (supports Buy Now flow)
-│   │   ├── payment/          # Square card payment step
-│   │   ├── order-success/    # Order confirmation
-│   │   ├── login/            # Frappe session login
-│   │   ├── signup/           # New user + ERPNext Customer creation
-│   │   ├── account/          # User account & order history
-│   │   ├── about/            # Brand story
-│   │   └── admin/            # Admin panel (ERPNext dashboard)
-│   ├── components/
-│   │   ├── Navbar.tsx        # Sticky nav with cart/wishlist badge counts
-│   │   └── Footer.tsx
-│   ├── store/
-│   │   ├── cart.ts           # Zustand cart store (persisted to localStorage)
-│   │   └── wishlist.ts       # Zustand wishlist store (persisted to localStorage)
-│   └── lib/
-│       └── api.ts            # ERPNext item field helpers (image, price, name, etc.)
-├── catalog_images/           # Local product image assets
-├── vite.config.ts            # Dev server config + API proxy
-└── package.json
-```
+Force a mode with `VITE_BACKEND_MODE=demo` or `=frappe`.
 
 ---
 
-## Pages & Features
-
-### Homepage (`/store/`)
-- Auto-advancing hero slider with Ken Burns zoom
-- Trust bar (Premium Quality, Skin Friendly, Free Shipping, Cash on Delivery)
-- Shop by Category grid (5 categories with circular images)
-- **Most Loved Pieces** — fetches `custom_is_featured` items from ERPNext
-- **New Arrivals** — latest items by creation date
-- Philosophy quote section
-- Promo banners, seasonal offer banner with discount code
-- Polaroid-style testimonials carousel (auto-scroll)
-- Instagram UGC grid
-
-### Shop (`/store/shop`)
-- Fetches up to 500 live items from ERPNext (`is_sales_item = 1, disabled = 0`)
-- Search (debounced, searches name + category + material)
-- Category filter tabs (All, Earrings, Necklaces, Rings, Bracelets, Pendants, Bangles, Sets, Accessories)
-- Sort by: Featured / Price Low-High / Price High-Low / Name A-Z
-- Paginated grid (24 per page, Load More)
-- Cursor sparkle animation (desktop)
-- Scroll progress bar
-- Heritage / Our Story section
-
-### Product Cards (Shop, Homepage, Wishlist — unified design)
-All product cards across the site share identical behavior:
-- Click card → navigate to product detail page
-- Hover → slide-up actions panel with **Add to Cart** + **Quick View**
-- **Add to Cart**: turns green on add; becomes a **+/− quantity stepper** when item is already in cart
-- **Quick View modal**: multi-image gallery with thumbnail strip, full product info, stepper, **Buy Now**
-- Cart badge (teal pill showing in-cart quantity) on the image
-- Promo badge (New / Bestseller / Trending / Limited)
-- Wishlist heart button (always visible, filled red when saved)
-- Stars rating display
-
-### Product Detail (`/store/product/:id`)
-- Vertical thumbnail strip (left) + large main image with click-to-zoom
-- Category badge, Featured badge
-- Material + weight details
-- Quantity selector (+/− up to 10)
-- **Add to Cart** button (turns green, shows checkmark)
-- **Buy Now** button — skips cart, goes directly to checkout
-- In-cart stepper replaces Add to Cart when item is already in cart
-- Add to / Remove from Wishlist
-- Trust badges (Premium Quality, Free shipping, 30-day returns, 1-year warranty)
-
-### Cart (`/store/cart`)
-- Line items with image, name, qty stepper, remove
-- Coupon code validation against ERPNext `Coupon Code` doctype
-- Subtotal / Shipping (free over $15) / Discount / Total
-- Checkout requires login — redirects to `/login?return=/checkout`
-
-### Wishlist (`/store/wishlist`)
-- Persistent across sessions (localStorage)
-- Same card design as shop: Add to Cart stepper, **Buy Now**, remove from wishlist
-
-### Checkout (`/store/checkout`)
-- Requires login
-- Pre-fills name/email from Frappe user session
-- Pre-fills saved address from `localStorage`
-- Coupon code support
-- **Supports Buy Now flow**: if `sessionStorage.hs_buynow` is set, uses that single item instead of the full cart — real cart is untouched
-- Saves shipping details to `localStorage` for next visit
-
-### Payment (`/store/payment`)
-- Square Web Payments SDK (card element)
-- Reads checkout data from `sessionStorage.hs_checkout`
-- Creates ERPNext Sales Order on success
-- Clears cart after successful payment
-
-### Admin Panel (`/store/admin`)
-- Direct ERPNext API connection (API key/secret stored in `localStorage`)
-- Tabs: Products, Orders, Customers, Coupons, Settings
-- Product CRUD (enable/disable, mark featured, edit price)
-- Order list with status management
-- Customer list
-- Coupon code management
-
----
-
-## Buy Now Flow
-
-"Buy Now" allows a customer to purchase a single item immediately without touching their existing cart.
-
-1. Customer clicks **Buy Now** on a product page, Quick View modal, or wishlist card
-2. Item (`{ id, name, category, price, image, qty }`) is saved to `sessionStorage` as `hs_buynow`
-3. Customer is sent to `/checkout` to fill in their shipping address
-4. On submit, checkout uses `hs_buynow` as the order cart and clears it from sessionStorage
-5. Payment proceeds normally via Square
-
-**Where Buy Now appears:**
-- Product detail page (button below Add to Cart)
-- Quick View modal (shop page and homepage)
-- Wishlist cards (replaces Quick View button)
-
----
-
-## Routes
-
-| Path | Description |
-|------|-------------|
-| `/store/` | Homepage |
-| `/store/shop` | Full catalog |
-| `/store/product/:id` | Product detail |
-| `/store/cart` | Shopping cart |
-| `/store/wishlist` | Saved items |
-| `/store/checkout` | Shipping address + coupon |
-| `/store/payment` | Square card payment |
-| `/store/order-success` | Order confirmation |
-| `/store/login` | Login |
-| `/store/signup` | Sign up |
-| `/store/account` | User account & order history |
-| `/store/about` | Brand story |
-| `/store/admin` | Admin panel |
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- Frappe bench running at `localhost:8001` (hira-bench)
-- ERPNext API key/secret configured in Admin Panel Settings tab
-- `square_payment` Frappe app installed on hira-bench
-
-### Local Development
+## Getting started
 
 ```bash
-# Install dependencies
 npm install
-
-# Start Vite dev server (proxies API calls to Frappe backend)
 npm run dev
 ```
 
-App runs at: **`http://localhost:8001/store`**
+Opens at **http://localhost:8001/store/**.
 
-The Vite dev server proxies `/api/*` requests to the Frappe backend configured in `vite.config.ts`.
+No backend needed. To point at a bench, set `VITE_FRAPPE_URL` in `.env.local`
+(see [.env.example](.env.example)) — the dev server proxies `/api` and `/files`
+there.
 
-### Frappe Build (deploy to hira-bench)
+**Demo sign-in:** `admin@hira.store` / `admin123` (the login page offers a
+one-tap fill). Shoppers can register their own account from Sign Up.
 
-```bash
-cd /home/frappenew_user/hirastore-build
-npm run build:frappe
+### Scripts
 
-# Copy built assets to Frappe public dir
-cp -r dist/* /home/frappenew_user/hira-bench/apps/hira/hira/public/hirastore/
-bench --site hirastore.local build
+| Command | What it does |
+|---|---|
+| `npm run dev` | dev server at `/store/` |
+| `npm run catalog` | regenerate `src/data/catalog.json` from the spreadsheet export |
+| `npm run build` | production build (base `/assets/hirastore/store/`) |
+| `npm run build:vercel` | production build for Vercel (base `/`) |
+| `npm run build:frappe` | build for the Frappe asset pipeline |
+| `npm run deploy` | copy `dist/` into a sibling `hirastore` Frappe app |
+| `npm run typecheck` | `tsc --noEmit` |
+
+> `build` no longer runs `deploy` automatically — `deploy` deletes files in a
+> sibling directory, which is not something a build should do silently (and it
+> breaks any CI runner). Run it explicitly when you want it.
+
+---
+
+## Deploying to Vercel
+
+Import the repo. [vercel.json](vercel.json) already sets the build command,
+output directory, SPA rewrites and asset caching, so no dashboard configuration
+is needed.
+
+**With no environment variables**, the deploy is a fully working storefront on
+the bundled catalogue — useful for sharing a link with a client.
+
+**To connect the real backend**, add one project environment variable:
+
+```
+FRAPPE_URL = https://erp.yourdomain.com
 ```
 
-App runs at: **`http://localhost:8001/store`**
+[api/\[...path\].js](api/[...path].js) proxies `/api/*` and `/files/*` there.
+Going through the proxy keeps everything same-origin, which is what makes
+Frappe's session cookie work — calling the bench directly from the browser
+would have the cookie dropped as third-party.
+
+Your Frappe site must allow the Vercel domain in its CORS settings, and the
+`hira` and `square_payment` apps must be installed for products and card
+payments to come from the server.
 
 ---
 
-## API
+## Project structure
 
-The storefront communicates directly with the Frappe/ERPNext backend via REST API. In development, Vite proxies API requests (configured in `vite.config.ts`). In production, the app is served from Frappe and uses same-origin requests.
+```
+HiraStore/
+├── api/[...path].js          # Vercel → Frappe reverse proxy
+├── scripts/build-catalog.mjs # spreadsheet export → src/data/catalog.json
+├── src/
+│   ├── lib/
+│   │   ├── backend.ts        # backend router: Frappe first, demo fallback
+│   │   ├── demoDb.ts         # the in-browser store
+│   │   ├── frappe.tsx        # drop-in replacement for frappe-react-sdk hooks
+│   │   ├── config.ts         # base paths, shipping rules, mode override
+│   │   └── api.ts            # ERPNext Item field helpers
+│   ├── data/catalog.json     # generated — do not edit by hand
+│   ├── app/…                 # one folder per route
+│   ├── components/           # Navbar, Footer, DemoBadge
+│   └── store/                # Zustand cart + wishlist
+├── public/catalog_images/    # 290 product photos, named by SKU
+└── vercel.json
+```
+
+### How the data layer works
+
+Every backend call goes through `backend.call()`. It probes once per page load,
+then either talks to Frappe or answers from `demoDb`. If a live backend dies
+mid-session the next call falls back rather than showing a broken screen.
+
+`src/lib/frappe.tsx` exposes the same hook names as `frappe-react-sdk`
+(`useFrappeGetDocList`, `useFrappeAuth`, …) so pages read the same as before,
+but every one of them now has a fallback path. The upstream SDK was removed —
+it talks over axios with no fallback, which is why the whole site went blank
+whenever the bench was unreachable.
+
+### The catalogue
+
+`npm run catalog` reads `catalog_images/catalog_data.json` (the original
+spreadsheet export) and emits Frappe-shaped `Item` records: SKU, name, category,
+price, weight, material and description. Products without a photo or a price are
+skipped. Names come from the sheet's description column where it has one, and
+are composed from the product's real attributes where it doesn't.
+
+The generated file carries a signature. When it changes, a returning visitor's
+browser re-seeds automatically — while keeping any products the admin edited.
 
 ---
 
-## Admin Panel
+## Pages
 
-Access at `/store/admin`. Connects directly to ERPNext using API key/secret stored in `localStorage` (`hs_admin_cfg`).
+| Path | Notes |
+|---|---|
+| `/` | hero slider, category grid, Most Loved, New Arrivals, testimonials |
+| `/shop` | search, category tabs, sort, 24-per-page grid |
+| `/product/:id` | gallery, quantity, Add to Cart, Buy Now |
+| `/cart` | line items, coupon validation, totals |
+| `/wishlist` | saved items, per account |
+| `/checkout` | shipping address, coupon, Buy Now bypass |
+| `/payment` | Card (Square or offline) and Cash on Delivery |
+| `/order-success` | confirmation |
+| `/login`, `/signup`, `/account` | auth + order history |
+| `/about` | brand story |
+| `/admin` | products, orders, customers, coupons, homepage curation |
 
-Configure credentials in the Admin Panel Settings tab. Never commit API keys or secrets to the repository.
+Shipping is free over **$15**, otherwise **$5** — defined once in
+`src/lib/config.ts` and used by both the cart and checkout.
 
-> **Security note:** If credentials were previously committed, rotate them immediately.
-
-Features: product CRUD, order management, customer list, coupon codes, homepage curation.
+Seeded coupons: `HIRA30` (30%), `WELCOME10` (10%), `FESTIVE20` (20% over $100).
 
 ---
 
-## Key ERPNext Custom Fields
+## Admin panel
+
+`/admin`, gated on the System Manager role. Product CRUD with image upload,
+order list with status updates, customers, coupon codes, and homepage curation
+for the Most Loved / New Arrivals rails.
+
+In demo mode Settings gains a **Reset demo data** action that restores the
+original catalogue and clears test orders.
+
+Homepage curation publishes to `/files/homepage_config.json` on a live backend
+so every visitor sees the same rails; in demo mode it stays local.
+
+---
+
+## ERPNext custom fields
 
 | DocType | Field | Purpose |
-|---------|-------|---------|
-| Item | `custom_is_featured` | Show in Most Loved section on homepage |
-| Item | `custom_item_images` | Additional product images (JSON array of URLs) |
-| Item | `custom_material` | Displayed on product detail + shop card |
-| Item | `custom_short_description` | Short blurb on product detail page |
-
----
-
-## Environment
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `VITE_CATALOG_BASE` | `/catalog_images` | Image base URL for Frappe builds |
+|---|---|---|
+| Item | `custom_is_featured` | show in Most Loved |
+| Item | `custom_item_images` | extra product images (JSON array) |
+| Item | `custom_material` | shown on the product page and shop card |
+| Item | `custom_short_description` | blurb on the product page |

@@ -1,7 +1,8 @@
-// Catalog images base — override at build time for Frappe deployment
-// e.g. VITE_CATALOG_BASE=/assets/hira/catalog_images npm run build:frappe
-const CATALOG_BASE = (import.meta.env.VITE_CATALOG_BASE as string) || `${import.meta.env.BASE_URL}catalog_images`;
+// Single source of truth for where product photos live — see lib/config.ts.
+import { CATALOG_BASE } from './config';
 
+// Frappe file URLs (/files/...) are same-origin: the Vite proxy handles them in
+// development, api/[...path].js on Vercel.
 const ERP_BASE = '';
 
 export function itemImage(item: { image?: string; name?: string; product_id?: string }) {

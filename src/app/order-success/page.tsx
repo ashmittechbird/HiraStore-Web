@@ -115,7 +115,11 @@ export default function OrderSuccessPage() {
           <div className="hs-order-meta">
             <div className="hs-meta-row"><span>Delivery</span><span title={deliveryLine || '—'}>{deliveryLine || '—'}</span></div>
             <div className="hs-meta-row"><span>Payment</span><span>{order.paymentMethod || 'Card'}</span></div>
-            <div className="hs-meta-row total"><span>Total Paid</span><span className="hs-total">${order.total.toFixed(2)}</span></div>
+            {/* Nothing has been charged yet on a cash-on-delivery order. */}
+            <div className="hs-meta-row total">
+              <span>{/cash on delivery/i.test(order.paymentMethod || '') ? 'Due on Delivery' : 'Total Paid'}</span>
+              <span className="hs-total">${order.total.toFixed(2)}</span>
+            </div>
           </div>
         </div>
 

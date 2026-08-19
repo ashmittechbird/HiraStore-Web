@@ -1,26 +1,50 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useFrappePostCall } from 'frappe-react-sdk';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useFrappePostCall, useBackendMode, useFrappeAuth } from '@/lib/frappe';
+import { useWishlist } from '@/store/wishlist';
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const { call, loading } = useFrappePostCall<{ message: string }>('frappe.core.doctype.user.user.sign_up');
   const location = useLocation();
+  const navigate = useNavigate();
+  const mode = useBackendMode();
+  const { updateCurrentUser } = useFrappeAuth();
+  const setWishlistUser = useWishlist(w => w.setUser);
+
+  // Frappe owns password creation — it emails a set-password link and never
+  // accepts one over the sign-up endpoint. Without a backend there's no mail to
+  // send, so the account is created with a password chosen right here instead.
+  const choosesPassword = mode === 'demo';
+
   const returnParam = new URLSearchParams(location.search).get('return');
   const loginHref = returnParam ? `/login?return=${encodeURIComponent(returnParam)}` : '/login';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    if (!fullName || !email) { setError('Name and email required'); return; }
+    if (!fullName || !email) { setError('Name and email are required'); return; }
+    if (choosesPassword && password.length < 6) {
+      setError('Choose a password of at least 6 characters');
+      return;
+    }
     try {
-      await call({ email, full_name: fullName, redirect_to: '' });
+      await call({ email, full_name: fullName, password, redirect_to: '' });
+      if (choosesPassword) {
+        // The account is signed in straight away — pull the new session into the
+        // auth context before navigating, or a guarded page bounces us to login.
+        await updateCurrentUser();
+        setWishlistUser(email);
+        navigate(returnParam && returnParam.startsWith('/') ? returnParam : '/account', { replace: true });
+        return;
+      }
       setSuccess(true);
     } catch (err: unknown) {
-      setError((err as Error).message || 'Signup failed');
+      setError((err as Error).message || 'We could not create the account');
     }
   }
 
@@ -52,6 +76,18 @@ export default function SignupPage() {
                 <label>Email</label>
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your@email.com" autoComplete="email" />
               </div>
+              {choosesPassword && (
+                <div className="field">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    autoComplete="new-password"
+                  />
+                </div>
+              )}
               {error && <div className="auth-error">{error}</div>}
               <button type="submit" className="btn-primary" disabled={loading}>
                 {loading ? 'Creating account…' : 'Create Account'}

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
+import { getHomepageConfig, getStorefrontItems } from '@/lib/backend';
 
 const SI = `${import.meta.env.BASE_URL}site-images`;
 
@@ -236,21 +237,14 @@ export default function HomePage() {
     try { return JSON.parse(localStorage.getItem('hs_homepage_config') || 'null'); } catch { return null; }
   });
   useEffect(() => {
-    // Fetch from server on mount — server is authoritative.
-    fetch('/files/homepage_config.json?t=' + Date.now(), { credentials: 'include' })
-      .then(r => r.ok ? r.json() : null)
-      .then(cfg => {
-        if (cfg && (Array.isArray(cfg.ml) || Array.isArray(cfg.na))) {
-          setHpConfig(cfg);
-          localStorage.setItem('hs_homepage_config', JSON.stringify(cfg));
-        }
-        // If the server returned nothing, keep whatever we already have — don't wipe stored config.
-      })
+    // Server is authoritative when one is reachable; otherwise the cached copy stands.
+    getHomepageConfig()
+      .then(cfg => { if (cfg) setHpConfig(cfg); })
       .catch(() => {});
-    // Listen for admin saving in another tab
+    // Pick up admin edits made in another tab
     const onStorage = (e: StorageEvent) => {
       if (e.key === 'hs_homepage_config' && e.newValue) {
-        try { setHpConfig(JSON.parse(e.newValue)); } catch {}
+        try { setHpConfig(JSON.parse(e.newValue)); } catch { /* ignore bad payload */ }
       }
     };
     window.addEventListener('storage', onStorage);
@@ -259,9 +253,8 @@ export default function HomePage() {
 
   const [allHpItems, setAllHpItems] = useState<Product[]>([]);
   useEffect(() => {
-    fetch('/api/method/hira.api.products.get_public_items?limit=200', { credentials: 'include' })
-      .then(r => r.json())
-      .then(res => { if (Array.isArray(res.message)) setAllHpItems(res.message); })
+    getStorefrontItems(200)
+      .then(items => setAllHpItems(items as Product[]))
       .catch(() => {});
   }, []);
 

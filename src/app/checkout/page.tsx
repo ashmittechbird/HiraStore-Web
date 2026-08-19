@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useFrappeAuth, useFrappeGetDoc, useFrappePostCall } from 'frappe-react-sdk';
+import { useFrappeAuth, useFrappeGetDoc, useFrappePostCall } from '@/lib/frappe';
 import { useCart } from '@/store/cart';
+import { shippingFor, FREE_SHIPPING_OVER } from '@/lib/config';
 
 interface FrappeUser { full_name?: string; email?: string; }
 
@@ -28,7 +29,9 @@ export default function CheckoutPage() {
   const { call: frappeGet } = useFrappePostCall<{ message: any }>('frappe.client.get');
 
   const subtotal = effectiveItems.reduce((s, i) => s + i.price * i.qty, 0);
-  const total = Math.max(0, subtotal - discount);
+  const safeDiscount = Math.min(discount, subtotal);
+  const shipping = shippingFor(subtotal);
+  const total = Math.max(0, subtotal - safeDiscount + shipping);
 
   // Redirect unauthenticated users
   useEffect(() => {
@@ -103,8 +106,6 @@ export default function CheckoutPage() {
     // Save address for next time
     localStorage.setItem('hs_saved_address', JSON.stringify({ address, city, state, zip, phone }));
     // Save checkout data for payment page (clamp discount, include shipping)
-    const safeDiscount = Math.min(discount, subtotal);
-    const shipping = 0;
     sessionStorage.setItem('hs_checkout', JSON.stringify({
       customer: form,
       cart: effectiveItems,
@@ -207,7 +208,8 @@ export default function CheckoutPage() {
             </div>
             <div className="summary-totals">
               <div className="total-row"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="total-row"><span>Shipping</span><span>Free</span></div>
+              <div className="total-row"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `${shipping.toFixed(2)}`}</span></div>
+              {shipping > 0 && <div className="total-row" style={{ fontSize: '12px', color: '#8aa5aa' }}><span>Add ${(FREE_SHIPPING_OVER - subtotal).toFixed(2)} for free shipping</span><span /></div>}
               {discount > 0 && <div className="total-row" style={{ color: '#16a34a' }}><span>Discount</span><span>−${discount.toFixed(2)}</span></div>}
               <div className="total-row grand"><span>Total</span><span>${total.toFixed(2)}</span></div>
             </div>

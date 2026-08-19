@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { useFrappeAuth } from 'frappe-react-sdk';
+import { useFrappeAuth } from '@/lib/frappe';
+import { call } from '@/lib/backend';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 
@@ -26,16 +27,15 @@ export default function Navbar() {
   useEffect(() => {
     if (!currentUser) { setIsAdmin(false); return; }
     if (currentUser === 'Administrator') { setIsAdmin(true); return; }
-    const filters = encodeURIComponent(JSON.stringify([
-      ['parent', '=', currentUser],
-      ['role', '=', 'System Manager'],
-    ]));
-    fetch(`/api/method/frappe.client.get_list?doctype=${encodeURIComponent('Has Role')}&filters=${filters}&limit=1`, {
-      credentials: 'include',
+    let alive = true;
+    call('frappe.client.get_list', {
+      doctype: 'Has Role',
+      filters: [['parent', '=', currentUser], ['role', '=', 'System Manager']],
+      limit: 1,
     })
-      .then(r => r.json())
-      .then(d => setIsAdmin(Array.isArray(d.message) && d.message.length > 0))
-      .catch(() => setIsAdmin(false));
+      .then(d => { if (alive) setIsAdmin(Array.isArray(d.message) && d.message.length > 0); })
+      .catch(() => { if (alive) setIsAdmin(false); });
+    return () => { alive = false; };
   }, [currentUser]);
 
   return (

@@ -2,7 +2,10 @@ import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
   useFrappeAuth, useFrappeGetDocList, useFrappeCreateDoc,
   useFrappeUpdateDoc, useFrappeDeleteDoc, useFrappePostCall,
-} from 'frappe-react-sdk';
+} from '@/lib/frappe';
+import { HOME_URL } from '@/lib/config';
+import { call, detectMode, db, cacheHomepageConfig, getHomepageConfig } from '@/lib/backend';
+import type { Mode } from '@/lib/backend';
 import './admin.css';
 
 // ─── TYPES ───────────────────────────────────────────────────────────
@@ -234,12 +237,25 @@ function CustomerDetailBody({ data }: { data: { name: string; email: string; ord
 }
 
 // ─── FILE UPLOAD HELPER (session-based) ──────────────────────────────
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(String(fr.result));
+    fr.onerror = () => reject(new Error('Could not read the selected file'));
+    fr.readAsDataURL(file);
+  });
+}
+
 async function uploadImage(file: File): Promise<string | null> {
+  // Without a backend there is nowhere to POST to, so the image is inlined as a
+  // data URL and kept with the rest of the demo store.
+  if ((await detectMode()) === 'demo') {
+    return db.saveFile(file.name, await fileToDataUrl(file));
+  }
   const fd = new FormData();
   fd.append('file', file, file.name);
   fd.append('is_private', '0');
-  const csrfCookie = document.cookie.match(/csrftoken=([^;]+)/);
-  const csrf = csrfCookie ? csrfCookie[1] : '';
+  const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
   const r = await fetch('/api/method/upload_file', {
     method: 'POST',
     credentials: 'include',
@@ -258,11 +274,23 @@ export default function AdminPage() {
   const [authLoading, setAuthLoading] = useState(true);
 
   // On mount, check if already logged in via cookie (frappe.auth.get_logged_user is not whitelisted)
+  const [mode, setMode] = useState<Mode | null>(null);
+
   useEffect(() => {
-    const userIdCookie = document.cookie.match(/(?:^|;\s*)user_id=([^;]+)/)?.[1];
-    const userId = userIdCookie ? decodeURIComponent(userIdCookie) : null;
-    setCurrentUser(userId && userId !== 'Guest' ? userId : null);
-    setAuthLoading(false);
+    let alive = true;
+    detectMode().then(m => {
+      if (!alive) return;
+      setMode(m);
+      if (m === 'demo') {
+        setCurrentUser(db.currentSession());
+      } else {
+        const cookie = document.cookie.match(/(?:^|;\s*)user_id=([^;]+)/)?.[1];
+        const userId = cookie ? decodeURIComponent(cookie) : null;
+        setCurrentUser(userId && userId !== 'Guest' ? userId : null);
+      }
+      setAuthLoading(false);
+    });
+    return () => { alive = false; };
   }, []);
 
   const authed = !authLoading && !!currentUser;
@@ -274,16 +302,13 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authed || !currentUser) { setIsAdmin(false); setAdminChecked(true); return; }
     if (currentUser === 'Administrator') { setIsAdmin(true); setAdminChecked(true); return; }
-    fetch(`/api/method/frappe.client.get?doctype=User&name=${encodeURIComponent(currentUser)}`, {
-      credentials: 'include',
-    })
-      .then(r => r.json())
+    call('frappe.client.get', { doctype: 'User', name: currentUser })
       .then(res => {
         const roles: string[] = (res.message?.roles ?? []).map((r: { role: string }) => r.role);
         setIsAdmin(roles.includes('System Manager') || roles.includes('Administrator'));
-        setAdminChecked(true);
       })
-      .catch(() => { setIsAdmin(false); setAdminChecked(true); });
+      .catch(() => setIsAdmin(false))
+      .finally(() => setAdminChecked(true));
   }, [authed, currentUser]);
 
   // Login state
@@ -382,19 +407,12 @@ export default function AdminPage() {
     if (!authed) return;
     setOrdersLoading(true);
     try {
-      const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] || 'fetch';
-      const res = await fetch('/api/method/frappe.client.get_list', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf },
-        body: JSON.stringify({
-          doctype: 'Sales Order',
-          fields: ORDER_FIELDS,
-          limit: 500,
-          order_by: 'transaction_date desc',
-        }),
+      const data = await call('frappe.client.get_list', {
+        doctype: 'Sales Order',
+        fields: ORDER_FIELDS,
+        limit: 500,
+        order_by: 'transaction_date desc',
       });
-      const data = await res.json();
       setAllOrders(data.message || []);
     } catch { setAllOrders([]); }
     setOrdersLoading(false);
@@ -420,14 +438,8 @@ export default function AdminPage() {
   useEffect(() => {
     if (!hpItemsLen || hpConfigFetched.current) return;
     hpConfigFetched.current = true;
-    // Load from localStorage immediately, then sync from server
-    try {
-      const local = JSON.parse(localStorage.getItem('hs_homepage_config') || 'null');
-      if (local) { setHpML(local.ml || []); setHpNA(local.na || []); }
-    } catch {}
-    fetch('/files/homepage_config.json?t=' + Date.now(), { credentials: 'include' })
-      .then(r => r.ok ? r.json() : null)
-      .then(cfg => { if (cfg) { setHpML(cfg.ml || []); setHpNA(cfg.na || []); localStorage.setItem('hs_homepage_config', JSON.stringify(cfg)); } })
+    getHomepageConfig()
+      .then(cfg => { if (cfg) { setHpML(cfg.ml || []); setHpNA(cfg.na || []); } })
       .catch(() => {});
   }, [hpItemsLen]);
 
@@ -465,21 +477,16 @@ export default function AdminPage() {
   async function doLogin(e: React.FormEvent) {
     e.preventDefault(); setLoginErr(''); setLoginLoading(true);
     try {
-      const res = await fetch('/api/method/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usr: loginEmail, pwd: loginPassword }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setLoginErr(data.message || 'Invalid credentials'); setLoginLoading(false); return; }
-      // Get logged-in user from cookie (frappe.auth.get_logged_user is not whitelisted)
-      const userIdCookie = document.cookie.match(/(?:^|;\s*)user_id=([^;]+)/)?.[1];
-      const userId = userIdCookie ? decodeURIComponent(userIdCookie) : null;
+      const data = await call('login', { usr: loginEmail, pwd: loginPassword });
+      // Frappe answers with the user; in demo mode the store echoes it back.
+      // The cookie is the fallback for benches that omit it from the body.
+      const cookie = document.cookie.match(/(?:^|;\s*)user_id=([^;]+)/)?.[1];
+      const userId = data?.user || (cookie ? decodeURIComponent(cookie) : null);
       if (userId && userId !== 'Guest') {
         setCurrentUser(userId);
+        setAdminChecked(false);
       } else {
-        setLoginErr('Login succeeded but could not get user. Try refreshing.');
+        setLoginErr('Signed in, but the user could not be identified. Try refreshing.');
       }
     } catch (err: any) {
       setLoginErr(err?.message || 'Network error. Is the server running?');
@@ -488,7 +495,6 @@ export default function AdminPage() {
   }
 
   async function logout() {
-    try { await fetch('/api/method/logout', { method: 'GET', credentials: 'include' }); } catch { }
     await sdkLogout();
     setCurrentUser(null);
     setIsAdmin(false);
@@ -598,60 +604,68 @@ export default function AdminPage() {
     setHpSaving(true);
     const config = JSON.stringify({ ml: hpML, na: hpNA });
 
-    // Save to localStorage first — instant feedback for this browser.
-    localStorage.setItem('hs_homepage_config', config);
 
-    // Upload to Frappe so other devices/customers see the change.
+    cacheHomepageConfig({ ml: hpML, na: hpNA });
+
+    // With no backend there is nothing further to publish — the local copy is
+    // what the storefront reads, and it is already saved.
+    if ((await detectMode()) === 'demo') {
+      toast('Homepage sections saved.', 'success');
+      setHpSaving(false);
+      return;
+    }
+
+    // Publish to Frappe so every visitor and device sees the same rails.
     const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
     if (!csrf) {
-      toast('Saved locally, but not synced to server — please sign in again to sync across devices.', 'error');
+      toast('Saved on this device, but not published — sign in again to sync.', 'error');
       setHpSaving(false);
       return;
     }
 
     try {
-      // 1. List ALL old homepage_config files (paginate defensively)
-      const listRes = await fetch('/api/method/frappe.client.get_list', {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf },
-        body: JSON.stringify({ doctype: 'File', filters: [['file_url', 'like', '/files/homepage_config%']], fields: ['name', 'file_url'], limit_page_length: 100 }),
+      // Replace any previous copies so /files/homepage_config.json stays canonical.
+      const listBody = await call('frappe.client.get_list', {
+        doctype: 'File',
+        filters: [['file_url', 'like', '/files/homepage_config%']],
+        fields: ['name', 'file_url'],
+        limit_page_length: 100,
       });
-      const listBody = await listRes.json().catch(() => ({}));
-      if (!listRes.ok) throw new Error('Could not list existing config files: ' + (listBody.exception || listRes.status));
       const oldFiles: { name: string; file_url: string }[] = listBody.message || [];
 
-      // 2. Delete each. Track failures so we can warn the user.
       const deleteFailures: string[] = [];
-      await Promise.all(oldFiles.map(async f => {
-        const r = await fetch('/api/method/frappe.client.delete', {
-          method: 'POST', credentials: 'include',
-          headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': csrf },
-          body: JSON.stringify({ doctype: 'File', name: f.name }),
-        });
-        if (!r.ok) deleteFailures.push(f.file_url);
-      }));
+      await Promise.all(
+        oldFiles.map(async fdoc => {
+          try {
+            await call('frappe.client.delete', { doctype: 'File', name: fdoc.name });
+          } catch {
+            deleteFailures.push(fdoc.file_url);
+          }
+        })
+      );
 
-      // 3. Upload the new config.
       const blob = new Blob([config], { type: 'application/json' });
       const fd = new FormData();
       fd.append('file', new File([blob], 'homepage_config.json', { type: 'application/json' }), 'homepage_config.json');
       fd.append('is_private', '0');
       fd.append('folder', 'Home');
-      const upRes = await fetch('/api/method/upload_file', { method: 'POST', credentials: 'include', headers: { 'X-Frappe-CSRF-Token': csrf }, body: fd });
+      const upRes = await fetch('/api/method/upload_file', {
+        method: 'POST', credentials: 'include',
+        headers: { 'X-Frappe-CSRF-Token': csrf }, body: fd,
+      });
       const upBody = await upRes.json().catch(() => ({}));
       if (!upRes.ok) throw new Error('Upload failed: ' + (upBody.exception || upRes.status));
 
-      // 4. Verify the file landed at the expected path. If Frappe renamed it (because delete failed), warn.
       const newUrl: string | undefined = upBody?.message?.file_url;
       if (newUrl && newUrl !== '/files/homepage_config.json') {
-        toast(`Saved, but Frappe renamed the file to ${newUrl}. The website expects /files/homepage_config.json — delete the duplicates in File Manager.`, 'error');
+        toast(`Saved, but Frappe stored it as ${newUrl}. The site reads /files/homepage_config.json — remove the duplicates in File Manager.`, 'error');
       } else if (deleteFailures.length) {
-        toast(`Saved, but couldn't delete ${deleteFailures.length} old file(s). Customers may see stale data.`, 'error');
+        toast(`Saved, but ${deleteFailures.length} old file(s) could not be removed. Visitors may see stale data.`, 'error');
       } else {
         toast('Homepage sections saved and published!', 'success');
       }
     } catch (e: any) {
-      toast('Saved locally, but server sync failed: ' + (e?.message || e) + '. Other devices will not see this change.', 'error');
+      toast('Saved on this device, but publishing failed: ' + (e?.message || e), 'error');
     } finally {
       setHpSaving(false);
     }
@@ -786,7 +800,7 @@ export default function AdminPage() {
                   <span className="dot green" />
                   <span>{currentUser}</span>
                 </div>
-                <a href="/store/" target="_blank" className="btn btn-outline btn-sm">{I.ext} View Site</a>
+                <a href={HOME_URL} target="_blank" className="btn btn-outline btn-sm">{I.ext} View Site</a>
               </div>
             </header>
 
@@ -983,6 +997,39 @@ export default function AdminPage() {
                   <h2>Account</h2>
                   <p className="desc">Logged in as <strong>{currentUser}</strong></p>
                   <button className="btn btn-danger" type="button" onClick={logout} style={{ marginTop: 12 }}>{I.logout} Sign Out</button>
+                </div>
+                <div className="settings-section">
+                  <h2>Backend</h2>
+                  {mode === 'frappe' ? (
+                    <p className="desc">
+                      Connected to <strong>Frappe / ERPNext</strong>. Products, orders and customers
+                      shown here are live records on the server.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="desc">
+                        No Frappe backend is reachable, so the panel is running on the built-in
+                        catalogue. Everything works, but products, orders and customers are stored
+                        in this browser only — they are not visible to anyone else.
+                      </p>
+                      <button
+                        className="btn btn-outline"
+                        type="button"
+                        style={{ marginTop: 12 }}
+                        onClick={() => setConfirmDlg({
+                          title: 'Reset demo data?',
+                          msg: 'This clears every product edit, order, customer and coupon made in this browser and restores the original catalogue. It cannot be undone.',
+                          onOk: () => {
+                            db.resetAll();
+                            toast('Demo data reset', 'success');
+                            setTimeout(() => window.location.reload(), 700);
+                          },
+                        })}
+                      >
+                        Reset demo data
+                      </button>
+                    </>
+                  )}
                 </div>
                 <div className="settings-section">
                   <h2>Catalog Settings</h2>

@@ -2,8 +2,11 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
-import { useFrappeGetDocList } from 'frappe-react-sdk';
+import { useFrappeGetDocList } from '@/lib/frappe';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
+import { asset } from '@/lib/config';
+
+const SITE_IMAGES = asset('site-images');
 
 interface Product {
   name?: string; item_name?: string; item_group?: string; category?: string;
@@ -370,7 +373,7 @@ function ShopContent() {
       {/* Heritage / Our Story */}
       <section className="heritage-section">
         <div className="heritage-img-wrap">
-          <img src="/store/site-images/heritage-craft.jpg" alt="Handcrafted Jewelry from Rajasthan" />
+          <img src={`${SITE_IMAGES}/heritage-craft.jpg`} alt="Handcrafted Jewelry from Rajasthan" />
         </div>
         <div className="heritage-content">
           <h2 className="heritage-title">Roots in Rajasthan,<br/>Crafted for the World</h2>

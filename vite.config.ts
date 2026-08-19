@@ -4,12 +4,17 @@ import path from 'path'
 
 /**
  * Frappe backend that has the `hira` app + ERPNext installed.
- * Override with VITE_FRAPPE_URL in .env.local when the bench moves.
+ * Override with VITE_FRAPPE_URL in .env.local when the bench lives elsewhere.
  *
- * When it's unreachable the app detects that at runtime and serves the bundled
- * catalog instead, so `npm run dev` works with or without a backend.
+ * Defaults to localhost because that reaches a bench running either on this
+ * machine or inside WSL2 — Windows forwards localhost into the VM. Addressing
+ * WSL by IP does not survive a restart: it hands out a new address each time,
+ * which is how the old hardcoded 172.30.38.114 went stale.
+ *
+ * When no backend answers, the app detects that at runtime and serves the
+ * bundled catalogue, so `npm run dev` works either way.
  */
-const backend = process.env.VITE_FRAPPE_URL || 'http://172.30.38.114:8001'
+const backend = process.env.VITE_FRAPPE_URL || 'http://localhost:8001'
 
 /**
  * Base path per target:
@@ -50,7 +55,9 @@ export default defineConfig(({ command, mode }) => ({
     chunkSizeWarningLimit: 900,
   },
   server: {
-    port: 8001,
+    // 8001 belongs to the Frappe bench — the dev server used to squat on it,
+    // so the two could never run at once on the same machine.
+    port: 5173,
     proxy: (() => {
       // changeOrigin rewrites the Host header to match the target, which is what
       // a real Frappe site expects.

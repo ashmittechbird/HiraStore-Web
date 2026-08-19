@@ -35,6 +35,10 @@ export default defineConfig(({ command, mode }) => ({
     },
   },
   build: {
+    // Frappe serves its desk assets from /assets/*, and we proxy that prefix
+    // straight through to the bench so /app works. So the storefront's own
+    // bundles have to live somewhere else or the two collide.
+    assetsDir: 'static',
     // Keep the vendor split small and cacheable; the catalog is the big payload.
     rollupOptions: {
       output: {
@@ -61,14 +65,17 @@ export default defineConfig(({ command, mode }) => ({
         timeout: 3000,
         proxyTimeout: 3000,
       }
+      // Mirrors the rewrites in vercel.json so /app behaves the same in dev.
+      // Vite serves its own dev assets under the base (/store/), which leaves
+      // /assets free for the Frappe desk's bundles.
       return {
         '/api/method': proxyOpts,
         '/api/resource': proxyOpts,
-        '/files': proxyOpts,
         '/api': proxyOpts,
-        '/app': proxyOpts,
-        '/login': proxyOpts,
+        '/files': proxyOpts,
         '/private': proxyOpts,
+        '/app': proxyOpts,
+        '/assets': proxyOpts,
       }
     })(),
   },

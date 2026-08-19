@@ -78,10 +78,29 @@ the bundled catalogue — useful for sharing a link with a client.
 FRAPPE_URL = https://erp.yourdomain.com
 ```
 
-[api/\[...path\].js](api/[...path].js) proxies `/api/*` and `/files/*` there.
-Going through the proxy keeps everything same-origin, which is what makes
-Frappe's session cookie work — calling the bench directly from the browser
-would have the cookie dropped as third-party.
+[api/\[...path\].js](api/[...path].js) then serves the whole backend under this
+domain, same-origin — which is what makes Frappe's session cookie work, since a
+cross-origin call would have it dropped as third-party:
+
+| Path | Serves |
+|---|---|
+| `/app` | the **ERPNext desk**, on your own domain |
+| `/assets/*` | desk assets — the storefront's own bundles live at `/static/*` to avoid the clash |
+| `/api/*` | REST and whitelisted methods |
+| `/files/*`, `/private/*` | uploads and product images |
+| `/logout` | ends the Frappe session |
+
+`/login` deliberately stays with the storefront: it authenticates through
+`/api/method/login`, so signing in there produces exactly the session cookie the
+desk needs.
+
+Add `FRAPPE_SITE_NAME` as well if the bench is multi-tenant and the site isn't
+named after the host you point at.
+
+Two limits worth knowing. The desk's realtime features (live notifications) need
+websockets, which a serverless proxy can't carry, and every desk request pays one
+extra network hop. Day-to-day desk work is fine; heavy bulk operations are better
+run against the bench directly.
 
 Your Frappe site must allow the Vercel domain in its CORS settings, and the
 `hira` and `square_payment` apps must be installed for products and card

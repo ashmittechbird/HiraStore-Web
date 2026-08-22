@@ -50,7 +50,8 @@ one-tap fill). Shoppers can register their own account from Sign Up.
 | Command | What it does |
 |---|---|
 | `npm run dev` | dev server at `/store/` |
-| `npm run catalog` | regenerate `src/data/catalog.json` from the spreadsheet export |
+| `npm run import-sheet` | read the master .xlsx into `catalog_images/catalog_sheet.json` |
+| `npm run catalog` | regenerate `src/data/catalog.json` from that sheet data |
 | `npm run build` | production build (base `/assets/hirastore/store/`) |
 | `npm run build:vercel` | production build for Vercel (base `/`) |
 | `npm run build:frappe` | build for the Frappe asset pipeline |

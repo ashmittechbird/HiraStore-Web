@@ -352,6 +352,7 @@ function ShopContent() {
                     <div className="product-info">
                       {metaLine && <p className="product-meta">{metaLine}</p>}
                       <h3 className="product-name">{name}</h3>
+                      <p className="product-code">{id}</p>
                       <div className="product-price">
                         <span className="price-current">{price > 0 ? `$${price.toLocaleString('en-US')}` : 'Price on request'}</span>
                         <div className="product-rating"><span className="stars">★★★★★</span></div>
@@ -539,6 +540,7 @@ function ShopContent() {
         /* Product info */
         .product-info { padding:14px 12px 18px; }
         .product-meta { font-size:10px; font-weight:600; color:var(--text-light); margin-bottom:6px; letter-spacing:0.1em; text-transform:uppercase; }
+        .product-code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:10.5px; color:var(--text-light); letter-spacing:0.06em; margin:2px 0 6px; }
         .product-name { font-family:var(--font-head); font-size:15px; font-weight:700; color:var(--text-dark); margin-bottom:10px; line-height:1.4; transition:color 0.2s; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
         .product-card:hover .product-name { color:var(--gold-dark); }
         .product-price { display:flex; align-items:center; justify-content:space-between; }

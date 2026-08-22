@@ -194,6 +194,13 @@ export default function ProductPage() {
             <p className="product-desc">{stripHtml(item.description as string)}</p>
           ) : null}
 
+          {/* Product code always shows; material and weight only when the
+              catalogue actually carries them. */}
+          <div className="detail-row">
+            <span className="detail-label">Product Code</span>
+            <span className="detail-val detail-code">{itemId}</span>
+          </div>
+
           {(item.custom_material || item.weight_per_unit || item.weight) && (
             <>
               {item.custom_material && (
@@ -317,6 +324,7 @@ export default function ProductPage() {
         .detail-row { display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;font-size:13px;flex-shrink:0; }
         .detail-label { font-weight:500;color:#6b8b91;min-width:76px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding-top:1px; }
         .detail-val { color:#334d52;line-height:1.5; }
+        .detail-code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:0.06em; }
         .product-desc { font-size:13px;color:#6b8b91;line-height:1.6;margin-bottom:6px;flex-shrink:0; }
 
         /* Qty */

@@ -408,6 +408,26 @@ function demoCall(method: string, params: Row): any {
     }
 
     // ── storefront ──
+    case 'hira.api.coupons.validate_coupon': {
+      const code = String(params.code || '').trim().toUpperCase();
+      const subtotal = Number(params.subtotal || 0);
+      const c = db.allCoupons().find(x => x.coupon_code.toUpperCase() === code);
+      if (!c) throw new BackendError('Invalid coupon code');
+      if (c.valid_upto && c.valid_upto < new Date().toISOString().slice(0, 10)) {
+        throw new BackendError('This coupon code has expired');
+      }
+      if (c.minimum_amount && subtotal < c.minimum_amount) {
+        throw new BackendError(`Minimum order $${c.minimum_amount} required for this code`);
+      }
+      return {
+        message: {
+          code: c.coupon_code,
+          discount_percentage: c.discount_percentage,
+          minimum_amount: c.minimum_amount,
+          discount: Math.round(subtotal * c.discount_percentage) / 100,
+        },
+      };
+    }
     case 'hira.api.products.get_public_item': {
       const it = db.getItem(String(params.name));
       if (!it || it.disabled) throw new BackendError('Product not found');
@@ -650,7 +670,9 @@ export async function getStorefrontItems(limit = 200): Promise<Row[]> {
     ],
     filters: [['disabled', '=', 0], ['is_sales_item', '=', 1]],
     order_by: 'modified desc',
+    // frappe.client.get_list reads limit_page_length; `limit` alone caps at 20.
     limit,
+    limit_page_length: limit,
   });
 }
 
@@ -685,4 +707,35 @@ export async function getMyOrders(): Promise<Row[]> {
     if (Array.isArray(res?.message)) return res.message as Row[];
   }
   return [];
+}
+
+// ─── coupons ─────────────────────────────────────────────────────────────────
+
+export interface CouponResult {
+  code: string;
+  discount: number;
+  discount_percentage: number;
+  minimum_amount: number;
+}
+
+/**
+ * Validate a coupon and get the money amount to subtract.
+ *
+ * Validation belongs on the server: guests can't read `Coupon Code`, and
+ * ERPNext stores the percentage on the linked Pricing Rule rather than on the
+ * coupon itself — reading `discount_percentage` off the coupon doc (as the
+ * pages used to) always yielded 0.
+ */
+export async function validateCoupon(code: string, subtotal: number): Promise<CouponResult> {
+  const trimmed = code.trim();
+  if (!trimmed) throw new Error('Enter a coupon code');
+
+  const res = await call(
+    'hira.api.coupons.validate_coupon',
+    { code: trimmed, subtotal },
+    { method: 'GET' }
+  );
+  const m = res?.message as CouponResult | undefined;
+  if (!m) throw new Error('Invalid coupon code');
+  return m;
 }

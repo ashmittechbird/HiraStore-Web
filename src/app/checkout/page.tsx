@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useFrappeAuth, useFrappeGetDoc, useFrappePostCall } from '@/lib/frappe';
+import { useFrappeAuth, useFrappeGetDoc } from '@/lib/frappe';
 import { useCart } from '@/store/cart';
 import { shippingFor, FREE_SHIPPING_OVER } from '@/lib/config';
+import { validateCoupon } from '@/lib/backend';
 
 interface FrappeUser { full_name?: string; email?: string; }
 
@@ -25,8 +26,6 @@ export default function CheckoutPage() {
   const { currentUser, isLoading: authLoading } = useFrappeAuth();
   // Only fetch the User doc when currentUser is actually set — avoids GET /api/.../User/undefined noise.
   const { data: userDoc } = useFrappeGetDoc<FrappeUser>('User', currentUser || undefined);
-  const { call: frappeGetList } = useFrappePostCall<{ message: any[] }>('frappe.client.get_list');
-  const { call: frappeGet } = useFrappePostCall<{ message: any }>('frappe.client.get');
 
   const subtotal = effectiveItems.reduce((s, i) => s + i.price * i.qty, 0);
   const safeDiscount = Math.min(discount, subtotal);
@@ -68,26 +67,10 @@ export default function CheckoutPage() {
   async function applyCoupon() {
     if (!coupon.trim()) return;
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const listRes = await frappeGetList({
-        doctype: 'Coupon Code',
-        fields: ['name', 'coupon_code', 'minimum_amount', 'valid_upto'],
-        filters: [['coupon_code', '=', coupon.trim()]],
-        limit: 1,
-      });
-      const hit = listRes.message?.[0];
-      if (!hit) throw new Error('Invalid coupon code');
-      if (hit.valid_upto && hit.valid_upto < today) throw new Error('This coupon code has expired');
-      const docRes = await frappeGet({ doctype: 'Coupon Code', name: hit.name });
-      const couponDoc = docRes.message;
-      if (couponDoc.minimum_amount && subtotal < couponDoc.minimum_amount)
-        throw new Error(`Minimum order $${couponDoc.minimum_amount} required`);
-      const disc = couponDoc.discount_percentage
-        ? +(subtotal * couponDoc.discount_percentage / 100).toFixed(2)
-        : 0;
-      setDiscount(disc);
-      setCouponMsg(`Coupon applied! Saving $${disc.toFixed(2)}`);
-      sessionStorage.setItem('hs_coupon', JSON.stringify({ code: coupon.trim(), discount: disc }));
+      const res = await validateCoupon(coupon, subtotal);
+      setDiscount(res.discount);
+      setCouponMsg(`Coupon applied! Saving $${res.discount.toFixed(2)}`);
+      sessionStorage.setItem('hs_coupon', JSON.stringify({ code: res.code, discount: res.discount }));
     } catch (e: unknown) {
       setCouponMsg((e as Error).message || 'Invalid coupon');
       setDiscount(0);

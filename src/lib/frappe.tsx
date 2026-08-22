@@ -165,11 +165,16 @@ export function useFrappeGetDocList<T>(
 ): QueryResult<T[]> {
   const key = args === undefined ? null : `list:${doctype}:${JSON.stringify(args)}`;
   return useQuery<T[]>(key, async () => {
+    // Frappe's frappe.client.get_list takes `limit_page_length`, not `limit` —
+    // passing `limit` alone silently caps every list at the default 20, which
+    // is why the admin panel only ever showed 20 of 286 products.
+    const limit = args?.limit ?? args?.limit_page_length;
     const res = await call('frappe.client.get_list', {
       doctype,
       fields: args?.fields,
       filters: args?.filters,
-      limit: args?.limit,
+      limit,
+      limit_page_length: limit,
       limit_start: args?.limit_start,
       order_by: args?.orderBy
         ? `${(args.orderBy as any).field} ${(args.orderBy as any).order || 'asc'}`

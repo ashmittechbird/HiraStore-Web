@@ -230,11 +230,21 @@ function ShopContent() {
           <nav className="breadcrumb" aria-label="Breadcrumb">
             <Link to="/">Home</Link>
             <span className="breadcrumb-sep">›</span>
-            <span>All Products</span>
+            <span>{category === 'All' ? 'All Products' : category}</span>
           </nav>
-          <h1 className="page-title">The Full Collection</h1>
+          <h1 className="page-title">{category === 'All' ? 'The Full Collection' : category}</h1>
           <p className="page-subtitle" id="pageSubtitle">
-            {loading ? 'Loading products…' : `${allProducts.length} handcrafted jewellery pieces`}
+            {loading
+              ? 'Loading products…'
+              // Counts the filtered set, not the whole catalogue — the heading and
+              // the result count below have to agree.
+              : `${filtered.length} handcrafted ${
+                  filtered.length === 1
+                    ? 'piece'
+                    : category === 'All'
+                      ? 'jewellery pieces'
+                      : category.toLowerCase()
+                }`}
           </p>
         </div>
       </div>

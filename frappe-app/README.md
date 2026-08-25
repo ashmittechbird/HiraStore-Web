@@ -14,6 +14,7 @@ machine that only one person can reproduce.
 | `hira.api.orders.create_cod_order` | Orders used to go through the `square_payment` app, which isn't installed. This books a real submitted Sales Order and creates the Customer on first purchase. |
 | `hira.api.orders.get_my_orders` | Shoppers can't list Sales Orders they don't own; this scopes to their own by contact email. |
 | `hira.api.session.get_csrf_token` | The desk reads its CSRF token from the bootinfo in the page Frappe serves. The storefront is served by Vite/Vercel, so it has no boot — every POST failed with `CSRFTokenError`. This hands the token to the same-origin frontend instead of disabling CSRF on the bench. |
+| `hira.api.bookings.*` | Video call requests from the storefront button. Creates the `Video Call Booking` doctype on first use, so a fresh bench needs no manual setup. Guests can create; only staff can list or change status. |
 | `hira.api.seed.seed_catalog` | Imports the 286 bundled products, so a fresh bench isn't an empty shop. Idempotent — re-run it after regenerating `src/data/catalog.json`. |
 
 ## Installing on a bench

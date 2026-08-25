@@ -4,6 +4,7 @@ import { FrappeProvider } from '@/lib/frappe'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import DemoBadge from './components/DemoBadge'
+import FloatingActions from './components/FloatingActions'
 import Home from './app/page'
 import Shop from './app/shop/page'
 import Cart from './app/cart/page'
@@ -51,6 +52,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <FloatingActions />
       <DemoBadge />
     </BrowserRouter>
     </FrappeProvider>

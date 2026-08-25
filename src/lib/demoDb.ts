@@ -38,6 +38,7 @@ const K = {
   files: 'hs_demo_files',
   seq: 'hs_demo_seq',
   catalogSig: 'hs_demo_catalog_sig',
+  bookings: 'hs_demo_bookings',
 };
 
 function read<T>(key: string, fallback: T): T {
@@ -469,4 +470,46 @@ export function resetAll(): void {
   Object.values(K).forEach(k => localStorage.removeItem(k));
   seeded = false;
   seed();
+}
+
+// ─── video call bookings ─────────────────────────────────────────────────────
+
+export interface DemoBooking {
+  name: string;
+  customer_name: string;
+  phone: string;
+  email: string;
+  preferred_date: string;
+  preferred_time: string;
+  notes: string;
+  status: string;
+  source: string;
+  creation: string;
+}
+
+export function allBookings(): DemoBooking[] {
+  seed();
+  return read<DemoBooking[]>(K.bookings, []);
+}
+
+export function createBooking(input: Partial<DemoBooking>): DemoBooking {
+  seed();
+  const booking: DemoBooking = {
+    name: `VCB-${new Date().getFullYear()}-${String(nextSeq('booking')).padStart(5, '0')}`,
+    customer_name: String(input.customer_name || '').slice(0, 140),
+    phone: String(input.phone || ''),
+    email: String(input.email || ''),
+    preferred_date: String(input.preferred_date || ''),
+    preferred_time: String(input.preferred_time || ''),
+    notes: String(input.notes || '').slice(0, 1000),
+    status: 'New',
+    source: 'Storefront',
+    creation: new Date().toISOString(),
+  };
+  write(K.bookings, [booking, ...allBookings()]);
+  return booking;
+}
+
+export function setBookingStatus(name: string, status: string): void {
+  write(K.bookings, allBookings().map(b => (b.name === name ? { ...b, status } : b)));
 }

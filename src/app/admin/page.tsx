@@ -4,7 +4,8 @@ import {
   useFrappeUpdateDoc, useFrappeDeleteDoc, useFrappePostCall,
 } from '@/lib/frappe';
 import { HOME_URL } from '@/lib/config';
-import { call, detectMode, db, cacheHomepageConfig, getHomepageConfig } from '@/lib/backend';
+import { call, detectMode, db, cacheHomepageConfig, getHomepageConfig, listBookings, setBookingStatus } from '@/lib/backend';
+import type { BookingRow } from '@/lib/backend';
 import type { Mode } from '@/lib/backend';
 import './admin.css';
 
@@ -16,11 +17,11 @@ interface Customer { name: string; customer_name?: string; customer_type?: strin
 interface Coupon { name: string; coupon_code?: string; minimum_amount?: number; valid_from?: string; valid_upto?: string; description?: string; discount_percentage?: number; pricing_rule?: string; }
 interface Addr { address_line1?: string; address_line2?: string; city?: string; state?: string; pincode?: string; country?: string; phone?: string; email_id?: string; address_type?: string; }
 interface Toasty { id: number; msg: string; type: 'success' | 'error' | 'info'; }
-type PageId = 'dashboard' | 'products' | 'orders' | 'customers' | 'homepage' | 'offers' | 'settings';
+type PageId = 'dashboard' | 'products' | 'orders' | 'customers' | 'bookings' | 'homepage' | 'offers' | 'settings';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────
 const STATUSES = ['Draft', 'To Deliver and Bill', 'To Bill', 'To Deliver', 'Completed', 'Cancelled'];
-const PAGE_TITLES: Record<PageId, string> = { dashboard: 'Dashboard', products: 'Products', orders: 'Orders', customers: 'Customers', homepage: 'Homepage Sections', offers: 'Offers & Coupons', settings: 'Settings' };
+const PAGE_TITLES: Record<PageId, string> = { dashboard: 'Dashboard', products: 'Products', orders: 'Orders', customers: 'Customers', bookings: 'Video Call Requests', homepage: 'Homepage Sections', offers: 'Offers & Coupons', settings: 'Settings' };
 
 // ─── HELPERS ──────────────────────────────────────────────────────────
 function iUrl(img?: string): string {
@@ -40,6 +41,7 @@ function parseRemarks(r?: string) {
 
 // ─── ICONS ────────────────────────────────────────────────────────────
 const I = {
+  video: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" /></svg>,
   grid: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /></svg>,
   tag: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" /><circle cx="7" cy="7" r="1.5" fill="currentColor" /></svg>,
   home: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>,
@@ -350,6 +352,18 @@ export default function AdminPage() {
   const [orderModal, setOrderModal] = useState<{ order: SalesOrder; addr: Addr | null } | null>(null);
   const [orderModalLoading, setOrderModalLoading] = useState(false);
 
+  // Video call bookings
+  const [bookings, setBookings] = useState<BookingRow[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(false);
+  const [bookingSearch, setBookingSearch] = useState('');
+
+  const reloadBookings = useCallback(async () => {
+    if (!authed) return;
+    setBookingsLoading(true);
+    try { setBookings(await listBookings(200)); } catch { setBookings([]); }
+    setBookingsLoading(false);
+  }, [authed]);
+
   // Customers state
   const [custSearch, setCustSearch] = useState('');
   const [custModal, setCustModal] = useState<{ name: string; email: string; orders: SalesOrder[]; addresses: Addr[] } | null>(null);
@@ -432,6 +446,7 @@ export default function AdminPage() {
 
   // ── EFFECTS ──
   useEffect(() => { reloadOrders(); }, [reloadOrders]);
+  useEffect(() => { reloadBookings(); }, [reloadBookings]);
 
   const hpConfigFetched = useRef(false);
   const hpItemsLen = hpItemsList.length;
@@ -466,6 +481,11 @@ export default function AdminPage() {
   const filteredCusts = allCustomers.filter(c => { const q = custSearch.toLowerCase(); return (c.customer_name || '').toLowerCase().includes(q) || (c.email_id || '').toLowerCase().includes(q) || (c.mobile_no || '').toLowerCase().includes(q); });
   const categories = Array.from(new Set(allProducts.map(p => p.item_group).filter(Boolean))).sort() as string[];
   const pendingCount = allOrders.filter(o => !['Completed', 'Cancelled'].includes(o.status || '')).length;
+  const newBookingCount = bookings.filter(b => b.status === 'New').length;
+  const filteredBookings = bookings.filter(b => {
+    const q = bookingSearch.toLowerCase();
+    return !q || (b.customer_name || '').toLowerCase().includes(q) || (b.phone || '').includes(q) || (b.email || '').toLowerCase().includes(q);
+  });
 
   // ── HANDLERS ──
   function toast(msg: string, type: 'success' | 'error' | 'info' = 'info') {
@@ -777,6 +797,7 @@ export default function AdminPage() {
               <SbItem icon={I.order} label="Orders" active={page === 'orders'} badge={pendingCount || undefined} onClick={() => nav('orders')} />
               <div className="sb-section">CRM</div>
               <SbItem icon={I.users} label="Customers" active={page === 'customers'} onClick={() => nav('customers')} />
+              <SbItem icon={I.video} label="Video Calls" active={page === 'bookings'} badge={newBookingCount || undefined} onClick={() => nav('bookings')} />
               <SbItem icon={I.offer} label="Offers" active={page === 'offers'} onClick={() => nav('offers')} />
               <div className="sb-section">System</div>
               <SbItem icon={I.settings} label="Settings" active={page === 'settings'} onClick={() => nav('settings')} />
@@ -922,6 +943,50 @@ export default function AdminPage() {
                           <td><span style={{ fontSize: 11, background: 'var(--blue-bg)', color: 'var(--blue)', padding: '2px 8px', borderRadius: 99 }}>{c.customer_type || 'Individual'}</span></td>
                           <td style={{ fontSize: 12, color: 'var(--text3)' }}>{c.creation ? new Date(c.creation).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</td>
                           <td><button type="button" className="btn btn-outline btn-sm" onClick={() => viewCust(c.customer_name || c.name, c.email_id || '')}>{I.eye} View</button></td>
+                        </tr>
+                      ))}</tbody></table></div>
+                  )}
+                </div>
+              </>}
+
+              {/* ── VIDEO CALL BOOKINGS ── */}
+              {page === 'bookings' && <>
+                <div className="toolbar">
+                  <div className="search-wrap">{I.search}<input className="search-input" type="text" placeholder="Search by name, phone or email…" value={bookingSearch} onChange={e => setBookingSearch(e.target.value)} /></div>
+                  <button type="button" className="btn btn-gold btn-sm" onClick={() => reloadBookings()}>{I.refresh} Refresh</button>
+                </div>
+                <div className="card">
+                  <div className="card-hd"><h2>Video Call Requests</h2></div>
+                  {bookingsLoading ? <div className="loading-overlay"><div className="spin" /><p>Loading requests…</p></div>
+                    : filteredBookings.length === 0 ? <div className="empty"><div className="empty-icon">{I.video}</div><h3>No requests yet</h3><p>Requests from the &ldquo;Book a Video Call&rdquo; button on the storefront appear here.</p></div> : (
+                    <div className="tbl-wrap"><table><thead><tr><th>Ref</th><th>Name</th><th>Contact</th><th>Preferred</th><th>Looking for</th><th>Status</th></tr></thead>
+                      <tbody>{filteredBookings.map(b => (
+                        <tr key={b.name}>
+                          <td style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11.5 }}>{b.name}</td>
+                          <td className="td-name">{b.customer_name}</td>
+                          <td style={{ fontSize: 12, color: 'var(--text2)' }}>
+                            <a href={`tel:${b.phone}`} style={{ color: 'var(--text2)' }}>{b.phone}</a>
+                            {b.email ? <><br /><span style={{ color: 'var(--text3)' }}>{b.email}</span></> : null}
+                          </td>
+                          <td style={{ fontSize: 12, color: 'var(--text2)' }}>
+                            {b.preferred_date ? new Date(b.preferred_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Any date'}
+                            {b.preferred_time ? <><br /><span style={{ color: 'var(--text3)' }}>{b.preferred_time}</span></> : null}
+                          </td>
+                          <td style={{ fontSize: 12, color: 'var(--text3)', maxWidth: 200 }}>{b.notes || '-'}</td>
+                          <td>
+                            <select
+                              className="form-input"
+                              style={{ padding: '4px 8px', fontSize: 12 }}
+                              value={b.status}
+                              onChange={async e => {
+                                const status = e.target.value;
+                                try { await setBookingStatus(b.name, status); toast('Status updated', 'success'); reloadBookings(); }
+                                catch { toast('Could not update status', 'error'); }
+                              }}
+                            >
+                              {['New', 'Confirmed', 'Completed', 'Cancelled'].map(o => <option key={o} value={o}>{o}</option>)}
+                            </select>
+                          </td>
                         </tr>
                       ))}</tbody></table></div>
                   )}

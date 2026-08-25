@@ -408,6 +408,22 @@ function demoCall(method: string, params: Row): any {
     }
 
     // ── storefront ──
+    case 'hira.api.bookings.get_slots':
+      return { message: { slots: [] } };
+    case 'hira.api.bookings.create_booking': {
+      const nm = String(params.customer_name || '').trim();
+      if (!nm) throw new BackendError('Please tell us your name');
+      const ph = String(params.phone || '').replace(/[^0-9+]/g, '');
+      if (ph.replace(/D/g, '').length < 7) throw new BackendError('Enter a valid phone number');
+      const b = db.createBooking({ ...params, customer_name: nm, phone: ph } as any);
+      return { message: { booking_id: b.name, status: b.status } };
+    }
+    case 'hira.api.bookings.list_bookings':
+      return { message: db.allBookings() };
+    case 'hira.api.bookings.set_booking_status': {
+      db.setBookingStatus(String(params.name), String(params.status));
+      return { message: { name: params.name, status: params.status } };
+    }
     case 'hira.api.coupons.validate_coupon': {
       const code = String(params.code || '').trim().toUpperCase();
       const subtotal = Number(params.subtotal || 0);
@@ -738,4 +754,47 @@ export async function validateCoupon(code: string, subtotal: number): Promise<Co
   const m = res?.message as CouponResult | undefined;
   if (!m) throw new Error('Invalid coupon code');
   return m;
+}
+
+// ─── video call bookings ─────────────────────────────────────────────────────
+
+export interface BookingInput {
+  customer_name: string;
+  phone: string;
+  email?: string;
+  preferred_date?: string;
+  preferred_time?: string;
+  notes?: string;
+}
+
+export interface BookingRow extends Row {
+  name: string;
+  customer_name: string;
+  phone: string;
+  status: string;
+}
+
+/** Time slots the store offers, from the backend where one is available. */
+export async function getBookingSlots(): Promise<string[]> {
+  const res = await call('hira.api.bookings.get_slots', {}, { method: 'GET' }).catch(() => null);
+  const slots = res?.message?.slots;
+  return Array.isArray(slots) && slots.length ? (slots as string[]) : [];
+}
+
+/** Request a video call. Works for guests — this is a first point of contact. */
+export async function createBooking(input: BookingInput): Promise<{ booking_id: string }> {
+  const res = await call('hira.api.bookings.create_booking', { ...input });
+  const m = res?.message;
+  if (!m?.booking_id) throw new Error('We could not record your request. Please try again.');
+  return m;
+}
+
+/** Bookings for the admin panel. */
+export async function listBookings(limit = 100): Promise<BookingRow[]> {
+  const res = await call('hira.api.bookings.list_bookings', { limit }, { method: 'GET' }).catch(() => null);
+  return Array.isArray(res?.message) ? (res.message as BookingRow[]) : [];
+}
+
+export async function setBookingStatus(name: string, status: string) {
+  return call('hira.api.bookings.set_booking_status', { name, status });
 }

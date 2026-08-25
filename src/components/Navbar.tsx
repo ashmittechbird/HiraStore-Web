@@ -43,10 +43,10 @@ export default function Navbar() {
       {/* Announcement Bar */}
       <div className="announcement">
         <div className="marquee-inner">
-          <span>Free Shipping on orders over $15</span>
+          <span>Free Shipping on orders over $100</span>
           <span>1 Year Warranty</span>
           <span>Premium Quality Jewellery</span>
-          <span>Free Shipping on orders over $15</span>
+          <span>Free Shipping on orders over $100</span>
           <span>1 Year Warranty</span>
           <span>Premium Quality Jewellery</span>
         </div>

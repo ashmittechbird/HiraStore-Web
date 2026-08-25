@@ -37,7 +37,7 @@ export const FORCED_MODE = (import.meta.env.VITE_BACKEND_MODE as string) || '';
 export const PROBE_TIMEOUT_MS = 2500;
 
 /** Free shipping threshold, and the flat rate below it. Shared by cart + checkout. */
-export const FREE_SHIPPING_OVER = 15;
+export const FREE_SHIPPING_OVER = 100;
 export const SHIPPING_FLAT = 5;
 
 export function shippingFor(subtotal: number): number {

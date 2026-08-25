@@ -193,6 +193,7 @@ export default function CheckoutPage() {
               <div className="total-row"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
               <div className="total-row"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `${shipping.toFixed(2)}`}</span></div>
               {shipping > 0 && <div className="total-row" style={{ fontSize: '12px', color: '#8aa5aa' }}><span>Add ${(FREE_SHIPPING_OVER - subtotal).toFixed(2)} for free shipping</span><span /></div>}
+              <div className="total-row" style={{ fontSize: '11.5px', color: '#8aa5aa', lineHeight: 1.5 }}><span>Shipping charge and tax applicable as per delivery address.</span><span /></div>
               {discount > 0 && <div className="total-row" style={{ color: '#16a34a' }}><span>Discount</span><span>−${discount.toFixed(2)}</span></div>}
               <div className="total-row grand"><span>Total</span><span>${total.toFixed(2)}</span></div>
             </div>

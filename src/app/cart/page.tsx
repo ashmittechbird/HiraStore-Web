@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
 import { useFrappeAuth } from '@/lib/frappe';
 import { validateCoupon } from '@/lib/backend';
+import { shippingFor, FREE_SHIPPING_OVER } from '@/lib/config';
 
 export default function CartPage() {
   const { items, removeItem, updateQty, clearCart, totalItems, totalPrice } = useCart();
@@ -16,7 +17,8 @@ export default function CartPage() {
   const { currentUser } = useFrappeAuth();
 
   const subtotal = totalPrice();
-  const shipping = subtotal >= 15 ? 0 : 5;
+  // Shared with checkout so the quote and the charge can't drift apart.
+  const shipping = shippingFor(subtotal);
   const safeDiscount = Math.min(discount, subtotal);
   const total = Math.max(0, subtotal - safeDiscount + shipping);
 
@@ -155,9 +157,12 @@ export default function CartPage() {
                 </div>
                 {shipping > 0 && (
                   <div style={{ fontSize: '12px', color: '#007a8c', background: '#e0f7fa', padding: '8px 12px', borderRadius: '4px', marginBottom: '8px' }}>
-                    Add ${(15 - subtotal).toFixed(2)} more for free shipping
+                    Add ${(FREE_SHIPPING_OVER - subtotal).toFixed(2)} more for free shipping
                   </div>
                 )}
+                <div style={{ fontSize: '11.5px', color: '#8aa5aa', lineHeight: 1.5, marginBottom: '8px' }}>
+                  Shipping charge and tax applicable as per delivery address.
+                </div>
                 <div className="summary-divider" />
                 <div className="summary-total-row">
                   <span className="summary-total-label">Total</span>

@@ -476,7 +476,7 @@ export default function HomePage() {
           <div className="offer-percent"><sup>UP TO </sup>30<sup>%</sup></div>
           <p className="offer-off">OFF</p>
           <h2 className="offer-headline">Adorn Yourself<br />for Less</h2>
-          <p className="offer-subtext">Handcrafted artificial jewellery pieces, now at our best prices of the season.</p>
+          <p className="offer-subtext">Handcrafted silver jewellery pieces, now at our best prices of the season.</p>
           <div className="offer-code-wrap">
             <span className="offer-code-label">Use Code</span>
             <span className="offer-code">HIRA30</span>

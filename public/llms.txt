@@ -1,9 +1,9 @@
 # The Hira Store
 
-> Handcrafted sterling silver jewelry designed for everyday elegance. Earrings, necklaces, rings, bracelets, and gift sets.
+> Handcrafted silver jewelry designed for everyday elegance. Earrings, necklaces, rings, bracelets, and gift sets.
 
 ## About
-The Hira Store is an online jewelry brand founded in 2020, offering premium artificial and demi-fine jewelry. Each piece is crafted by artisans using ethically sourced materials. The store ships from San Jose, CA and offers free shipping on orders over $15.
+The Hira Store is an online jewelry brand founded in 2023, offering premium silver and demi-fine jewelry. Each piece is crafted by artisans using ethically sourced materials. The store ships from San Jose, CA and offers free shipping on orders over $100.
 
 ## Pages
 - [Shop All Jewelry](/store/shop): Browse the full catalog of 500+ handcrafted pieces with search, filters, and sorting.

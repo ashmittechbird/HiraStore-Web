@@ -10,7 +10,7 @@ interface FrappeUser { full_name?: string; email?: string; }
 
 const OFFERS = [
   { code: 'HIRA30', title: '30% Off Sitewide', desc: 'Valid on all orders above ₹999', min: 'Min. order ₹999' },
-  { code: 'FREESHIP', title: 'Free Shipping', desc: 'On all orders, no minimum', min: 'No minimum order' },
+  { code: 'FREESHIP', title: 'Free Shipping', desc: 'On orders over $100', min: 'Min. order $100' },
 ];
 
 function statusClass(s: string) {

@@ -34,7 +34,7 @@ export default function AboutPage() {
         <div className="about-hero-content">
           <div className="about-hero-eyebrow">The Hira Store</div>
           <h1 className="about-hero-title">Crafted with<br />Devotion.</h1>
-          <p className="about-hero-subtitle">Est. 2020 &nbsp;·&nbsp; Premium Artificial Jewellery</p>
+          <p className="about-hero-subtitle">Est. 2023 &nbsp;·&nbsp; Premium Silver Jewellery</p>
         </div>
         <div className="about-hero-scroll">
           <div className="about-hero-scroll-line" />
@@ -65,7 +65,7 @@ export default function AboutPage() {
           </h2>
           <div className="about-story-body reveal reveal-delay-1">
             <p>
-              What started as a passion project in 2020, soon evolved into a respected
+              What started as a passion project in 2023, soon evolved into a respected
               business that offers beautiful pieces of jewelry for every occasion. We
               emphasize sustainability and ethically sourced materials without compromising
               on the quality of our metals and gemstones.
@@ -131,7 +131,7 @@ export default function AboutPage() {
             your experience matters to us.
           </p>
           <div className="about-heritage-rule reveal reveal-delay-3" />
-          <div className="about-heritage-detail reveal reveal-delay-3">Est. 2020 &nbsp;·&nbsp; Hira Jewellery</div>
+          <div className="about-heritage-detail reveal reveal-delay-3">Est. 2023 &nbsp;·&nbsp; Hira Jewellery</div>
         </div>
       </section>
 
@@ -216,7 +216,7 @@ export default function AboutPage() {
         <div className="about-founder-inner">
           <span className="about-founder-mark reveal" aria-hidden="true">&ldquo;</span>
           <p className="about-founder-quote reveal">
-            I started Hira because I wanted my mother to wear something
+            I started Hira because I wanted my daughter to wear something
             extraordinary every single day, not just on celebrations.
             She deserved that, and so do you. Every piece we make carries
             that intention: to be worthy of your everyday life.

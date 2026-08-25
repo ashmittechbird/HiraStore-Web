@@ -378,11 +378,11 @@ function ShopContent() {
       {/* Heritage / Our Story */}
       <section className="heritage-section">
         <div className="heritage-img-wrap">
-          <img src={`${SITE_IMAGES}/heritage-craft.jpg`} alt="Handcrafted Jewelry from Rajasthan" />
+          <img src={`${SITE_IMAGES}/heritage-craft.jpg`} alt="Handcrafted Jewelry from India" />
         </div>
         <div className="heritage-content">
-          <h2 className="heritage-title">Roots in Rajasthan,<br/>Crafted for the World</h2>
-          <p className="heritage-desc">Every piece of Hira jewelry carries the legacy of expert artisans from Rajasthan. We blend generations of traditional craftsmanship with modern design to create demi-fine jewelry that elevates your everyday style.</p>
+          <h2 className="heritage-title">Roots in India,<br/>Crafted for the World</h2>
+          <p className="heritage-desc">Every piece of Hira jewelry carries the legacy of expert artisans from India. We blend generations of traditional craftsmanship with modern design to create demi-fine jewelry that elevates your everyday style.</p>
           <Link to="/about" className="btn-story">Discover Our Story</Link>
         </div>
       </section>

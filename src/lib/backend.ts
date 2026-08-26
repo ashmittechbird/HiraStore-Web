@@ -221,6 +221,30 @@ async function frappeGet(method: string, params: Record<string, unknown>): Promi
 
 type Row = Record<string, any>;
 
+/**
+ * Phone number in the digits-with-country-code form wa.me requires.
+ *
+ * A bare 10-digit number has no country code and wa.me fails silently on those
+ * — the tab opens to nothing and the store believes it messaged the customer.
+ * Mirrors `_msisdn` in the hira app so both modes behave the same.
+ */
+const DEFAULT_COUNTRY_CODE =
+  (import.meta.env.VITE_DEFAULT_COUNTRY_CODE as string) || '1';
+
+export function normalizeMsisdn(raw: unknown): string {
+  const s = String(raw ?? '').trim();
+  let digits = s.replace(/\D/g, '');
+  if (!digits) return '';
+
+  if (s.startsWith('+')) return digits;
+  if (s.startsWith('00')) return digits.replace(/^0+/, '');
+
+  digits = digits.replace(/^0+/, '');
+  const cc = DEFAULT_COUNTRY_CODE;
+  if (digits.startsWith(cc) && digits.length > 10) return digits;
+  return digits.length <= 10 ? cc + digits : digits;
+}
+
 /** Evaluate one Frappe filter triple against a row. */
 function matchOne(row: Row, field: string, op: string, value: any): boolean {
   const v = row[field];
@@ -420,6 +444,23 @@ function demoCall(method: string, params: Row): any {
     }
     case 'hira.api.bookings.list_bookings':
       return { message: db.allBookings() };
+    case 'hira.api.bookings.whatsapp_message': {
+      const bk = db.allBookings().find(x => x.name === String(params.name));
+      if (!bk) throw new BackendError('Booking not found');
+      // wa.me needs a country code; a bare local number silently fails to open.
+      const digits = normalizeMsisdn(bk.phone);
+      if (!digits) throw new BackendError('This booking has no usable phone number');
+      const first = (bk.customer_name || 'there').split(' ')[0];
+      const when = bk.preferred_date
+        ? `${bk.preferred_date}${bk.preferred_time ? ', ' + bk.preferred_time : ''}`
+        : 'a time that suits you';
+      const text =
+        `Hi ${first}, this is The Hira Store. Your video call is confirmed for ${when}. ` +
+        `Reference ${bk.name}.`;
+      return {
+        message: { phone: digits, text, url: `https://wa.me/${digits}?text=${encodeURIComponent(text)}` },
+      };
+    }
     case 'hira.api.bookings.set_booking_status': {
       db.setBookingStatus(String(params.name), String(params.status));
       return { message: { name: params.name, status: params.status } };
@@ -797,4 +838,19 @@ export async function listBookings(limit = 100): Promise<BookingRow[]> {
 
 export async function setBookingStatus(name: string, status: string) {
   return call('hira.api.bookings.set_booking_status', { name, status });
+}
+
+/**
+ * Pre-filled WhatsApp link for confirming a booking with the customer.
+ *
+ * Sending WhatsApp automatically needs the Business API and a paid provider;
+ * a click-to-send link needs nothing and reaches them on the channel they use.
+ */
+export async function bookingWhatsappLink(
+  name: string,
+  kind: 'confirmed' | 'followup' = 'confirmed'
+): Promise<string> {
+  const res = await call('hira.api.bookings.whatsapp_message', { name, kind }, { method: 'GET' })
+    .catch(() => null);
+  return res?.message?.url || '';
 }

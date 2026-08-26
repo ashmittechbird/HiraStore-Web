@@ -4,7 +4,7 @@ import {
   useFrappeUpdateDoc, useFrappeDeleteDoc, useFrappePostCall,
 } from '@/lib/frappe';
 import { HOME_URL } from '@/lib/config';
-import { call, detectMode, db, cacheHomepageConfig, getHomepageConfig, listBookings, setBookingStatus } from '@/lib/backend';
+import { call, detectMode, db, cacheHomepageConfig, getHomepageConfig, listBookings, setBookingStatus, bookingWhatsappLink } from '@/lib/backend';
 import type { BookingRow } from '@/lib/backend';
 import type { Mode } from '@/lib/backend';
 import './admin.css';
@@ -959,7 +959,7 @@ export default function AdminPage() {
                   <div className="card-hd"><h2>Video Call Requests</h2></div>
                   {bookingsLoading ? <div className="loading-overlay"><div className="spin" /><p>Loading requests…</p></div>
                     : filteredBookings.length === 0 ? <div className="empty"><div className="empty-icon">{I.video}</div><h3>No requests yet</h3><p>Requests from the &ldquo;Book a Video Call&rdquo; button on the storefront appear here.</p></div> : (
-                    <div className="tbl-wrap"><table><thead><tr><th>Ref</th><th>Name</th><th>Contact</th><th>Preferred</th><th>Looking for</th><th>Status</th></tr></thead>
+                    <div className="tbl-wrap"><table><thead><tr><th>Ref</th><th>Name</th><th>Contact</th><th>Preferred</th><th>Looking for</th><th>Status</th><th>Notify</th></tr></thead>
                       <tbody>{filteredBookings.map(b => (
                         <tr key={b.name}>
                           <td style={{ fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11.5 }}>{b.name}</td>
@@ -986,6 +986,22 @@ export default function AdminPage() {
                             >
                               {['New', 'Confirmed', 'Completed', 'Cancelled'].map(o => <option key={o} value={o}>{o}</option>)}
                             </select>
+                          </td>
+                          <td>
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              title="Open WhatsApp with a confirmation ready to send"
+                              onClick={async () => {
+                                try {
+                                  const url = await bookingWhatsappLink(b.name, 'confirmed');
+                                  if (url) window.open(url, '_blank', 'noopener');
+                                  else toast('No usable phone number on this booking', 'error');
+                                } catch { toast('Could not build the WhatsApp message', 'error'); }
+                              }}
+                            >
+                              WhatsApp
+                            </button>
                           </td>
                         </tr>
                       ))}</tbody></table></div>

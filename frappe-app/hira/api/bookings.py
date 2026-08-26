@@ -129,8 +129,17 @@ def _when(doc):
 
 
 def can_send_email():
-    """True only when the bench has a usable outgoing account."""
-    return bool(frappe.db.exists("Email Account", {"enable_outgoing": 1, "default_outgoing": 1}))
+    """True only when the bench has an outgoing account that can actually send.
+
+    An account still waiting for its password counts as configured in Frappe but
+    fails at SMTP time. Treating it as ready would report "notified" for mail
+    that never left, which is the one thing this must not do.
+    """
+    return bool(frappe.db.exists("Email Account", {
+        "enable_outgoing": 1,
+        "default_outgoing": 1,
+        "awaiting_password": 0,
+    }))
 
 
 def _email_customer(doc, kind):

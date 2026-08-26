@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { whatsappLink } from '@/lib/contact';
 
 function readSocialLinks() {
   return {
@@ -7,7 +8,8 @@ function readSocialLinks() {
     facebook:  localStorage.getItem('hs_sm_facebook')  || '',
     pinterest: localStorage.getItem('hs_sm_pinterest') || '',
     tiktok:    localStorage.getItem('hs_sm_tiktok')    || '',
-    whatsapp:  localStorage.getItem('hs_sm_whatsapp')  || '',
+    // Falls back to the store's own line so the icon isn't missing by default.
+    whatsapp:  whatsappLink(),
   };
 }
 

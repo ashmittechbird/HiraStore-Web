@@ -8,8 +8,17 @@
 
 const WHATSAPP_KEY = 'hs_sm_whatsapp';
 
-/** Fallback used when the admin hasn't configured a number yet. */
-const DEFAULT_WHATSAPP = import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined;
+/**
+ * The store's WhatsApp line, in full international form.
+ *
+ * Baked in so the button works on any deploy without configuration; the admin's
+ * Settings value still wins when one is saved. 972-655-6599 is a US number, so
+ * it carries country code 1 — WhatsApp needs the country code and no symbols.
+ */
+const STORE_WHATSAPP = '19726556599';
+
+const DEFAULT_WHATSAPP =
+  (import.meta.env.VITE_WHATSAPP_NUMBER as string | undefined) || STORE_WHATSAPP;
 
 /** Digits only — what wa.me expects, country code included, no +. */
 export function whatsappNumber(): string {

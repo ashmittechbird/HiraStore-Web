@@ -1,3002 +1,3324 @@
 [
  {
-  "sno": "1",
   "product_id": "THSE001",
   "description": "Pure silver earrings with pink meenakari details",
   "category": "Earrings",
   "weight_raw": "22 grams",
-  "price_inr": 3500,
   "final_price_usd": 65,
-  "status": "Available"
+  "price_inr": 3500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "2",
   "product_id": "THSE002",
   "description": "Pure silver earrings with blue meenakari details",
   "category": "Earrings",
   "weight_raw": "42 grams",
-  "price_inr": 12250,
   "final_price_usd": 225,
-  "status": "Available"
+  "price_inr": 12250,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "3",
   "product_id": "THSE003",
   "description": "Pure silver earrings with yellow meenakari details",
   "category": "Earrings",
   "weight_raw": "11 grams",
-  "price_inr": 1980,
   "final_price_usd": 36,
-  "status": "Available"
+  "price_inr": 1980,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "4",
   "product_id": "THSE004",
   "description": "Pure silver earrings with blue meenakari details",
   "category": "Earrings",
   "weight_raw": "21 grams",
-  "price_inr": 3640,
   "final_price_usd": 65,
-  "status": "Available"
+  "price_inr": 3640,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "5",
   "product_id": "THSE005",
   "description": "Pure silver earrings with blue/green meenakari details",
   "category": "Earrings",
   "weight_raw": "22 grams",
-  "price_inr": 3500,
   "final_price_usd": 65,
-  "status": "Available"
+  "price_inr": 3500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "6",
   "product_id": "THSE006",
   "description": "Pure silver earrings with green drops gold dipped",
   "category": "Earrings",
   "weight_raw": "26 grams",
-  "price_inr": 8820,
   "final_price_usd": 165,
-  "status": "Available"
+  "price_inr": 8820,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "7",
   "product_id": "THSE010",
   "description": "Pure silver earrings with dual tone",
   "category": "Earrings",
   "weight_raw": "34 grams",
-  "price_inr": 10500,
   "final_price_usd": 195,
-  "status": "Available"
+  "price_inr": 10500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "8",
   "product_id": "THSE012",
   "description": "Pure silver earrings with blue meenakari details",
   "category": "Earrings",
   "weight_raw": "72 grams",
-  "price_inr": 19350,
   "final_price_usd": 295,
-  "status": "Available"
+  "price_inr": 19350,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "9",
   "product_id": "THSE014",
   "description": "Pure silver earrings with white pearl details",
   "category": "Earrings",
   "weight_raw": "24 grams",
-  "price_inr": 5330,
   "final_price_usd": 95,
-  "status": "Available"
+  "price_inr": 5330,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "10",
   "product_id": "THSE018",
   "description": "Pure silver earrings with blue stone details",
   "category": "Earrings",
   "weight_raw": "38 grams",
-  "price_inr": 9800,
   "final_price_usd": 150,
-  "status": "Available"
+  "price_inr": 9800,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "11",
   "product_id": "THSE020",
   "description": "Pure silver earrings with dual tone",
   "category": "Earrings",
   "weight_raw": "21 grams",
-  "price_inr": 6600,
   "final_price_usd": 100,
-  "status": "Available"
+  "price_inr": 6600,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "12",
   "product_id": "THSE021",
   "description": "Pure silver ear cuffs",
   "category": "Earrings",
   "weight_raw": "14 grams",
-  "price_inr": 3850,
   "final_price_usd": 75,
-  "status": "Available"
+  "price_inr": 3850,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "13",
   "product_id": "THSE022",
   "description": "Pure silver chandbali earrings with kundan and pearl",
   "category": "Earrings",
   "weight_raw": "37 grams",
-  "price_inr": 19000,
   "final_price_usd": 275,
-  "status": "Available"
+  "price_inr": 19000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "14",
   "product_id": "THSE024",
   "description": "Pure silver stud with black stones",
   "category": "Earrings",
   "weight_raw": "17 grams",
-  "price_inr": 2550,
   "final_price_usd": 40,
-  "status": "Available"
+  "price_inr": 2550,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "15",
   "product_id": "THSE027",
   "description": "Pure silver earrings with dual tone",
   "category": "Earrings",
   "weight_raw": "27 grams",
-  "price_inr": 6800,
   "final_price_usd": 105,
-  "status": "Available"
+  "price_inr": 6800,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "16",
   "product_id": "THSE029",
   "description": "Pure silver drops with green and pink stones",
   "category": "Earrings",
   "weight_raw": "28 grams",
-  "price_inr": 6399,
   "final_price_usd": 95,
-  "status": "Available"
+  "price_inr": 6399,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "17",
   "product_id": "THSE032",
   "description": "Pure silver drops with meenakari and pearls",
   "category": "Earrings",
   "weight_raw": "28 grams",
-  "price_inr": 6299,
   "final_price_usd": 95,
-  "status": "Available"
+  "price_inr": 6299,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "18",
   "product_id": "THSB001",
   "description": "Pure silver tennis bracelet",
   "category": "Bracelets",
   "weight_raw": "24 grams",
-  "price_inr": 14000,
   "final_price_usd": 200,
-  "status": "Available"
+  "price_inr": 14000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "19",
   "product_id": "THSB002",
   "description": "Pure silver Kada inspired from Baahubali",
   "category": "Bracelets",
   "weight_raw": "99 grams",
-  "price_inr": 21780,
   "final_price_usd": 335,
-  "status": "Available"
+  "price_inr": 21780,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "20",
   "product_id": "THSE033/34",
   "description": "Elegant Pure silver studs with ruby",
   "category": "Earrings",
   "weight_raw": "4 grams",
-  "price_inr": 6400,
   "final_price_usd": 100,
-  "status": ""
+  "price_inr": 6400,
+  "status": "",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "21",
   "product_id": "THSB003",
   "description": "Pure silver tennis bracelet with green stones",
   "category": "Bracelets",
   "weight_raw": "11.2 grams",
-  "price_inr": 9800,
   "final_price_usd": 150,
-  "status": "Available"
+  "price_inr": 9800,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "22",
   "product_id": "THSN002",
   "description": "Exquisite Pure silver dual tone pendant",
   "category": "Necklaces",
   "weight_raw": "82 grams",
-  "price_inr": 18360,
   "final_price_usd": 280,
-  "status": "Available"
+  "price_inr": 18360,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "23",
   "product_id": "THSE035",
   "description": "Elegant Pure silver studs with pearls",
   "category": "Earrings",
   "weight_raw": "15 grams",
-  "price_inr": 3350,
   "final_price_usd": 50,
-  "status": "Available"
+  "price_inr": 3350,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "24",
   "product_id": "THSR001",
   "description": "Beautiful swan ring in pure silver",
   "category": "Accessories -Ring",
   "weight_raw": "11 grams",
-  "price_inr": 2280,
   "final_price_usd": 35,
-  "status": "sold"
+  "price_inr": 2280,
+  "status": "sold",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "25",
   "product_id": "THSB004",
   "description": "Perfect Kada bracelet in pure silver with red stones",
   "category": "Bracelets",
   "weight_raw": "63 grams",
-  "price_inr": 12560,
   "final_price_usd": 195,
-  "status": "Available"
+  "price_inr": 12560,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "26",
   "product_id": "THSE036",
   "description": "Victorian style earrings in pure silver with green and white stones",
   "category": "Earrings",
   "weight_raw": "28 grams",
-  "price_inr": 10580,
   "final_price_usd": 165,
-  "status": "Available"
+  "price_inr": 10580,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "27",
   "product_id": "THSE039",
   "description": "Dainty pure silver earrings",
   "category": "Earrings",
   "weight_raw": "4 grams",
-  "price_inr": 850,
   "final_price_usd": 15,
-  "status": "Available"
+  "price_inr": 850,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "28",
   "product_id": "THSN003",
   "description": "Hasli with ocean blue kundan Necklace",
   "category": "Necklaces",
   "weight_raw": "82 grams",
-  "price_inr": 17960,
   "final_price_usd": 275,
-  "status": "Available"
+  "price_inr": 17960,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "29",
   "product_id": "THSB005",
   "description": "Pure silver tennis bracelet",
   "category": "Bracelets",
   "weight_raw": "24 grams",
-  "price_inr": 18000,
   "final_price_usd": 275,
-  "status": "Available"
+  "price_inr": 18000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "30",
   "product_id": "THSE040",
   "description": "Dainty pure silver earrings",
   "category": "Earrings",
   "weight_raw": "4 grams",
-  "price_inr": 1080,
   "final_price_usd": 20,
-  "status": "Available"
+  "price_inr": 1080,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "31",
   "product_id": "THSE041",
   "description": "Dainty pure silver earrings",
   "category": "Earrings",
   "weight_raw": "4 grams",
-  "price_inr": 1260,
   "final_price_usd": 20,
-  "status": "Available"
+  "price_inr": 1260,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "32",
   "product_id": "THSN004",
   "description": "Hasli Modern silver Necklace",
   "category": "Necklaces",
   "weight_raw": "94 grams",
-  "price_inr": 33500,
   "final_price_usd": 500,
-  "status": "Available"
+  "price_inr": 33500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "33",
   "product_id": "THSN006",
   "description": "Hasli Modern silver Necklace",
   "category": "Necklaces",
   "weight_raw": "21 grams",
-  "price_inr": 4450,
   "final_price_usd": 75,
-  "status": "Available"
+  "price_inr": 4450,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "34",
   "product_id": "THSN009",
   "description": "Majestic green stone set necklace in pure silver",
   "category": "Necklaces",
   "weight_raw": "101 grams",
-  "price_inr": 19000,
   "final_price_usd": 300,
-  "status": "Available"
+  "price_inr": 19000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "35",
   "product_id": "THSN012",
   "description": "Victorian pearl necklace in pure silver with red and white stone pendant",
   "category": "Necklaces",
   "weight_raw": "74 grams",
-  "price_inr": 28840,
   "final_price_usd": 495,
-  "status": "Available"
+  "price_inr": 28840,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "36",
   "product_id": "THSS002",
   "description": "Delicate choker set with earrings",
   "category": "Necklaces",
   "weight_raw": "48 grams",
-  "price_inr": 14280,
   "final_price_usd": 285,
-  "status": "sold"
+  "price_inr": 14280,
+  "status": "sold",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "37",
   "product_id": "THSE042",
   "description": "Elaborate Ear cuffs set in pink tone",
   "category": "Earrings",
   "weight_raw": "42 grams",
+  "final_price_usd": 145,
   "price_inr": 9570,
-  "final_price_usd": 145,
-  "status": "Available"
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "38",
-  "product_id": "THSA001",
-  "description": "Siver anklets",
-  "category": "Accessories - Anklets",
-  "weight_raw": "43 grams",
-  "price_inr": 10750,
-  "final_price_usd": 165,
-  "status": "Available"
- },
- {
-  "sno": "39",
-  "product_id": "THSB006",
-  "description": "Dual tone ravishing Kada bracelet",
-  "category": "Bracelets",
-  "weight_raw": "59  grams",
-  "price_inr": 15821,
-  "final_price_usd": 250,
-  "status": "Available"
- },
- {
-  "sno": "40",
-  "product_id": "THSN017",
-  "description": "Antique Deep Nagas Necklace",
-  "category": "necklaces",
-  "weight_raw": "118.01",
-  "price_inr": 29502.5,
-  "final_price_usd": 495,
-  "status": "Available"
- },
- {
-  "sno": "41",
-  "product_id": "THSE044",
-  "description": "Moissanite antique earrings in gold tone",
-  "category": "Earrings",
-  "weight_raw": "48.2",
-  "price_inr": 12050,
-  "final_price_usd": 195,
-  "status": "Available"
- },
- {
-  "sno": "42",
-  "product_id": "THSE045",
-  "description": "Swarovski ear studs",
-  "category": "Earrings",
-  "weight_raw": "",
-  "price_inr": 1500,
-  "final_price_usd": 25,
-  "status": "Available"
- },
- {
-  "sno": "43",
-  "product_id": "THSR002",
-  "description": "Green cocktail ring",
-  "category": "Accessories -Ring",
-  "weight_raw": "",
-  "price_inr": 2000,
-  "final_price_usd": 30,
-  "status": "Available"
- },
- {
-  "sno": "44",
-  "product_id": "THSW001/02",
-  "description": "Infinity watch sliders",
-  "category": "Accessories -Watch Sliders",
-  "weight_raw": "",
-  "price_inr": 2400,
-  "final_price_usd": 40,
-  "status": "promo"
- },
- {
-  "sno": "45",
-  "product_id": "THSE046",
-  "description": "Solid Baguette hoops",
-  "category": "Earrings",
-  "weight_raw": "",
-  "price_inr": 3000,
-  "final_price_usd": 45,
-  "status": ""
- },
- {
-  "sno": "46",
-  "product_id": "THSR004",
-  "description": "Beautiful dailywear disc ring in rose gold with swarovski",
-  "category": "Accessories -Ring",
-  "weight_raw": "",
-  "price_inr": 2000,
-  "final_price_usd": 30,
-  "status": "Available"
- },
- {
-  "sno": "47",
-  "product_id": "THSE047",
-  "description": "Cocktail halo hoops",
-  "category": "Earrings",
-  "weight_raw": "",
-  "price_inr": 5000,
-  "final_price_usd": 95,
-  "status": "Available"
- },
- {
-  "sno": "48",
-  "product_id": "THSE049",
-  "description": "Classic mother of pearls silver stud",
-  "category": "Earrings",
-  "weight_raw": "",
-  "price_inr": 6500,
-  "final_price_usd": 120,
-  "status": "Available"
- },
- {
-  "sno": "49",
-  "product_id": "THSE052",
-  "description": "Diamond cluster silver studs",
-  "category": "Earrings",
-  "weight_raw": "",
-  "price_inr": 3500,
-  "final_price_usd": 65,
-  "status": "Available"
- },
- {
-  "sno": "50",
-  "product_id": "THSR006",
-  "description": "Classic elevated solitaire ring",
-  "category": "Accessories -Ring",
-  "weight_raw": "",
-  "price_inr": 3200,
-  "final_price_usd": 50,
-  "status": "Available"
- },
- {
-  "sno": "51",
-  "product_id": "THSB013",
-  "description": "Multicolor stone silver bangles",
-  "category": "Bangles",
-  "weight_raw": "49.37",
-  "price_inr": 12342.5,
-  "final_price_usd": 225,
-  "status": "Available"
- },
- {
-  "sno": "52",
-  "product_id": "THSB015",
-  "description": "Green Kundan stone silver bangles",
-  "category": "Bangles",
-  "weight_raw": "34",
-  "price_inr": 8500,
-  "final_price_usd": 150,
-  "status": "Available"
- },
- {
-  "sno": "53",
-  "product_id": "THSB016",
-  "description": "Pink Kundan stone silver bangles",
-  "category": "Bangles",
-  "weight_raw": "35",
-  "price_inr": 8750,
-  "final_price_usd": 160,
-  "status": "Available"
- },
- {
-  "sno": "54",
-  "product_id": "THSB017",
-  "description": "Pink Kundan stone silver bangles",
-  "category": "Bangles",
-  "weight_raw": "32.3",
-  "price_inr": 8075,
-  "final_price_usd": 145,
-  "status": "Available"
- },
- {
-  "sno": "55",
-  "product_id": "THSE053",
-  "description": "Delicate Ear cuffs in pure silver to show your distinct style",
-  "category": "Accessories - Ear cuffs",
-  "weight_raw": "",
-  "price_inr": 1000,
-  "final_price_usd": 15,
-  "status": "available"
- },
- {
-  "sno": "56",
-  "product_id": "THSN022",
-  "description": "Multilayer Silver necklace - 5 layers of pure silver gives a contemporary stylish look for any blouse",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 5500,
-  "final_price_usd": 100,
-  "status": "Available"
- },
- {
-  "sno": "57",
-  "product_id": "THSE054",
-  "description": "Delicate Ear cuffs in pure silver to show your distinct style",
-  "category": "Accessories - Ear cuffs",
-  "weight_raw": "",
-  "price_inr": 2000,
-  "final_price_usd": 30,
-  "status": "Available"
- },
- {
-  "sno": "58",
-  "product_id": "THSE055",
-  "description": "Pure silver amethyst studs",
-  "category": "Earrings",
-  "weight_raw": "",
-  "price_inr": 1500,
-  "final_price_usd": 25,
-  "status": "available"
- },
- {
-  "sno": "59",
-  "product_id": "THSC001-2",
-  "description": "Pandora charms you can add to your collection",
-  "category": "Accessories - Charms",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": 25,
-  "status": "Available"
- },
- {
-  "sno": "60",
-  "product_id": "THSN023",
-  "description": "Bridal Kemp Jadau majestic necklace",
-  "category": "Necklaces",
-  "weight_raw": "177.62",
-  "price_inr": 44405,
-  "final_price_usd": 795,
-  "status": "Available"
- },
- {
-  "sno": "61",
   "product_id": "THSA001",
   "description": "Silver Vilakku - Home Décor",
   "category": "Articles",
   "weight_raw": "35",
-  "price_inr": 7000,
   "final_price_usd": 125,
-  "status": "Available"
+  "price_inr": 7000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "62",
+  "product_id": "THSB006",
+  "description": "Dual tone ravishing Kada bracelet",
+  "category": "Bracelets",
+  "weight_raw": "59  grams",
+  "final_price_usd": 250,
+  "price_inr": 15821,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE043",
+  "description": "Kundan Jimiki with pearls",
+  "category": "Earrings",
+  "weight_raw": "38.7",
+  "final_price_usd": 150,
+  "price_inr": 9675,
+  "status": "sold",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN017",
+  "description": "Antique Deep Nagas Necklace",
+  "category": "necklaces",
+  "weight_raw": "118.01",
+  "final_price_usd": 495,
+  "price_inr": 29502.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE044",
+  "description": "Moissanite antique earrings in gold tone",
+  "category": "Earrings",
+  "weight_raw": "48.2",
+  "final_price_usd": 195,
+  "price_inr": 12050,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE045",
+  "description": "Swarovski ear studs",
+  "category": "Earrings",
+  "weight_raw": "",
+  "final_price_usd": 25,
+  "price_inr": 1500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSR002",
+  "description": "Green cocktail ring",
+  "category": "Accessories -Ring",
+  "weight_raw": "",
+  "final_price_usd": 30,
+  "price_inr": 2000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSW001/02",
+  "description": "Infinity watch sliders",
+  "category": "Accessories -Watch Sliders",
+  "weight_raw": "",
+  "final_price_usd": 40,
+  "price_inr": 2400,
+  "status": "promo",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE046",
+  "description": "Solid Baguette hoops",
+  "category": "Earrings",
+  "weight_raw": "",
+  "final_price_usd": 45,
+  "price_inr": 3000,
+  "status": "",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSR004",
+  "description": "Beautiful dailywear disc ring in rose gold with swarovski",
+  "category": "Accessories -Ring",
+  "weight_raw": "",
+  "final_price_usd": 30,
+  "price_inr": 2000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE047",
+  "description": "Cocktail halo hoops",
+  "category": "Earrings",
+  "weight_raw": "",
+  "final_price_usd": 95,
+  "price_inr": 5000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE049",
+  "description": "Classic mother of pearls silver stud",
+  "category": "Earrings",
+  "weight_raw": "",
+  "final_price_usd": 120,
+  "price_inr": 6500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE052",
+  "description": "Diamond cluster silver studs",
+  "category": "Earrings",
+  "weight_raw": "",
+  "final_price_usd": 65,
+  "price_inr": 3500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSR006",
+  "description": "Classic elevated solitaire ring",
+  "category": "Accessories -Ring",
+  "weight_raw": "",
+  "final_price_usd": 50,
+  "price_inr": 3200,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSB013",
+  "description": "Multicolor stone silver bangles",
+  "category": "Bangles",
+  "weight_raw": "49.37",
+  "final_price_usd": 225,
+  "price_inr": 12342.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSB015",
+  "description": "Green Kundan stone silver bangles",
+  "category": "Bangles",
+  "weight_raw": "34",
+  "final_price_usd": 150,
+  "price_inr": 8500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSB016",
+  "description": "Pink Kundan stone silver bangles",
+  "category": "Bangles",
+  "weight_raw": "35",
+  "final_price_usd": 160,
+  "price_inr": 8750,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSB017",
+  "description": "Pink Kundan stone silver bangles",
+  "category": "Bangles",
+  "weight_raw": "32.3",
+  "final_price_usd": 145,
+  "price_inr": 8075,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE053",
+  "description": "Delicate Ear cuffs in pure silver to show your distinct style",
+  "category": "Accessories - Ear cuffs",
+  "weight_raw": "",
+  "final_price_usd": 15,
+  "price_inr": 1000,
+  "status": "available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN022",
+  "description": "Multilayer Silver necklace - 5 layers of pure silver gives a contemporary stylish look for any blouse",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 100,
+  "price_inr": 5500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE054",
+  "description": "Delicate Ear cuffs in pure silver to show your distinct style",
+  "category": "Accessories - Ear cuffs",
+  "weight_raw": "",
+  "final_price_usd": 30,
+  "price_inr": 2000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE055",
+  "description": "Pure silver amethyst studs",
+  "category": "Earrings",
+  "weight_raw": "",
+  "final_price_usd": 25,
+  "price_inr": 1500,
+  "status": "available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSC001-2",
+  "description": "Pandora charms you can add to your collection",
+  "category": "Accessories - Charms",
+  "weight_raw": "",
+  "final_price_usd": 25,
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN023",
+  "description": "Bridal Kemp Jadau majestic necklace",
+  "category": "Necklaces",
+  "weight_raw": "177.62",
+  "final_price_usd": 795,
+  "price_inr": 44405,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
   "product_id": "THSA002",
   "description": "Silver Vilakku- Home Décor",
   "category": "Articles",
   "weight_raw": "69",
-  "price_inr": 13800,
   "final_price_usd": 250,
-  "status": "Available"
+  "price_inr": 13800,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "63",
   "product_id": "THSA003",
   "description": "Peacock statue - Home Décor",
   "category": "Articles",
   "weight_raw": "180",
+  "final_price_usd": 650,
   "price_inr": 36000,
-  "final_price_usd": 650,
-  "status": "Promo"
+  "status": "Promo",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
  },
  {
-  "sno": "64",
-  "product_id": "THSA004",
-  "description": "Silver Clock with intricate detailing in an antique finish. Elevate your space with this unique look!- Home Décor",
-  "category": "Articles",
-  "weight_raw": "",
-  "price_inr": 5500,
-  "final_price_usd": 175,
-  "status": "Available"
- },
- {
-  "sno": "65",
-  "product_id": "THSA005",
-  "description": "Cow Idol in pure silver with base. Makes a great gift too for any function/event.",
-  "category": "Articles",
-  "weight_raw": "171",
-  "price_inr": 34200,
-  "final_price_usd": 625,
-  "status": "Available"
- },
- {
-  "sno": "66",
-  "product_id": "THSA007",
-  "description": "RadhaKrishna idol in pure silver with antique finish",
-  "category": "Articles",
-  "weight_raw": "153",
-  "price_inr": 30600,
-  "final_price_usd": 475,
-  "status": "Available"
- },
- {
-  "sno": "67",
-  "product_id": "THSA010",
-  "description": "Saraswathi  idol in pure silver with antique finish",
-  "category": "Articles",
-  "weight_raw": "329",
-  "price_inr": 49350,
-  "final_price_usd": 750,
-  "status": "Available"
- },
- {
-  "sno": "68",
-  "product_id": "THSA011",
-  "description": "RadhaKrishna idol in pure silver with antique finish",
-  "category": "Articles",
-  "weight_raw": "80",
-  "price_inr": 16000,
-  "final_price_usd": 245,
-  "status": "Available"
- },
- {
-  "sno": "69",
-  "product_id": "THSA012",
-  "description": "Lakshmi idol in pure silver with antique finish",
-  "category": "Articles",
-  "weight_raw": "234",
-  "price_inr": 35100,
-  "final_price_usd": 575,
-  "status": "Available"
- },
- {
-  "sno": "70",
-  "product_id": "THSA013",
-  "description": "Komadha idol (Cow and calf) in pure silver -perfect for your home temple or gifting",
-  "category": "Articles",
-  "weight_raw": "89",
-  "price_inr": 17800,
-  "final_price_usd": 275,
-  "status": "Available"
- },
- {
-  "sno": "71",
-  "product_id": "THSA015",
-  "description": "Annapoorani Goddess Idol in pure silver antique finish",
-  "category": "Articles",
-  "weight_raw": "91",
-  "price_inr": 18200,
-  "final_price_usd": 275,
-  "status": "Available"
- },
- {
-  "sno": "72",
-  "product_id": "THSA016",
-  "description": "Hanuman idol in pure silver antique finish",
-  "category": "Articles",
-  "weight_raw": "80",
-  "price_inr": 16000,
-  "final_price_usd": 250,
-  "status": "Available"
- },
- {
-  "sno": "73",
-  "product_id": "THSA017",
-  "description": "iPhone case",
-  "category": "Articles",
-  "weight_raw": "33.5",
-  "price_inr": 6700,
-  "final_price_usd": 100,
-  "status": "Available"
- },
- {
-  "sno": "74",
-  "product_id": "THSA018",
-  "description": "RadhaKrishna idol in pure silver with antique finish",
-  "category": "Articles",
-  "weight_raw": "22",
-  "price_inr": 3300,
-  "final_price_usd": 50,
-  "status": "Available"
- },
- {
-  "sno": "75",
-  "product_id": "THSHB001",
-  "description": "Majestic Hip belt in gold finish to top off your elegant sarees or lehengas on any grand occasion",
-  "category": "Accessories - Hip Belts",
-  "weight_raw": "188",
-  "price_inr": 47000,
-  "final_price_usd": 725,
-  "status": "Available"
- },
- {
-  "sno": "76",
-  "product_id": "THSHB002",
-  "description": "Majestic Hip belt in gold finish to top off your elegant sarees or lehengas on any grand occasion",
-  "category": "Accessories - Hip Belts",
-  "weight_raw": "157.61",
-  "price_inr": 39402.5,
-  "final_price_usd": 600,
-  "status": "Available"
- },
- {
-  "sno": "77",
-  "product_id": "THSHA001",
-  "description": "Amazingly detailed stonework hair accessory set to adorn your braid and steal the show on your special day!",
-  "category": "Hair Accessories",
-  "weight_raw": "269.96",
-  "price_inr": 67490,
-  "final_price_usd": 1100,
-  "status": "Available"
- },
- {
-  "sno": "78",
-  "product_id": "THSV001",
-  "description": "Antique cuffs/ traditional Vanki for your arms - Sure to turn heads when you look so regal!",
-  "category": "Accessories - Arm Cuffs",
-  "weight_raw": "146.52",
-  "price_inr": 36630,
-  "final_price_usd": 560,
-  "status": "Available"
- },
- {
-  "sno": "79",
-  "product_id": "THSA019",
-  "description": "Silver purse with handle - intricate carvings and cutwork!  Cant believe its handmade. Silver craftsmanship at its best!",
-  "category": "Accessories - Bags",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": 500,
-  "status": "Available"
- },
- {
-  "sno": "80",
-  "product_id": "THSA020",
-  "description": "Silver Clutch with latch close and beautiful basketweave style work.",
-  "category": "Accessories - Bags",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": null,
-  "status": "Available"
- },
- {
-  "sno": "81",
-  "product_id": "THSA021",
-  "description": "Silver crossbody - will fit iphone and small card case perfectly",
-  "category": "Accessories - Bags",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": 450,
-  "status": "Available"
- },
- {
-  "sno": "82",
-  "product_id": "THSA022",
-  "description": "Silver box for nuts with cutwork lid. Make a gorgeous Diwali gift for family and friends",
-  "category": "Articles",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": null,
-  "status": "Available"
- },
- {
-  "sno": "83",
-  "product_id": "THSA023",
-  "description": "Small Silver trinket box with cutwork lid. Make a gorgeous Diwali gift for family and friends",
-  "category": "Articles",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": null,
-  "status": "Available"
- },
- {
-  "sno": "84",
-  "product_id": "THSNC001",
-  "description": "Netthi Chutti with white polka stones and a red semi-precious stone",
-  "category": "Hair Accessories",
-  "weight_raw": "20.8",
-  "price_inr": 5200,
-  "final_price_usd": 95,
-  "status": "Available"
- },
- {
-  "sno": "85",
-  "product_id": "THSN026",
-  "description": "Pearl and silver beads mala in gold finish",
-  "category": "Necklaces",
-  "weight_raw": "51",
-  "price_inr": 12750,
-  "final_price_usd": 230,
-  "status": "Available"
- },
- {
-  "sno": "86",
-  "product_id": "THSN027",
-  "description": "Multilayered ruby pearls necklace",
-  "category": "Necklaces",
-  "weight_raw": "14.73",
-  "price_inr": 2946,
-  "final_price_usd": 55,
-  "status": "Available"
- },
- {
-  "sno": "87",
-  "product_id": "THSN028",
-  "description": "Pink pearls and silver beads mala in gold finish",
-  "category": "Necklaces",
-  "weight_raw": "47.5",
-  "price_inr": 9500,
-  "final_price_usd": 175,
-  "status": "Promo"
- },
- {
-  "sno": "88",
-  "product_id": "THSN029",
-  "description": "Pearl and silver beads mala in gold finish",
-  "category": "Necklaces",
-  "weight_raw": "69.31",
-  "price_inr": 13862,
-  "final_price_usd": 250,
-  "status": "Available"
- },
- {
-  "sno": "89",
-  "product_id": "THSN030",
-  "description": "Pink pearls and silver beads mala in gold finish",
-  "category": "Necklaces",
-  "weight_raw": "59.32",
-  "price_inr": 11864,
-  "final_price_usd": 215,
-  "status": "Available"
- },
- {
-  "sno": "90",
-  "product_id": "THSN031",
-  "description": "Multilayer Silver necklace - 3 layers of pearls adorned with red kemp stone pendants finished with pearls",
-  "category": "Necklaces",
-  "weight_raw": "87.77",
-  "price_inr": 21942.5,
-  "final_price_usd": 400,
-  "status": "Available"
- },
- {
-  "sno": "91",
-  "product_id": "THSN033",
-  "description": "Navaratna short necklace with gold hanging beads",
-  "category": "Necklaces",
-  "weight_raw": "45.78",
-  "price_inr": 11445,
-  "final_price_usd": 195,
-  "status": "Available"
- },
- {
-  "sno": "92",
-  "product_id": "THSN034",
-  "description": "Green pearls and silver beads mala in gold finish",
-  "category": "Necklaces",
-  "weight_raw": "55.6",
-  "price_inr": 11120,
-  "final_price_usd": 200,
-  "status": "Available"
- },
- {
-  "sno": "93",
-  "product_id": "THSN035",
-  "description": "Blue pearls and silver beads mala in gold finish",
-  "category": "Necklaces",
-  "weight_raw": "35.33",
-  "price_inr": 7066,
-  "final_price_usd": 130,
-  "status": "Available"
- },
- {
-  "sno": "94",
-  "product_id": "THSN036",
-  "description": "White long beads necklace handpainted with floral details",
-  "category": "Necklaces",
-  "weight_raw": "50.28",
-  "price_inr": 12570,
-  "final_price_usd": 200,
-  "status": "Available"
- },
- {
-  "sno": "95",
-  "product_id": "THSN037",
-  "description": "Pink pearls and silver lotus beads mala in gold finish",
-  "category": "Necklaces",
-  "weight_raw": "53.51",
-  "price_inr": 10702,
-  "final_price_usd": 175,
-  "status": "Available"
- },
- {
-  "sno": "96",
-  "product_id": "THSN038",
-  "description": "Multicolor pearl silver chain",
-  "category": "Necklaces",
-  "weight_raw": "29.5",
-  "price_inr": 5900,
-  "final_price_usd": 90,
-  "status": "Available"
- },
- {
-  "sno": "97",
-  "product_id": "THSN039",
-  "description": "One of a kind red and white beads mala",
-  "category": "Necklaces",
-  "weight_raw": "176.12",
-  "price_inr": 35224,
-  "final_price_usd": 650,
-  "status": "Available"
- },
- {
-  "sno": "98",
-  "product_id": "THSN040",
-  "description": "Kemp pendant necklace with cream and maroon pearl chain",
-  "category": "Necklaces",
-  "weight_raw": "96.55",
-  "price_inr": 24137.5,
-  "final_price_usd": 445,
-  "status": "Available"
- },
- {
-  "sno": "99",
-  "product_id": "THSB018",
-  "description": "White CZ stones pair of silver bangles in gold finish",
-  "category": "Bangles",
-  "weight_raw": "62.62",
-  "price_inr": 15655,
-  "final_price_usd": 250,
-  "status": "Available"
- },
- {
-  "sno": "100",
-  "product_id": "THSP001",
-  "description": "Moissanite antique pendant with floral detailing in white and red stones finished with pearls.",
-  "category": "Pendants",
-  "weight_raw": "",
-  "price_inr": 12000,
-  "final_price_usd": 185,
-  "status": "Available"
- },
- {
-  "sno": "101",
-  "product_id": "THSNC002",
-  "description": "Green and white stone super sute chutti to elevate your lehenga/skirt look",
-  "category": "Hair Accessories",
-  "weight_raw": "",
-  "price_inr": 10000,
-  "final_price_usd": 155,
-  "status": "Available"
- },
- {
-  "sno": "102",
-  "product_id": "THSP006",
-  "description": "Heavy antique pendant with fish motifs and stone detailing to up your saree game",
-  "category": "Pendants",
-  "weight_raw": "106.47",
-  "price_inr": 26617.5,
-  "final_price_usd": 450,
-  "status": "Available"
- },
- {
-  "sno": "103",
-  "product_id": "THSN041",
-  "description": "Silver choker with cluster pearl detailing",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 15000,
-  "final_price_usd": 275,
-  "status": "Available"
- },
- {
-  "sno": "104",
-  "product_id": "THSP002",
-  "description": "Victorian Pendant with polki and pink stones finished with pearls",
-  "category": "Pendants",
-  "weight_raw": "56.65",
-  "price_inr": 14162.5,
-  "final_price_usd": 215,
-  "status": "Available"
- },
- {
-  "sno": "105",
-  "product_id": "THSE056",
-  "description": "Victorian style earrings in pure silver with red and white stones",
-  "category": "Earrings",
-  "weight_raw": "44.3",
-  "price_inr": 11075,
-  "final_price_usd": 175,
-  "status": "Available"
- },
- {
-  "sno": "106",
-  "product_id": "THSP003",
-  "description": "Victorian Pendant with polki and pink stones finished with pearls",
-  "category": "Pendants",
-  "weight_raw": "50.99",
-  "price_inr": 12747.5,
-  "final_price_usd": 200,
-  "status": "Available"
- },
- {
-  "sno": "107",
-  "product_id": "THSP004",
-  "description": "Victorian Pendant with polki and green stones to add to your royal look",
-  "category": "Pendants",
-  "weight_raw": "67",
-  "price_inr": 16750,
-  "final_price_usd": 255,
-  "status": "Available"
- },
- {
-  "sno": "108",
-  "product_id": "THSE058",
-  "description": "Victorian style earrings in pure silver with pink and white stones",
-  "category": "Earrings",
-  "weight_raw": "32.28",
-  "price_inr": 8070,
-  "final_price_usd": 125,
-  "status": "Available"
- },
- {
-  "sno": "109",
-  "product_id": "THSP005",
-  "description": "Victorian Pendant with polki and pink stones finished with pearls",
-  "category": "Pendants",
-  "weight_raw": "61",
-  "price_inr": 15250,
-  "final_price_usd": 250,
-  "status": "Available"
- },
- {
-  "sno": "110",
-  "product_id": "THSE059",
-  "description": "Traditional Kemp stone Jumkas",
-  "category": "Earrings",
-  "weight_raw": "69.44",
-  "price_inr": 13888,
-  "final_price_usd": 250,
-  "status": "Available"
- },
- {
-  "sno": "111",
-  "product_id": "THSE060",
-  "description": "Victorian style earrings in pure silver with green and white stones",
-  "category": "Earrings",
-  "weight_raw": "63.19",
-  "price_inr": 15797.5,
-  "final_price_usd": 250,
-  "status": "Available"
- },
- {
-  "sno": "112",
-  "product_id": "THSN043",
-  "description": "Multilayer Silver necklace - 4 layers of pearls adorned with green kemp stone pendants finished with pearls",
-  "category": "Necklaces",
-  "weight_raw": "125.44",
-  "price_inr": 31360,
-  "final_price_usd": 575,
-  "status": "Available"
- },
- {
-  "sno": "113",
-  "product_id": "THSN044",
-  "description": "Multilayer Silver necklace - 5 layers of ruby mala with pure silver red kemp moppu",
-  "category": "Necklaces",
-  "weight_raw": "266.84",
-  "price_inr": 66710,
-  "final_price_usd": 995,
-  "status": "Available"
- },
- {
-  "sno": "114",
-  "product_id": "THSN045",
-  "description": "Antique finish long haram with pendant",
-  "category": "Necklaces",
-  "weight_raw": "110.75",
-  "price_inr": 27687.5,
-  "final_price_usd": 450,
-  "status": "Available"
- },
- {
-  "sno": "115",
-  "product_id": "THSE061",
-  "description": "Kemp earrings in hoop style",
-  "category": "Earrings",
-  "weight_raw": "35",
-  "price_inr": 8750,
-  "final_price_usd": 145,
-  "status": "Available"
- },
- {
-  "sno": "116",
-  "product_id": "THSR007",
-  "description": "Kemp stone finger ring",
-  "category": "Accessories -Ring",
-  "weight_raw": "21.35",
-  "price_inr": 5337.5,
-  "final_price_usd": 85,
-  "status": "Available"
- },
- {
-  "sno": "117",
-  "product_id": "THSP006",
-  "description": "Kemp pendant necklace with red and green stones",
-  "category": "Pendants",
-  "weight_raw": "25.58",
-  "price_inr": 6395,
-  "final_price_usd": 99,
-  "status": "Available"
- },
- {
-  "sno": "118",
-  "product_id": "THSNC003",
-  "description": "Netthi Chutti with red and green stones",
-  "category": "Hair Accessories",
-  "weight_raw": "29.27",
-  "price_inr": 7317.5,
-  "final_price_usd": 120,
-  "status": "Available"
- },
- {
-  "sno": "119",
-  "product_id": "THSE064",
-  "description": "Fish Jadau kundan earrings embellished with pearls",
-  "category": "Earrings",
-  "weight_raw": "16",
-  "price_inr": 4000,
-  "final_price_usd": 75,
-  "status": "Available"
- },
- {
-  "sno": "120",
-  "product_id": "THSE065",
-  "description": "Round stud earrings with red stones and gold beads",
-  "category": "Earrings",
-  "weight_raw": "23.22",
-  "price_inr": 5805,
-  "final_price_usd": 99,
-  "status": "Available"
- },
- {
-  "sno": "121",
-  "product_id": "THSE066",
-  "description": "Floral stud earrings with red stones and pearls",
-  "category": "Earrings",
-  "weight_raw": "18",
-  "price_inr": 4500,
-  "final_price_usd": 80,
-  "status": "Available"
- },
- {
-  "sno": "122",
-  "product_id": "THSE068",
-  "description": "Handpainted polki jumkas",
-  "category": "Earrings",
-  "weight_raw": "22.42",
-  "price_inr": 5605,
-  "final_price_usd": 85,
-  "status": "Available"
- },
- {
-  "sno": "123",
-  "product_id": "THSP007",
-  "description": "Kemp pendant necklace with red and green stones",
-  "category": "Necklaces",
-  "weight_raw": "32.41",
-  "price_inr": 8102.5,
-  "final_price_usd": 150,
-  "status": "Available"
- },
- {
-  "sno": "124",
-  "product_id": "THSP008",
-  "description": "Kemp pendant necklace with red and green stones",
-  "category": "Pendants",
-  "weight_raw": "51.4",
-  "price_inr": 12850,
-  "final_price_usd": 200,
-  "status": "Available"
- },
- {
-  "sno": "125",
-  "product_id": "THSP009",
-  "description": "Kemp pendant necklace with red and green stones",
-  "category": "Pendants",
-  "weight_raw": "42.98",
-  "price_inr": 10745,
-  "final_price_usd": 195,
-  "status": "Available"
- },
- {
-  "sno": "126",
-  "product_id": "THSN046",
-  "description": "Kundan Jadau choker necklace with red, green and white stones finished with pearls",
-  "category": "Necklaces",
-  "weight_raw": "44",
-  "price_inr": 11000,
-  "final_price_usd": 200,
-  "status": "Available"
- },
- {
-  "sno": "127",
-  "product_id": "THSN047",
-  "description": "Kemp pendant necklace with red  stones and green pearl chain",
-  "category": "Necklaces",
-  "weight_raw": "45.72",
-  "price_inr": 11430,
-  "final_price_usd": 200,
-  "status": "Available"
- },
- {
-  "sno": "128",
-  "product_id": "THSN049",
-  "description": "Kundan Jadau choker necklace with red, green and white stones finished with pearls",
-  "category": "Necklaces",
-  "weight_raw": "83",
-  "price_inr": 20750,
-  "final_price_usd": 375,
-  "status": "Damage - Fix"
- },
- {
-  "sno": "129",
-  "product_id": "THSN050",
-  "description": "Manga mala with red and white stones - mid-length",
-  "category": "Necklaces",
-  "weight_raw": "84",
-  "price_inr": 21000,
-  "final_price_usd": 385,
-  "status": "Available"
- },
- {
-  "sno": "130",
-  "product_id": "THSN051",
-  "description": "Kemp stones necklace grand looking to accentuate your traditional silk saree or dance costumes",
-  "category": "Necklaces",
-  "weight_raw": "122.83",
-  "price_inr": 30707.5,
-  "final_price_usd": 575,
-  "status": "Available"
- },
- {
-  "sno": "131",
-  "product_id": "THSN052",
-  "description": "Kemp stones necklace grand looking to accentuate your traditional silk saree or dance costumes",
-  "category": "Necklaces",
-  "weight_raw": "191.36",
-  "price_inr": 47840,
-  "final_price_usd": 875,
-  "status": "Return fix"
- },
- {
-  "sno": "132",
-  "product_id": "THSE069",
-  "description": "Traditional Kemp stone Jumkas",
-  "category": "Earrings",
-  "weight_raw": "62.1",
-  "price_inr": 15525,
-  "final_price_usd": 250,
-  "status": "Available"
- },
- {
-  "sno": "133",
-  "product_id": "THSE070",
-  "description": "Regal long earrings in antique look finished with pearls",
-  "category": "Earrings",
-  "weight_raw": "56.99",
-  "price_inr": 14247.5,
-  "final_price_usd": 225,
-  "status": "sold for $190"
- },
- {
-  "sno": "134",
-  "product_id": "THSB020",
-  "description": "Elegant Kada bracelet with kemp stones in gold finish.",
-  "category": "Bangles",
-  "weight_raw": "",
-  "price_inr": 21650,
-  "final_price_usd": 395,
-  "status": "Available"
- },
- {
-  "sno": "135",
-  "product_id": "THSN056",
-  "description": "Statement Hasli with kundan and mossanite",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 18800,
-  "final_price_usd": 335,
-  "status": "Available"
- },
- {
-  "sno": "136",
-  "product_id": "THSB021",
-  "description": "Dual tone open bracelet with Kemp stones",
-  "category": "Bracelets",
-  "weight_raw": "",
-  "price_inr": 15000,
-  "final_price_usd": 275,
-  "status": "Available"
- },
- {
-  "sno": "137",
-  "product_id": "THSN057",
-  "description": "Hasli with a statement pendant in mossainite",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 32000,
-  "final_price_usd": 575,
-  "status": "Available"
- },
- {
-  "sno": "138",
-  "product_id": "THSN058",
-  "description": "Glamorous modern hasli with a unique style pendant",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 38500,
-  "final_price_usd": 695,
-  "status": "Available"
- },
- {
-  "sno": "139",
-  "product_id": "THSN059",
-  "description": "Dazzling bead necklace with stone pendant handcrafted to perfection.",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 19850,
-  "final_price_usd": 350,
-  "status": "Sold"
- },
- {
-  "sno": "140",
-  "product_id": "THSN060",
-  "description": "Luxurious and intricate statement piece with kemp detaining and intricate patterns",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 39500,
-  "final_price_usd": 695,
-  "status": "Available"
- },
- {
-  "sno": "141",
-  "product_id": "THSN061",
-  "description": "Timeless style pearl necklace with silver pendant embellished with polki stones",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 22800,
-  "final_price_usd": 415,
-  "status": "Available"
- },
- {
-  "sno": "142",
-  "product_id": "THSN062",
-  "description": "Dual tone wide choker with unique detailing",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 37500,
-  "final_price_usd": 675,
-  "status": "Available"
- },
- {
-  "sno": "143",
-  "product_id": "THSN063",
-  "description": "Unique necklace adorned with red and white stones in pure silver with gold finish.",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 14500,
-  "final_price_usd": 265,
-  "status": "Available"
- },
- {
-  "sno": "144",
-  "product_id": "THSN065",
-  "description": "Radiant coin necklace in pure silver with a captivating pendant",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 20780,
-  "final_price_usd": 375,
-  "status": "Available"
- },
- {
-  "sno": "145",
-  "product_id": "THSN066",
-  "description": "Vintage coin necklace reimagined in pure 925 silver",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 19890,
-  "final_price_usd": 350,
-  "status": "Available"
- },
- {
-  "sno": "146",
-  "product_id": "THSN067",
-  "description": "Artistic silver pendant with a pink dori/thread.",
-  "category": "Necklaces",
-  "weight_raw": "",
-  "price_inr": 10450,
-  "final_price_usd": 175,
-  "status": "Available"
- },
- {
-  "sno": "147",
-  "product_id": "THSE071",
-  "description": "Traditional jimiki/jumka with green and white stones finished with pearls all around.",
-  "category": "Earrings",
-  "weight_raw": "",
-  "price_inr": 7460,
-  "final_price_usd": 135,
-  "status": "Available"
- },
- {
-  "sno": "148",
-  "product_id": "THSE072",
-  "description": "Alluring long silver earrings/ jimiki with animal motif.",
-  "category": "Earrings",
-  "weight_raw": "",
-  "price_inr": 18650,
-  "final_price_usd": 275,
-  "status": "Available"
- },
- {
-  "sno": "149",
-  "product_id": "THSH001",
-  "description": "Hip Keychain in pure 925 silver with gold finish and cute bird mtifs.",
-  "category": "Accessories - Waist Keychain",
-  "weight_raw": "",
-  "price_inr": 19000,
-  "final_price_usd": 345,
-  "status": "Available"
- },
- {
-  "sno": "151",
-  "product_id": "THST001",
-  "description": "Toe rings in pure  silver - size adjustable",
-  "category": "Accessories - Toe Rings",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": 25,
-  "status": "Available"
- },
- {
-  "sno": "152",
-  "product_id": "THST003",
-  "description": "Toe rings in pure  silver - size adjustable",
-  "category": "Accessories - Toe Rings",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": 25,
-  "status": "Available"
- },
- {
-  "sno": "153",
-  "product_id": "THST004",
-  "description": "Toe rings in pure  silver - size adjustable",
-  "category": "Accessories - Toe Rings",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": 25,
-  "status": "Available"
- },
- {
-  "sno": "154",
-  "product_id": "THST006",
-  "description": "Toe rings in pure  silver - size adjustable",
-  "category": "Accessories - Toe Rings",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": 25,
-  "status": "Available"
- },
- {
-  "sno": "155",
-  "product_id": "THSE076",
-  "description": "Pure silver earrings with dual tone and pearl detailing",
-  "category": "Earrings",
-  "weight_raw": "33.8",
-  "price_inr": 9890,
-  "final_price_usd": 185,
-  "status": "Available"
- },
- {
-  "sno": "156",
-  "product_id": "THSN069",
-  "description": "Reena Silver Oxidised choker",
-  "category": "Necklace",
-  "weight_raw": "55.6",
-  "price_inr": 12340,
-  "final_price_usd": 230,
-  "status": "Available"
- },
- {
-  "sno": "157",
-  "product_id": "THSE077",
-  "description": "Pure silver earrings with red kemp stones",
-  "category": "Earrings",
-  "weight_raw": "",
-  "price_inr": null,
-  "final_price_usd": null,
-  "status": "Available"
- },
- {
-  "sno": "158",
-  "product_id": "THSB022",
-  "description": "Pure Silver adorned with Polki stones pair of bangles",
-  "category": "Bangles",
-  "weight_raw": "104.6",
-  "price_inr": 12890,
-  "final_price_usd": 245,
-  "status": "Available"
- },
- {
-  "sno": "159",
-  "product_id": "THSN074",
-  "description": "Moppu chain with Krishna",
-  "category": "necklace",
-  "weight_raw": "54",
-  "price_inr": 13350,
-  "final_price_usd": 250,
-  "status": "Available"
- },
- {
-  "sno": "160",
-  "product_id": "THSN075",
-  "description": "Moppu chain with Lakshmi",
-  "category": "necklace",
-  "weight_raw": "22.6",
-  "price_inr": 8160,
-  "final_price_usd": 150,
-  "status": "Available"
- },
- {
-  "sno": "161",
-  "product_id": "THSR008",
-  "description": "Beautiful silver ring with pearls",
-  "category": "Accessories -Ring",
-  "weight_raw": "21.2",
-  "price_inr": 7230,
-  "final_price_usd": 135,
-  "status": "Available"
- },
- {
-  "sno": "162",
-  "product_id": "THSR009",
-  "description": "Ravishing silver ring with red stones in gold finish",
-  "category": "Accessories -Ring",
-  "weight_raw": "9",
-  "price_inr": 2800,
-  "final_price_usd": 50,
-  "status": "Available"
- },
- {
-  "sno": "163",
-  "product_id": "THSR010",
-  "description": "Beautiful silver ring with white polki stones",
-  "category": "Accessories -Ring",
-  "weight_raw": "12",
-  "price_inr": 5560,
-  "final_price_usd": 99,
-  "status": "Available"
- },
- {
-  "sno": "164",
-  "product_id": "THSR011",
-  "description": "Gorgeous two-tone ring in pure silver",
-  "category": "Accessories -Ring",
-  "weight_raw": "15.8",
-  "price_inr": 3800,
-  "final_price_usd": 75,
-  "status": "Available"
- },
- {
-  "sno": "165",
-  "product_id": "THSR012",
-  "description": "Statement ring in blue color",
-  "category": "Accessories -Ring",
-  "weight_raw": "15",
-  "price_inr": 2890,
-  "final_price_usd": 55,
-  "status": "Available"
- },
- {
-  "sno": "166",
-  "product_id": "THSR013",
-  "description": "Statement ring in red color",
-  "category": "Accessories -Ring",
-  "weight_raw": "14.8",
-  "price_inr": 2890,
-  "final_price_usd": 55,
-  "status": "Available"
- },
- {
-  "sno": "167",
   "product_id": "THSA004",
   "description": "Pair of dainty silver anklets",
   "category": "Accessories - Anklets",
   "weight_raw": "16",
-  "price_inr": 4120,
   "final_price_usd": 75,
-  "status": "Available"
+  "price_inr": 4120,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "168",
   "product_id": "THSA005",
   "description": "Pair of cute silver anklets",
   "category": "Accessories - Anklets",
   "weight_raw": "26.4",
-  "price_inr": 6670,
   "final_price_usd": 125,
-  "status": "Available"
+  "price_inr": 6670,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "169",
+  "product_id": "THSA007",
+  "description": "RadhaKrishna idol in pure silver with antique finish",
+  "category": "Articles",
+  "weight_raw": "153",
+  "final_price_usd": 475,
+  "price_inr": 30600,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA010",
+  "description": "Saraswathi  idol in pure silver with antique finish",
+  "category": "Articles",
+  "weight_raw": "329",
+  "final_price_usd": 750,
+  "price_inr": 49350,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA011",
+  "description": "RadhaKrishna idol in pure silver with antique finish",
+  "category": "Articles",
+  "weight_raw": "80",
+  "final_price_usd": 245,
+  "price_inr": 16000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA012",
+  "description": "Lakshmi idol in pure silver with antique finish",
+  "category": "Articles",
+  "weight_raw": "234",
+  "final_price_usd": 575,
+  "price_inr": 35100,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA013",
+  "description": "Komadha idol (Cow and calf) in pure silver -perfect for your home temple or gifting",
+  "category": "Articles",
+  "weight_raw": "89",
+  "final_price_usd": 275,
+  "price_inr": 17800,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA015",
+  "description": "Annapoorani Goddess Idol in pure silver antique finish",
+  "category": "Articles",
+  "weight_raw": "91",
+  "final_price_usd": 275,
+  "price_inr": 18200,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA016",
+  "description": "Hanuman idol in pure silver antique finish",
+  "category": "Articles",
+  "weight_raw": "80",
+  "final_price_usd": 250,
+  "price_inr": 16000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA017",
+  "description": "iPhone case",
+  "category": "Articles",
+  "weight_raw": "33.5",
+  "final_price_usd": 100,
+  "price_inr": 6700,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA018",
+  "description": "RadhaKrishna idol in pure silver with antique finish",
+  "category": "Articles",
+  "weight_raw": "22",
+  "final_price_usd": 50,
+  "price_inr": 3300,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSHB001",
+  "description": "Majestic Hip belt in gold finish to top off your elegant sarees or lehengas on any grand occasion",
+  "category": "Accessories - Hip Belts",
+  "weight_raw": "188",
+  "final_price_usd": 725,
+  "price_inr": 47000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSHB002",
+  "description": "Majestic Hip belt in gold finish to top off your elegant sarees or lehengas on any grand occasion",
+  "category": "Accessories - Hip Belts",
+  "weight_raw": "157.61",
+  "final_price_usd": 600,
+  "price_inr": 39402.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSHA001",
+  "description": "Amazingly detailed stonework hair accessory set to adorn your braid and steal the show on your special day!",
+  "category": "Hair Accessories",
+  "weight_raw": "269.96",
+  "final_price_usd": 1100,
+  "price_inr": 67490,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSV001",
+  "description": "Antique cuffs/ traditional Vanki for your arms - Sure to turn heads when you look so regal!",
+  "category": "Accessories - Arm Cuffs",
+  "weight_raw": "146.52",
+  "final_price_usd": 560,
+  "price_inr": 36630,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA019",
+  "description": "Silver purse with handle - intricate carvings and cutwork!  Cant believe its handmade. Silver craftsmanship at its best!",
+  "category": "Accessories - Bags",
+  "weight_raw": "",
+  "final_price_usd": 500,
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA020",
+  "description": "Silver Clutch with latch close and beautiful basketweave style work.",
+  "category": "Accessories - Bags",
+  "weight_raw": "",
+  "final_price_usd": null,
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA021",
+  "description": "Silver crossbody - will fit iphone and small card case perfectly",
+  "category": "Accessories - Bags",
+  "weight_raw": "",
+  "final_price_usd": 450,
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA022",
+  "description": "Silver box for nuts with cutwork lid. Make a gorgeous Diwali gift for family and friends",
+  "category": "Articles",
+  "weight_raw": "",
+  "final_price_usd": null,
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSA023",
+  "description": "Small Silver trinket box with cutwork lid. Make a gorgeous Diwali gift for family and friends",
+  "category": "Articles",
+  "weight_raw": "",
+  "final_price_usd": null,
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSNC001",
+  "description": "Netthi Chutti with white polka stones and a red semi-precious stone",
+  "category": "Hair Accessories",
+  "weight_raw": "20.8",
+  "final_price_usd": 95,
+  "price_inr": 5200,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN026",
+  "description": "Pearl and silver beads mala in gold finish",
+  "category": "Necklaces",
+  "weight_raw": "51",
+  "final_price_usd": 230,
+  "price_inr": 12750,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN027",
+  "description": "Multilayered ruby pearls necklace",
+  "category": "Necklaces",
+  "weight_raw": "14.73",
+  "final_price_usd": 55,
+  "price_inr": 2946,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN028",
+  "description": "Pink pearls and silver beads mala in gold finish",
+  "category": "Necklaces",
+  "weight_raw": "47.5",
+  "final_price_usd": 175,
+  "price_inr": 9500,
+  "status": "Promo",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN029",
+  "description": "Pearl and silver beads mala in gold finish",
+  "category": "Necklaces",
+  "weight_raw": "69.31",
+  "final_price_usd": 250,
+  "price_inr": 13862,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN030",
+  "description": "Pink pearls and silver beads mala in gold finish",
+  "category": "Necklaces",
+  "weight_raw": "59.32",
+  "final_price_usd": 215,
+  "price_inr": 11864,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN031",
+  "description": "Multilayer Silver necklace - 3 layers of pearls adorned with red kemp stone pendants finished with pearls",
+  "category": "Necklaces",
+  "weight_raw": "87.77",
+  "final_price_usd": 400,
+  "price_inr": 21942.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN033",
+  "description": "Navaratna short necklace with gold hanging beads",
+  "category": "Necklaces",
+  "weight_raw": "45.78",
+  "final_price_usd": 195,
+  "price_inr": 11445,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN034",
+  "description": "Green pearls and silver beads mala in gold finish",
+  "category": "Necklaces",
+  "weight_raw": "55.6",
+  "final_price_usd": 200,
+  "price_inr": 11120,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN035",
+  "description": "Blue pearls and silver beads mala in gold finish",
+  "category": "Necklaces",
+  "weight_raw": "35.33",
+  "final_price_usd": 130,
+  "price_inr": 7066,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN036",
+  "description": "White long beads necklace handpainted with floral details",
+  "category": "Necklaces",
+  "weight_raw": "50.28",
+  "final_price_usd": 200,
+  "price_inr": 12570,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN037",
+  "description": "Pink pearls and silver lotus beads mala in gold finish",
+  "category": "Necklaces",
+  "weight_raw": "53.51",
+  "final_price_usd": 175,
+  "price_inr": 10702,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN038",
+  "description": "Multicolor pearl silver chain",
+  "category": "Necklaces",
+  "weight_raw": "29.5",
+  "final_price_usd": 90,
+  "price_inr": 5900,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN039",
+  "description": "One of a kind red and white beads mala",
+  "category": "Necklaces",
+  "weight_raw": "176.12",
+  "final_price_usd": 650,
+  "price_inr": 35224,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN040",
+  "description": "Kemp pendant necklace with cream and maroon pearl chain",
+  "category": "Necklaces",
+  "weight_raw": "96.55",
+  "final_price_usd": 445,
+  "price_inr": 24137.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSB018",
+  "description": "White CZ stones pair of silver bangles in gold finish",
+  "category": "Bangles",
+  "weight_raw": "62.62",
+  "final_price_usd": 250,
+  "price_inr": 15655,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSP001",
+  "description": "Moissanite antique pendant with floral detailing in white and red stones finished with pearls.",
+  "category": "Pendants",
+  "weight_raw": "",
+  "final_price_usd": 185,
+  "price_inr": 12000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSNC002",
+  "description": "Green and white stone super sute chutti to elevate your lehenga/skirt look",
+  "category": "Hair Accessories",
+  "weight_raw": "",
+  "final_price_usd": 155,
+  "price_inr": 10000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSP006",
+  "description": "Kemp pendant necklace with red and green stones",
+  "category": "Pendants",
+  "weight_raw": "25.58",
+  "final_price_usd": 99,
+  "price_inr": 6395,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN041",
+  "description": "Silver choker with cluster pearl detailing",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 275,
+  "price_inr": 15000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSP002",
+  "description": "Victorian Pendant with polki and pink stones finished with pearls",
+  "category": "Pendants",
+  "weight_raw": "56.65",
+  "final_price_usd": 215,
+  "price_inr": 14162.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE056",
+  "description": "Victorian style earrings in pure silver with red and white stones",
+  "category": "Earrings",
+  "weight_raw": "44.3",
+  "final_price_usd": 175,
+  "price_inr": 11075,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSP003",
+  "description": "Victorian Pendant with polki and pink stones finished with pearls",
+  "category": "Pendants",
+  "weight_raw": "50.99",
+  "final_price_usd": 200,
+  "price_inr": 12747.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSP004",
+  "description": "Victorian Pendant with polki and green stones to add to your royal look",
+  "category": "Pendants",
+  "weight_raw": "67",
+  "final_price_usd": 255,
+  "price_inr": 16750,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE058",
+  "description": "Victorian style earrings in pure silver with pink and white stones",
+  "category": "Earrings",
+  "weight_raw": "32.28",
+  "final_price_usd": 125,
+  "price_inr": 8070,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSP005",
+  "description": "Victorian Pendant with polki and pink stones finished with pearls",
+  "category": "Pendants",
+  "weight_raw": "61",
+  "final_price_usd": 250,
+  "price_inr": 15250,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE059",
+  "description": "Traditional Kemp stone Jumkas",
+  "category": "Earrings",
+  "weight_raw": "69.44",
+  "final_price_usd": 250,
+  "price_inr": 13888,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE060",
+  "description": "Victorian style earrings in pure silver with green and white stones",
+  "category": "Earrings",
+  "weight_raw": "63.19",
+  "final_price_usd": 250,
+  "price_inr": 15797.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN043",
+  "description": "Multilayer Silver necklace - 4 layers of pearls adorned with green kemp stone pendants finished with pearls",
+  "category": "Necklaces",
+  "weight_raw": "125.44",
+  "final_price_usd": 575,
+  "price_inr": 31360,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN044",
+  "description": "Multilayer Silver necklace - 5 layers of ruby mala with pure silver red kemp moppu",
+  "category": "Necklaces",
+  "weight_raw": "266.84",
+  "final_price_usd": 995,
+  "price_inr": 66710,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN045",
+  "description": "Antique finish long haram with pendant",
+  "category": "Necklaces",
+  "weight_raw": "110.75",
+  "final_price_usd": 450,
+  "price_inr": 27687.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE061",
+  "description": "Kemp earrings in hoop style",
+  "category": "Earrings",
+  "weight_raw": "35",
+  "final_price_usd": 145,
+  "price_inr": 8750,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSR007",
+  "description": "Kemp stone finger ring",
+  "category": "Accessories -Ring",
+  "weight_raw": "21.35",
+  "final_price_usd": 85,
+  "price_inr": 5337.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSNC003",
+  "description": "Netthi Chutti with red and green stones",
+  "category": "Hair Accessories",
+  "weight_raw": "29.27",
+  "final_price_usd": 120,
+  "price_inr": 7317.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE064",
+  "description": "Fish Jadau kundan earrings embellished with pearls",
+  "category": "Earrings",
+  "weight_raw": "16",
+  "final_price_usd": 75,
+  "price_inr": 4000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE065",
+  "description": "Round stud earrings with red stones and gold beads",
+  "category": "Earrings",
+  "weight_raw": "23.22",
+  "final_price_usd": 99,
+  "price_inr": 5805,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE066",
+  "description": "Floral stud earrings with red stones and pearls",
+  "category": "Earrings",
+  "weight_raw": "18",
+  "final_price_usd": 80,
+  "price_inr": 4500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE068",
+  "description": "Handpainted polki jumkas",
+  "category": "Earrings",
+  "weight_raw": "22.42",
+  "final_price_usd": 85,
+  "price_inr": 5605,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSP007",
+  "description": "Kemp pendant necklace with red and green stones",
+  "category": "Necklaces",
+  "weight_raw": "32.41",
+  "final_price_usd": 150,
+  "price_inr": 8102.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSP008",
+  "description": "Kemp pendant necklace with red and green stones",
+  "category": "Pendants",
+  "weight_raw": "51.4",
+  "final_price_usd": 200,
+  "price_inr": 12850,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSP009",
+  "description": "Kemp pendant necklace with red and green stones",
+  "category": "Pendants",
+  "weight_raw": "42.98",
+  "final_price_usd": 195,
+  "price_inr": 10745,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN046",
+  "description": "Kundan Jadau choker necklace with red, green and white stones finished with pearls",
+  "category": "Necklaces",
+  "weight_raw": "44",
+  "final_price_usd": 200,
+  "price_inr": 11000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN047",
+  "description": "Kemp pendant necklace with red  stones and green pearl chain",
+  "category": "Necklaces",
+  "weight_raw": "45.72",
+  "final_price_usd": 200,
+  "price_inr": 11430,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN049",
+  "description": "Kundan Jadau choker necklace with red, green and white stones finished with pearls",
+  "category": "Necklaces",
+  "weight_raw": "83",
+  "final_price_usd": 375,
+  "price_inr": 20750,
+  "status": "Damage - Fix",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN050",
+  "description": "Manga mala with red and white stones - mid-length",
+  "category": "Necklaces",
+  "weight_raw": "84",
+  "final_price_usd": 385,
+  "price_inr": 21000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN051",
+  "description": "Kemp stones necklace grand looking to accentuate your traditional silk saree or dance costumes",
+  "category": "Necklaces",
+  "weight_raw": "122.83",
+  "final_price_usd": 575,
+  "price_inr": 30707.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSN052",
+  "description": "Kemp stones necklace grand looking to accentuate your traditional silk saree or dance costumes",
+  "category": "Necklaces",
+  "weight_raw": "191.36",
+  "final_price_usd": 875,
+  "price_inr": 47840,
+  "status": "Return fix",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE069",
+  "description": "Traditional Kemp stone Jumkas",
+  "category": "Earrings",
+  "weight_raw": "62.1",
+  "final_price_usd": 250,
+  "price_inr": 15525,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSE070",
+  "description": "Regal long earrings in antique look finished with pearls",
+  "category": "Earrings",
+  "weight_raw": "56.99",
+  "final_price_usd": 225,
+  "price_inr": 14247.5,
+  "status": "sold for $190",
+  "qty": null,
+  "source_sheet": "Launch-Aug 23"
+ },
+ {
+  "product_id": "THSB020",
+  "description": "Elegant Kada bracelet with kemp stones in gold finish.",
+  "category": "Bangles",
+  "weight_raw": "",
+  "final_price_usd": 395,
+  "price_inr": 21650,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN056",
+  "description": "Fashionable new hasli with bird motifs",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 335,
+  "price_inr": 18800,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSB021",
+  "description": "Stunning bracelet with kemp stones",
+  "category": "Bracelets",
+  "weight_raw": "",
+  "final_price_usd": 275,
+  "price_inr": 15000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN057",
+  "description": "Sophisticated hasli with a breathtaking pendant",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 575,
+  "price_inr": 32000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN058",
+  "description": "Glamorous modern hasli with a unique style pendant",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 695,
+  "price_inr": 38500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN059",
+  "description": "Dazzling bead necklace with stone pendant handcrafted to perfection.",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 350,
+  "price_inr": 19850,
+  "status": "Sold",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN060",
+  "description": "Luxurious and intricate statement piece with kemp detaining and intricate patterns",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 695,
+  "price_inr": 39500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN061",
+  "description": "Timeless style pearl necklace with silver pendant embellished with polki stones",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 415,
+  "price_inr": 22800,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN062",
+  "description": "Precious neckpiece to turn heads! You cant go wrong with this one, elevate your style.",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 675,
+  "price_inr": 37500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN063",
+  "description": "Unique necklace adorned with red and white stones in pure silver with gold finish.",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 265,
+  "price_inr": 14500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN065",
+  "description": "Radiant coin necklace in pure silver with a captivating pendant",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 375,
+  "price_inr": 20780,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN066",
+  "description": "Vintage coin necklace reimagined in pure 925 silver",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 350,
+  "price_inr": 19890,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSN067",
+  "description": "Artistic silver pendant with a pink dori/thread.",
+  "category": "Necklaces",
+  "weight_raw": "",
+  "final_price_usd": 175,
+  "price_inr": 10450,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSE071",
+  "description": "Traditional jimiki/jumka with green and white stones finished with pearls all around.",
+  "category": "Earrings",
+  "weight_raw": "",
+  "final_price_usd": 135,
+  "price_inr": 7460,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSE072",
+  "description": "Alluring long silver earrings/ jimiki with animal motif.",
+  "category": "Earrings",
+  "weight_raw": "",
+  "final_price_usd": 275,
+  "price_inr": 18650,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSH001",
+  "description": "Hip Keychain in pure 925 silver with gold finish and cute bird mtifs.",
+  "category": "Accessories - Waist Keychain",
+  "weight_raw": "",
+  "final_price_usd": 345,
+  "price_inr": 19000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THST001",
+  "description": "Toe rings in pure  silver - size adjustable",
+  "category": "Accessories - Toe Rings",
+  "weight_raw": "",
+  "final_price_usd": 25,
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THST003",
+  "description": "Toe rings in pure  silver - size adjustable",
+  "category": "Accessories - Toe Rings",
+  "weight_raw": "",
+  "final_price_usd": 25,
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THST004",
+  "description": "Toe rings in pure  silver - size adjustable",
+  "category": "Accessories - Toe Rings",
+  "weight_raw": "",
+  "final_price_usd": 25,
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THST006",
+  "description": "Toe rings in pure  silver - size adjustable",
+  "category": "Accessories - Toe Rings",
+  "weight_raw": "",
+  "final_price_usd": 25,
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Oct 23"
+ },
+ {
+  "product_id": "THSE076",
+  "description": "Pure silver earrings with dual tone and pearl detailing",
+  "category": "Earrings",
+  "weight_raw": "33.8",
+  "final_price_usd": 185,
+  "price_inr": 9890,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSN069",
+  "description": "Reena Silver Oxidised choker",
+  "category": "Necklace",
+  "weight_raw": "55.6",
+  "final_price_usd": 230,
+  "price_inr": 12340,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSN070",
+  "description": "Moppu Chain in gold finish",
+  "category": "necklace",
+  "weight_raw": "37.6",
+  "final_price_usd": 175,
+  "price_inr": 10970,
+  "status": "sold",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSE077",
+  "description": "Pure silver beads earrings",
+  "category": "Earrings",
+  "weight_raw": "23.8",
+  "final_price_usd": 95,
+  "price_inr": 5000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSB022",
+  "description": "Pure Silver adorned with Polki stones pair of bangles",
+  "category": "Bangles",
+  "weight_raw": "104.6",
+  "final_price_usd": 245,
+  "price_inr": 12890,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSN074",
+  "description": "Moppu chain with Krishna",
+  "category": "necklace",
+  "weight_raw": "54",
+  "final_price_usd": 250,
+  "price_inr": 13350,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSN075",
+  "description": "Moppu chain with Lakshmi",
+  "category": "necklace",
+  "weight_raw": "22.6",
+  "final_price_usd": 150,
+  "price_inr": 8160,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSR008",
+  "description": "Beautiful silver ring with pearls",
+  "category": "Accessories -Ring",
+  "weight_raw": "21.2",
+  "final_price_usd": 135,
+  "price_inr": 7230,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSR009",
+  "description": "Ravishing silver ring with red stones in gold finish",
+  "category": "Accessories -Ring",
+  "weight_raw": "9",
+  "final_price_usd": 50,
+  "price_inr": 2800,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSR010",
+  "description": "Beautiful silver ring with white polki stones",
+  "category": "Accessories -Ring",
+  "weight_raw": "12",
+  "final_price_usd": 99,
+  "price_inr": 5560,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSR011",
+  "description": "Gorgeous two-tone ring in pure silver",
+  "category": "Accessories -Ring",
+  "weight_raw": "15.8",
+  "final_price_usd": 75,
+  "price_inr": 3800,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSR012",
+  "description": "Statement ring in blue color",
+  "category": "Accessories -Ring",
+  "weight_raw": "15",
+  "final_price_usd": 55,
+  "price_inr": 2890,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
+  "product_id": "THSR013",
+  "description": "Statement ring in red color",
+  "category": "Accessories -Ring",
+  "weight_raw": "14.8",
+  "final_price_usd": 55,
+  "price_inr": 2890,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
+ },
+ {
   "product_id": "THSE078",
   "description": "All new Cuff Earrings with floral detail",
   "category": "Earrings",
   "weight_raw": "14.8",
-  "price_inr": 4850,
   "final_price_usd": 95,
-  "status": "available"
+  "price_inr": 4850,
+  "status": "available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "170",
   "product_id": "THSN077",
   "description": "Evil Eye necklace",
   "category": "Necklace",
   "weight_raw": "3",
-  "price_inr": 2890,
   "final_price_usd": 55,
-  "status": "available"
+  "price_inr": 2890,
+  "status": "available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "171",
   "product_id": "THSN078",
   "description": "Pure silver choker",
   "category": "Necklace",
   "weight_raw": "36.2",
-  "price_inr": 4380,
   "final_price_usd": 85,
-  "status": "Available"
+  "price_inr": 4380,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "172",
   "product_id": "THSN079",
   "description": "",
   "category": "Necklace",
   "weight_raw": "23.2",
-  "price_inr": 9890,
   "final_price_usd": 185,
-  "status": "Available"
+  "price_inr": 9890,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "173",
   "product_id": "THSN081",
   "description": "Manga beads Necklace",
   "category": "Necklace",
   "weight_raw": "54",
-  "price_inr": 11600,
   "final_price_usd": 225,
-  "status": "Available"
+  "price_inr": 11600,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "174",
   "product_id": "THSN082",
   "description": "Pure silver choker",
   "category": "Necklace",
   "weight_raw": "27",
-  "price_inr": 5940,
   "final_price_usd": 115,
-  "status": "Available"
+  "price_inr": 5940,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "175",
   "product_id": "THSN083",
   "description": "Pure silver choker with fish detail",
   "category": "Necklace",
   "weight_raw": "23",
-  "price_inr": 5060,
   "final_price_usd": 95,
-  "status": "Available"
+  "price_inr": 5060,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "176",
   "product_id": "THSN084",
   "description": "Pure silver choker with floral detail",
   "category": "Necklace",
   "weight_raw": "12.6",
-  "price_inr": 2776,
   "final_price_usd": 50,
-  "status": "Available"
+  "price_inr": 2776,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "177",
   "product_id": "THSN085",
   "description": "Pure silver choker",
   "category": "Necklace",
   "weight_raw": "37.8",
-  "price_inr": 7560,
   "final_price_usd": 145,
-  "status": "Available"
+  "price_inr": 7560,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "178",
   "product_id": "THSE081",
   "description": "Gold finish earrings with polki stones",
   "category": "Earrings",
   "weight_raw": "22",
-  "price_inr": 6600,
   "final_price_usd": 125,
-  "status": "Available"
+  "price_inr": 6600,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "179",
   "product_id": "THSN086",
   "description": "Long silver chain with statement pendant",
   "category": "Necklace",
   "weight_raw": "77",
-  "price_inr": 18500,
   "final_price_usd": 345,
-  "status": "Available"
+  "price_inr": 18500,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "180",
   "product_id": "THSN088",
   "description": "Purple beads necklace with statement pendant",
   "category": "Necklace",
   "weight_raw": "91.2",
-  "price_inr": 19110,
   "final_price_usd": 350,
-  "status": "Available"
+  "price_inr": 19110,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "181",
   "product_id": "THSN089",
   "description": "Purple beads necklace with unique pendant",
   "category": "Necklace",
   "weight_raw": "64.2",
-  "price_inr": 6890,
   "final_price_usd": 125,
-  "status": "Available"
+  "price_inr": 6890,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "182",
   "product_id": "THSE082",
   "description": "Silver earrings with beads",
   "category": "Earrings",
   "weight_raw": "25.2",
-  "price_inr": 5550,
   "final_price_usd": 99,
-  "status": "Available"
+  "price_inr": 5550,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "183",
   "product_id": "THSN091",
   "description": "Exquisite pearl necklace in sea green with a pendant",
   "category": "Necklace",
   "weight_raw": "99.4",
-  "price_inr": 26170,
   "final_price_usd": 495,
-  "status": "Available"
+  "price_inr": 26170,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "184",
   "product_id": "THSE083",
   "description": "Two-tone Nandi earrings",
   "category": "Earrings",
   "weight_raw": "34",
-  "price_inr": 8890,
   "final_price_usd": 165,
-  "status": "Available"
+  "price_inr": 8890,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "185",
   "product_id": "THSN095",
   "description": "Silver Necklace set with matching earrings",
   "category": "Necklace",
   "weight_raw": "66.6",
-  "price_inr": 14400,
   "final_price_usd": 275,
-  "status": "Available"
+  "price_inr": 14400,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "186",
   "product_id": "THSE085",
   "description": "Gold tone Silver earrings with stone details",
   "category": "Earrings",
   "weight_raw": "31.8",
-  "price_inr": 9950,
   "final_price_usd": 185,
-  "status": "Available"
+  "price_inr": 9950,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "187",
   "product_id": "THSE089",
   "description": "Silver earrings with pink stone details Chandbali style",
   "category": "Earrings",
   "weight_raw": "29",
-  "price_inr": null,
   "final_price_usd": 95,
-  "status": "Available"
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Dec 23"
  },
  {
-  "sno": "188",
   "product_id": "THSE090",
   "description": "Pendant earrings set",
   "category": "Sets",
   "weight_raw": "",
-  "price_inr": null,
   "final_price_usd": 60,
-  "status": "Available"
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "189",
   "product_id": "THSP010",
   "description": "Pendant",
   "category": "Pendant",
   "weight_raw": "",
-  "price_inr": null,
   "final_price_usd": 35,
-  "status": "Available"
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "190",
   "product_id": "THSE091",
   "description": "Pendant Earrings set",
   "category": "Sets",
   "weight_raw": "",
-  "price_inr": null,
   "final_price_usd": 60,
-  "status": "Available"
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "191",
   "product_id": "THSP011",
   "description": "Pendant",
   "category": "Pendant",
   "weight_raw": "",
-  "price_inr": 8162.5,
   "final_price_usd": 135,
-  "status": "Available"
+  "price_inr": 8162.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "192",
   "product_id": "THSE092",
   "description": "Pendant Earrings set",
   "category": "Sets",
   "weight_raw": "",
-  "price_inr": 12995,
   "final_price_usd": 225,
-  "status": "Available"
+  "price_inr": 12995,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "193",
   "product_id": "THSN096",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 11062.5,
   "final_price_usd": 195,
-  "status": "Available"
+  "price_inr": 11062.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "194",
   "product_id": "THSP012",
   "description": "Ganesha Pendant",
   "category": "Pendant",
   "weight_raw": "",
-  "price_inr": 7930,
   "final_price_usd": 130,
-  "status": "Available"
+  "price_inr": 7930,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "195",
   "product_id": "THSE093",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 4245,
   "final_price_usd": 75,
-  "status": "Available"
+  "price_inr": 4245,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "196",
   "product_id": "THSP013",
   "description": "Ram Parivar Pendant",
   "category": "Pendant",
   "weight_raw": "",
-  "price_inr": 8745,
   "final_price_usd": 145,
-  "status": "Available"
+  "price_inr": 8745,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "197",
   "product_id": "THSE094",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 12387.5,
   "final_price_usd": 200,
-  "status": "Available"
+  "price_inr": 12387.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "198",
   "product_id": "THSN097",
   "description": "Short Necklace with red and green stones",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 8992.5,
   "final_price_usd": 150,
-  "status": "Available"
+  "price_inr": 8992.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "199",
   "product_id": "THSN099",
   "description": "Long Haram in gold tone",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 19587.5,
   "final_price_usd": 325,
-  "status": "Available"
+  "price_inr": 19587.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "200",
   "product_id": "THSN100",
   "description": "Long Haram in gold tone",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 17637.5,
   "final_price_usd": 295,
-  "status": "Available"
+  "price_inr": 17637.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "201",
   "product_id": "THSP014",
   "description": "Venkatesha Pendant",
   "category": "Pendant",
   "weight_raw": "",
-  "price_inr": 3812.5,
   "final_price_usd": 75,
-  "status": "Available"
+  "price_inr": 3812.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "202",
   "product_id": "THSN101",
   "description": "Long Coin Haram traditional",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 24062.5,
   "final_price_usd": 395,
-  "status": "Available"
+  "price_inr": 24062.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "203",
   "product_id": "THSE095",
   "description": "Green stone earrings",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 2912.5,
   "final_price_usd": 50,
-  "status": "Available"
+  "price_inr": 2912.5,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "204",
   "product_id": "THSN102",
   "description": "Nagas Necklace",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 18245,
   "final_price_usd": 299,
-  "status": "Available"
+  "price_inr": 18245,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "205",
   "product_id": "THSE096",
   "description": "Turquoise Earrings",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": null,
   "final_price_usd": 145,
-  "status": "Available"
+  "price_inr": null,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "Mar 24"
  },
  {
-  "sno": "207",
   "product_id": "THSB023",
-  "description": "Silver bangles with red, green and white stones",
+  "description": "",
   "category": "Bangles",
   "weight_raw": "16.2",
-  "price_inr": "THSB023",
   "final_price_usd": 70,
-  "status": "Available"
+  "price_inr": 3600,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "208",
   "product_id": "THSN106",
-  "description": "Cute Manga pendant and earrings set in white and green stones",
+  "description": "",
   "category": "Pendant set",
   "weight_raw": "26",
-  "price_inr": "THSN106",
   "final_price_usd": 99,
-  "status": "sold - chain"
+  "price_inr": 7730,
+  "status": "sold - chain",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "209",
   "product_id": "THSB024",
-  "description": "Pair of silver bangles",
+  "description": "",
   "category": "Bangles",
   "weight_raw": "28.8",
-  "price_inr": "THSB024",
   "final_price_usd": 95,
-  "status": "Available"
+  "price_inr": 5890,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "210",
   "product_id": "THSE097",
-  "description": "Silver earrings with green stones",
+  "description": "",
   "category": "Earrings",
   "weight_raw": "12.4",
-  "price_inr": "THSE097",
   "final_price_usd": 50,
-  "status": "Available"
+  "price_inr": 2800,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "211",
   "product_id": "THSB025",
-  "description": "Silver bangles with green stones",
+  "description": "",
   "category": "Bangles",
   "weight_raw": "32.2",
-  "price_inr": "THSB025",
   "final_price_usd": 120,
-  "status": "Available"
+  "price_inr": 7400,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "212",
   "product_id": "THSE098",
-  "description": "Gold tone tear drop earrings with green stones",
+  "description": "",
   "category": "Earrings",
   "weight_raw": "7.6",
-  "price_inr": "THSE098",
   "final_price_usd": 35,
-  "status": "Available"
+  "price_inr": 1780,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "213",
   "product_id": "THSN107",
-  "description": "Silver coin necklace with red kundan stone detailing",
+  "description": "",
   "category": "Necklace",
   "weight_raw": "76.8",
-  "price_inr": "THSN107",
   "final_price_usd": 310,
-  "status": "Available"
+  "price_inr": 16500,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "214",
   "product_id": "THSN109",
-  "description": "Silver long chain with statement pearl embellished pendant",
+  "description": "",
   "category": "Necklace",
   "weight_raw": "75.8",
-  "price_inr": "THSN109",
   "final_price_usd": 375,
-  "status": "Available"
+  "price_inr": 19850,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "215",
   "product_id": "THSN112",
-  "description": "Long silver chain with an adorable pendant",
+  "description": "",
   "category": "Necklace",
   "weight_raw": "46",
-  "price_inr": "THSN112",
   "final_price_usd": 195,
-  "status": "Available"
+  "price_inr": 10580,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "216",
   "product_id": "THSE099",
-  "description": "Navratna statement earrings",
+  "description": "",
   "category": "Earrings",
   "weight_raw": "21.8",
-  "price_inr": "THSE099",
   "final_price_usd": 200,
-  "status": "Available"
+  "price_inr": 12880,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "217",
   "product_id": "THSN113",
-  "description": "Pearl chain with mossainite pendant",
+  "description": "",
   "category": "Necklace",
   "weight_raw": "43.8",
-  "price_inr": "THSN113",
   "final_price_usd": 250,
-  "status": "Available"
+  "price_inr": 13300,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "218",
-  "product_id": "THSE102",
-  "description": "Gold tone polki earrings",
-  "category": "Earrings",
-  "weight_raw": "27.4",
-  "price_inr": "THSE102",
-  "final_price_usd": 165,
-  "status": "Available"
- },
- {
-  "sno": "219",
-  "product_id": "THSE103",
-  "description": "Silver earrings with a green stone",
-  "category": "Earrings",
-  "weight_raw": "19.8",
-  "price_inr": "THSE103",
-  "final_price_usd": 85,
-  "status": "Available"
- },
- {
-  "sno": "220",
-  "product_id": "THSE104",
-  "description": "Two tone earrings with calf motifs",
-  "category": "Earrings",
-  "weight_raw": "21.8",
-  "price_inr": "THSE104",
-  "final_price_usd": 95,
-  "status": "Available"
- },
- {
-  "sno": "221",
-  "product_id": "THSE105",
-  "description": "Silver earrings with a green stone",
+  "product_id": "THSE100",
+  "description": "",
   "category": "Earrings",
   "weight_raw": "18.2",
-  "price_inr": "THSE105",
-  "final_price_usd": 75,
-  "status": "Available"
+  "final_price_usd": 105,
+  "price_inr": 6500,
+  "status": "Promo",
+  "qty": 1,
+  "source_sheet": "Apr 24"
  },
  {
-  "sno": "222",
+  "product_id": "THSE102",
+  "description": "",
+  "category": "Earrings",
+  "weight_raw": "27.4",
+  "final_price_usd": 165,
+  "price_inr": 8660,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
+ },
+ {
+  "product_id": "THSE103",
+  "description": "",
+  "category": "Earrings",
+  "weight_raw": "19.8",
+  "final_price_usd": 85,
+  "price_inr": 4560,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
+ },
+ {
+  "product_id": "THSE104",
+  "description": "",
+  "category": "Earrings",
+  "weight_raw": "21.8",
+  "final_price_usd": 95,
+  "price_inr": 4970,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
+ },
+ {
+  "product_id": "THSE105",
+  "description": "",
+  "category": "Earrings",
+  "weight_raw": "18.2",
+  "final_price_usd": 75,
+  "price_inr": 4190,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 24"
+ },
+ {
   "product_id": "THSE106",
   "description": "",
   "category": "Earrings",
   "weight_raw": "12",
-  "price_inr": 2880,
   "final_price_usd": 55,
-  "status": "Available"
+  "price_inr": 2880,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
  },
  {
-  "sno": "223",
   "product_id": "THSE107",
   "description": "",
   "category": "Earrings",
   "weight_raw": "23",
-  "price_inr": 7900,
   "final_price_usd": 145,
-  "status": "Available"
+  "price_inr": 7900,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
  },
  {
-  "sno": "224",
+  "product_id": "THSE110",
+  "description": "",
+  "category": "Earrings",
+  "weight_raw": "36.8",
+  "final_price_usd": 150,
+  "price_inr": 8100,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
+ },
+ {
   "product_id": "THSB026",
   "description": "",
   "category": "Bangles",
   "weight_raw": "",
-  "price_inr": 12980,
   "final_price_usd": 245,
-  "status": "Available"
+  "price_inr": 12980,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
  },
  {
-  "sno": "225",
   "product_id": "THSP015",
   "description": "",
   "category": "Pendant",
   "weight_raw": "44",
-  "price_inr": 9680,
   "final_price_usd": 180,
-  "status": "Available"
+  "price_inr": 9680,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
  },
  {
-  "sno": "226",
   "product_id": "THSP016",
   "description": "",
   "category": "Pendant",
   "weight_raw": "28.8",
-  "price_inr": 6340,
   "final_price_usd": 120,
-  "status": "Available"
+  "price_inr": 6340,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
  },
  {
-  "sno": "227",
   "product_id": "THSE113",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 5000,
   "final_price_usd": 95,
-  "status": "Available"
+  "price_inr": 5000,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
  },
  {
-  "sno": "228",
   "product_id": "THSE114",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 9500,
   "final_price_usd": 175,
-  "status": "Available"
+  "price_inr": 9500,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
  },
  {
-  "sno": "229",
   "product_id": "THSN115",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 7520,
   "final_price_usd": 145,
-  "status": "Available"
+  "price_inr": 7520,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
  },
  {
-  "sno": "230",
   "product_id": "THSE118",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 2210,
   "final_price_usd": 45,
-  "status": "Available"
+  "price_inr": 2210,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
  },
  {
-  "sno": "231",
   "product_id": "THSE119",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 7240,
   "final_price_usd": 135,
-  "status": "Available"
+  "price_inr": 7240,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "May 24"
  },
  {
-  "sno": "232",
   "product_id": "THSN117",
   "description": "",
   "category": "Necklace",
   "weight_raw": "90.6",
-  "price_inr": "THSN117",
   "final_price_usd": 450,
-  "status": "Available"
+  "price_inr": 24210,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "233",
   "product_id": "THSN118",
   "description": "",
   "category": "Necklace",
   "weight_raw": "67",
-  "price_inr": "THSN118",
   "final_price_usd": 285,
-  "status": "Available"
+  "price_inr": 15400,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "234",
   "product_id": "THSN119",
   "description": "",
   "category": "Necklace",
   "weight_raw": "109.6",
-  "price_inr": "THSN119",
   "final_price_usd": 525,
-  "status": "Available"
+  "price_inr": 27810,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "235",
   "product_id": "THSE121",
   "description": "",
   "category": "Earrings",
   "weight_raw": "48.2",
-  "price_inr": "THSE121",
   "final_price_usd": 245,
-  "status": "Available"
+  "price_inr": 12900,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "236",
   "product_id": "THSN121",
   "description": "",
   "category": "Necklace",
   "weight_raw": "78.4",
-  "price_inr": "THSN121",
   "final_price_usd": 375,
-  "status": "Available"
+  "price_inr": 20090,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "237",
   "product_id": "THSN123",
   "description": "",
   "category": "Necklace",
   "weight_raw": "13.5",
-  "price_inr": "THSN123",
   "final_price_usd": 75,
-  "status": "Available"
+  "price_inr": 4120,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "238",
   "product_id": "THSN124",
   "description": "",
   "category": "Necklace",
   "weight_raw": "11.2",
-  "price_inr": "THSN124",
   "final_price_usd": 75,
-  "status": "Available"
+  "price_inr": 4120,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "239",
   "product_id": "THSB028",
   "description": "",
   "category": "Bangles",
   "weight_raw": "86.8",
-  "price_inr": "THSB028",
   "final_price_usd": 225,
-  "status": "Sold - 2"
+  "price_inr": 13250,
+  "status": "Sold - 2",
+  "qty": 3,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "240",
   "product_id": "THSE123",
   "description": "",
   "category": "Earrings",
   "weight_raw": "9",
-  "price_inr": "THSE123",
   "final_price_usd": 95,
-  "status": "Available"
+  "price_inr": 5450,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "241",
   "product_id": "THSE126",
   "description": "",
   "category": "Earrings",
   "weight_raw": "16.2",
-  "price_inr": "THSE126",
   "final_price_usd": 65,
-  "status": "Available"
+  "price_inr": 3800,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "242",
   "product_id": "THSE127",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": "THSE127",
   "final_price_usd": 95,
-  "status": "Available"
+  "price_inr": 5010,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "243",
   "product_id": "THSE128",
   "description": "",
   "category": "Earrings",
   "weight_raw": "22.6",
-  "price_inr": "THSE128",
   "final_price_usd": 145,
-  "status": "Available"
+  "price_inr": 7750,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "244",
   "product_id": "THSE130",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": "THSE130",
   "final_price_usd": 99,
-  "status": "Available"
+  "price_inr": 5720,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "245",
   "product_id": "THSN126",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN126",
   "final_price_usd": 95,
-  "status": "Available"
+  "price_inr": 5720,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "246",
   "product_id": "THSN127",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN127",
   "final_price_usd": 275,
-  "status": "Available"
+  "price_inr": 16000,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "247",
   "product_id": "THSE132",
   "description": "",
   "category": "Earrings",
   "weight_raw": "22.4",
-  "price_inr": "THSE132",
   "final_price_usd": 145,
-  "status": "Available"
+  "price_inr": 7560,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "248",
   "product_id": "THSN129",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN129",
   "final_price_usd": 395,
-  "status": "Available"
+  "price_inr": 20980,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "249",
   "product_id": "THSN130",
   "description": "",
   "category": "Necklace",
   "weight_raw": "85.8",
-  "price_inr": "THSN130",
   "final_price_usd": 399,
-  "status": "Available"
+  "price_inr": 22400,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "250",
   "product_id": "THSE133",
   "description": "",
   "category": "Earrings",
   "weight_raw": "16.8",
-  "price_inr": "THSE133",
   "final_price_usd": 75,
-  "status": "Sold"
+  "price_inr": 3800,
+  "status": "Sold",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "251",
   "product_id": "THSE134",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": "THSE134",
   "final_price_usd": 145,
-  "status": "Sold"
+  "price_inr": 7600,
+  "status": "Sold",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "252",
   "product_id": "THSE136",
   "description": "",
   "category": "Earrings",
   "weight_raw": "16.2",
-  "price_inr": "THSE136",
   "final_price_usd": 115,
-  "status": "Available"
+  "price_inr": 6250,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "253",
   "product_id": "THSE138",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": "THSE138",
   "final_price_usd": 99,
-  "status": "Available"
+  "price_inr": 5400,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "254",
   "product_id": "THSN131",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN131",
   "final_price_usd": 545,
-  "status": "Available"
+  "price_inr": 32000,
+  "status": "Available",
+  "qty": null,
+  "source_sheet": "June 24"
  },
  {
-  "sno": "255",
   "product_id": "THSN133",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 85,
-  "status": "Available"
+  "price_inr": 5050,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "256",
   "product_id": "THSN134",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 80,
-  "status": "Available"
+  "price_inr": 4690,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "257",
   "product_id": "THSN135",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 335,
-  "status": "Available"
+  "price_inr": 19200,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "258",
   "product_id": "THSN136",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 445,
-  "status": "Available"
+  "price_inr": 25750,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "259",
   "product_id": "THSN137",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 950,
-  "status": "Available"
+  "price_inr": 55620,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "260",
   "product_id": "THSE139",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 200,
-  "status": "Available"
+  "price_inr": 11750,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "261",
   "product_id": "THSE140",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 1,
-  "final_price_usd": 200,
-  "status": "Available"
+  "final_price_usd": 95,
+  "price_inr": 5500,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "262",
   "product_id": "THSN139",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 545,
-  "status": "Available"
+  "price_inr": 31750,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "263",
   "product_id": "THSR014",
   "description": "",
   "category": "Accessories -Ring",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 45,
-  "status": "Available"
+  "price_inr": 2340,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "264",
-  "product_id": "THSE140",
-  "description": "",
-  "category": "Earrings",
-  "weight_raw": "",
-  "price_inr": 1,
-  "final_price_usd": 95,
-  "status": "Available"
- },
- {
-  "sno": "265",
   "product_id": "THSR015",
   "description": "",
   "category": "Accessories -Ring",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 55,
-  "status": "Available"
+  "price_inr": 3250,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "266",
   "product_id": "THSR016",
   "description": "",
   "category": "Accessories -Ring",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 45,
-  "status": "Available"
+  "price_inr": 2260,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "267",
   "product_id": "THSN140",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 110,
-  "status": "Available"
+  "price_inr": 6320,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Sep 24"
  },
  {
-  "sno": "268",
   "product_id": "THSE141",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 50,
-  "status": "Available"
+  "price_inr": 2930,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Nov 24"
  },
  {
-  "sno": "269",
   "product_id": "THSE142",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 85,
-  "status": "Available"
+  "price_inr": 5040,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Nov 24"
  },
  {
-  "sno": "270",
   "product_id": "THSE143",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 65,
-  "status": "Available"
+  "price_inr": 3600,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Nov 24"
  },
  {
-  "sno": "271",
   "product_id": "THSE145",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 105,
-  "status": "Available"
+  "price_inr": 5980,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Nov 24"
  },
  {
-  "sno": "272",
   "product_id": "THSB033",
   "description": "",
   "category": "Bracelet",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 65,
-  "status": "Available"
+  "price_inr": 3710,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Nov 24"
  },
  {
-  "sno": "273",
   "product_id": "THSN143",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": 1,
   "final_price_usd": 610,
-  "status": "Available"
+  "price_inr": 35280,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Nov 24"
  },
  {
-  "sno": "274",
   "product_id": "THSE146",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": "THSE146",
   "final_price_usd": 90,
-  "status": "Available"
+  "price_inr": 5050,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
  },
  {
-  "sno": "275",
   "product_id": "THSN144",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN144",
   "final_price_usd": 215,
-  "status": "Available"
+  "price_inr": 12500,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
  },
  {
-  "sno": "276",
+  "product_id": "THSN145",
+  "description": "",
+  "category": "Necklace",
+  "weight_raw": "",
+  "final_price_usd": 75,
+  "price_inr": 5050,
+  "status": "Sold",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
+ },
+ {
   "product_id": "THSN146",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN146",
   "final_price_usd": 175,
-  "status": "Available"
+  "price_inr": 7940,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
  },
  {
-  "sno": "277",
   "product_id": "THSN147",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN147",
   "final_price_usd": 145,
-  "status": "Available"
+  "price_inr": 8240,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
  },
  {
-  "sno": "278",
   "product_id": "THSE147",
   "description": "",
   "category": "Earrings",
   "weight_raw": "",
-  "price_inr": "THSE147",
   "final_price_usd": 215,
-  "status": "Available"
+  "price_inr": 14060,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
  },
  {
-  "sno": "279",
   "product_id": "THSN148",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN148",
-  "final_price_usd": 150,
-  "status": "Available"
+  "final_price_usd": 145,
+  "price_inr": 9100,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
  },
  {
-  "sno": "280",
   "product_id": "THSN149",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN149",
   "final_price_usd": 695,
-  "status": "Available"
+  "price_inr": 39800,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
  },
  {
-  "sno": "281",
+  "product_id": "THSE148",
+  "description": "",
+  "category": "Earrings",
+  "weight_raw": "",
+  "final_price_usd": 60,
+  "price_inr": 3330,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
+ },
+ {
+  "product_id": "THSN150",
+  "description": "",
+  "category": "Necklace",
+  "weight_raw": "",
+  "final_price_usd": 165,
+  "price_inr": 10750,
+  "status": "Sold",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
+ },
+ {
   "product_id": "THSN151",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN151",
   "final_price_usd": 325,
-  "status": "Available"
+  "price_inr": 18750,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
  },
  {
-  "sno": "282",
   "product_id": "THSN152",
   "description": "",
   "category": "Necklace",
   "weight_raw": "",
-  "price_inr": "THSN152",
   "final_price_usd": 325,
-  "status": "Available"
+  "price_inr": 19060,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Jan 2025"
  },
  {
-  "sno": "283",
   "product_id": "THSN153",
   "description": "",
   "category": "Necklace",
-  "weight_raw": "1",
-  "price_inr": "THSN154",
-  "final_price_usd": 225,
-  "status": "Available"
+  "weight_raw": "",
+  "final_price_usd": 545,
+  "price_inr": 30600,
+  "status": "Return damaged",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "284",
-  "product_id": "THSE148",
+  "product_id": "THSN154",
   "description": "",
-  "category": "Earrings",
-  "weight_raw": "1",
-  "price_inr": "THSE148",
-  "final_price_usd": 60,
-  "status": "Available"
+  "category": "Necklace",
+  "weight_raw": "",
+  "final_price_usd": 225,
+  "price_inr": 12720,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "285",
   "product_id": "THSB034",
   "description": "",
   "category": "Bangle Pair",
-  "weight_raw": "2",
-  "price_inr": "THSB034",
+  "weight_raw": "",
   "final_price_usd": 595,
-  "status": "Available"
+  "price_inr": 33400,
+  "status": "Available",
+  "qty": 2,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "286",
   "product_id": "THSN155",
   "description": "",
   "category": "Necklace",
-  "weight_raw": "1",
-  "price_inr": "THSN155",
+  "weight_raw": "",
   "final_price_usd": 850,
-  "status": "Available"
+  "price_inr": 48210,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "287",
   "product_id": "THSB035",
   "description": "",
   "category": "Bangle Pair",
-  "weight_raw": "2",
-  "price_inr": "THSB035",
+  "weight_raw": "",
   "final_price_usd": 495,
-  "status": "Available"
+  "price_inr": 32000,
+  "status": "Available",
+  "qty": 2,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "288",
   "product_id": "THSE149",
   "description": "",
   "category": "Earrings",
-  "weight_raw": "1",
-  "price_inr": "THSE149",
+  "weight_raw": "",
   "final_price_usd": 215,
-  "status": "Available"
+  "price_inr": 12480,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "289",
   "product_id": "THSE150",
   "description": "",
   "category": "Earrings",
-  "weight_raw": "1",
-  "price_inr": "THSE150",
+  "weight_raw": "",
   "final_price_usd": 195,
-  "status": "Available"
+  "price_inr": 11290,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "290",
   "product_id": "THSE151",
   "description": "",
   "category": "Earrings",
-  "weight_raw": "1",
-  "price_inr": "THSE151",
+  "weight_raw": "",
   "final_price_usd": 105,
-  "status": "Available"
+  "price_inr": 5750,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "291",
   "product_id": "THSE152",
   "description": "",
   "category": "Earrings",
-  "weight_raw": "1",
-  "price_inr": "THSE152",
+  "weight_raw": "",
   "final_price_usd": 98,
-  "status": "Available"
+  "price_inr": 5520,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "292",
   "product_id": "THSE153",
   "description": "",
   "category": "Earrings",
-  "weight_raw": "1",
-  "price_inr": "THSE153",
+  "weight_raw": "",
   "final_price_usd": 65,
-  "status": "Available"
+  "price_inr": 3700,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "293",
   "product_id": "THSE154",
   "description": "",
   "category": "Earrings",
-  "weight_raw": "1",
-  "price_inr": "THSE154",
+  "weight_raw": "",
   "final_price_usd": 65,
-  "status": "Available"
+  "price_inr": 3760,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "294",
   "product_id": "THSN156",
   "description": "",
   "category": "Necklace",
-  "weight_raw": "1",
-  "price_inr": "THSN156",
+  "weight_raw": "",
   "final_price_usd": 345,
-  "status": "Available"
+  "price_inr": 19700,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "295",
   "product_id": "THSE155",
   "description": "",
   "category": "Earrings",
-  "weight_raw": "1",
-  "price_inr": "THSE155",
+  "weight_raw": "",
   "final_price_usd": 105,
-  "status": "Available"
+  "price_inr": 5750,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "296",
   "product_id": "THSN157",
   "description": "",
   "category": "Necklace",
-  "weight_raw": "1",
-  "price_inr": "THSN157",
+  "weight_raw": "",
   "final_price_usd": 575,
-  "status": "Available"
+  "price_inr": 32500,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "297",
   "product_id": "THSE156",
   "description": "",
   "category": "Earrings",
-  "weight_raw": "1",
-  "price_inr": "THSE156",
+  "weight_raw": "",
   "final_price_usd": 98,
-  "status": "Available"
+  "price_inr": 5570,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "298",
   "product_id": "THSE157",
   "description": "",
   "category": "Earrings",
-  "weight_raw": "1",
-  "price_inr": "THSE157",
+  "weight_raw": "",
   "final_price_usd": 115,
-  "status": "Available"
+  "price_inr": 6390,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "299",
   "product_id": "THSB036",
   "description": "",
   "category": "Bracelet",
-  "weight_raw": "1",
-  "price_inr": "THSB036",
+  "weight_raw": "",
   "final_price_usd": 250,
-  "status": "Available"
+  "price_inr": 14250,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "300",
   "product_id": "THSP017",
   "description": "",
   "category": "Pendant",
-  "weight_raw": "1",
-  "price_inr": "THSP017",
+  "weight_raw": "",
   "final_price_usd": 165,
-  "status": "Available"
+  "price_inr": 9550,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "301",
   "product_id": "THSP018",
   "description": "",
   "category": "Pendant",
-  "weight_raw": "1",
-  "price_inr": "THSP018",
+  "weight_raw": "",
   "final_price_usd": 145,
-  "status": "Available"
+  "price_inr": 8010,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  },
  {
-  "sno": "302",
   "product_id": "THSR017",
   "description": "",
   "category": "Accessories -Ring",
-  "weight_raw": "1",
-  "price_inr": "THSR017",
+  "weight_raw": "",
   "final_price_usd": 65,
-  "status": "Available"
+  "price_inr": 3780,
+  "status": "Available",
+  "qty": 1,
+  "source_sheet": "Apr 2025"
  }
 ]

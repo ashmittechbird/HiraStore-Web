@@ -24,7 +24,9 @@ def validate_coupon(code=None, subtotal=0):
     if not code:
         frappe.throw("Enter a coupon code")
 
-    subtotal = flt(subtotal)
+    # A negative subtotal would yield a negative discount, which reads as a
+    # credit downstream. The cart total can never be below zero.
+    subtotal = max(0.0, flt(subtotal))
 
     row = frappe.db.get_value(
         "Coupon Code",
@@ -89,6 +91,10 @@ def list_public_coupons():
                 pct = flt(rule.discount_percentage)
                 min_amt = flt(rule.min_amt)
         out.append({
+            # Both spellings: the storefront reads "code", while the admin
+            # table and ERPNext itself use "coupon_code" / "name".
+            "name": r.name,
+            "coupon_code": r.coupon_code,
             "code": r.coupon_code,
             "description": r.description or "",
             "discount_percentage": pct,
@@ -137,6 +143,10 @@ def seed_coupons():
             "coupon_name": s["code"],
             "coupon_code": s["code"],
             "coupon_type": "Promotional",
+            # ERPNext checks used >= maximum_use when a Sales Order carries the
+            # code, and 0 >= 0 is true — a maximum of 0 blocks every redemption
+            # rather than meaning unlimited. Give promotional codes headroom.
+            "maximum_use": 100000,
             "pricing_rule": rule.name,
             "description": s["desc"],
             "valid_from": "2025-01-01",

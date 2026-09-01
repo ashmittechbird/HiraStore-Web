@@ -4,7 +4,7 @@ import {
   useFrappeUpdateDoc, useFrappeDeleteDoc, useFrappePostCall,
 } from '@/lib/frappe';
 import { HOME_URL } from '@/lib/config';
-import { call, detectMode, db, cacheHomepageConfig, getHomepageConfig, listBookings, setBookingStatus, bookingWhatsappLink } from '@/lib/backend';
+import { call, detectMode, db, cacheHomepageConfig, getHomepageConfig, listBookings, setBookingStatus, bookingWhatsappLink, listCoupons } from '@/lib/backend';
 import type { BookingRow } from '@/lib/backend';
 import type { Mode } from '@/lib/backend';
 import './admin.css';
@@ -400,9 +400,16 @@ export default function AdminPage() {
   const hpArgs = useMemo(() => (authed ? { fields: HP_FIELDS as any, filters: [['disabled', '=', 0]] as any, limit: 200, orderBy: { field: 'item_name' as any, order: 'asc' as const } } : undefined), [authed]);
   const { data: hpItemsList = [], isLoading: hpLoading, mutate: reloadHp } = useFrappeGetDocList<Item>('Item', hpArgs);
 
-  const COUPON_FIELDS = ['name', 'coupon_code', 'minimum_amount', 'valid_from', 'valid_upto', 'description'];
-  const couponArgs = useMemo(() => (authed ? { fields: COUPON_FIELDS as any, limit: 50, orderBy: { field: 'creation' as any, order: 'desc' as const } } : undefined), [authed]);
-  const { data: couponList = [], isLoading: offersListLoading, mutate: reloadOffers } = useFrappeGetDocList<Coupon>('Coupon Code', couponArgs);
+  // Coupon Code has no minimum_amount field — requesting it fails the whole
+  // query. The hira app reads the real discount and minimum off the linked
+  // Pricing Rule instead.
+  const [offersListLoading, setOffersLoading] = useState(false);
+  const reloadOffers = useCallback(async () => {
+    if (!authed) return;
+    setOffersLoading(true);
+    try { setAllOffers(await listCoupons() as unknown as Coupon[]); } catch { setAllOffers([]); }
+    setOffersLoading(false);
+  }, [authed]);
 
   const companyArgs = useMemo(() => (authed ? { fields: ['name'] as any, limit: 1 } : undefined), [authed]);
   const { data: companyList = [] } = useFrappeGetDocList<{ name: string }>('Company', companyArgs);
@@ -442,7 +449,7 @@ export default function AdminPage() {
     revenue: allOrders.reduce((s, o) => s + (o.grand_total || 0), 0),
   };
   const recentOrders = allOrders.slice(0, 8);
-  const offersLoading = offersListLoading || (couponList.length > 0 && allOffers.length === 0);
+  const offersLoading = offersListLoading;
 
   // ── EFFECTS ──
   useEffect(() => { reloadOrders(); }, [reloadOrders]);
@@ -458,22 +465,7 @@ export default function AdminPage() {
       .catch(() => {});
   }, [hpItemsLen]);
 
-  // Track the couponList signature so we only refetch when names actually change,
-  // not just because SWR returned a new array reference.
-  const couponNamesKey = couponList.map(c => c.name).join('|');
-  useEffect(() => {
-    if (!couponList.length) {
-      setAllOffers(prev => (prev.length === 0 ? prev : []));
-      return;
-    }
-    let cancelled = false;
-    Promise.all(
-      couponList.map(c => frappeGetRef.current({ doctype: 'Coupon Code', name: c.name })
-        .then(r => r.message || c).catch(() => c))
-    ).then(full => { if (!cancelled) setAllOffers(full); });
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [couponNamesKey]);
+  useEffect(() => { reloadOffers(); }, [reloadOffers]);
 
   // ── FILTERS ──
   const filteredProducts = allProducts.filter(p => { const q = prodSearch.toLowerCase(); return (p.item_name || p.name || '').toLowerCase().includes(q) && (!prodCat || p.item_group === prodCat); });

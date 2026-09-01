@@ -465,6 +465,15 @@ function demoCall(method: string, params: Row): any {
       db.setBookingStatus(String(params.name), String(params.status));
       return { message: { name: params.name, status: params.status } };
     }
+    case 'hira.api.coupons.list_public_coupons':
+      return {
+        message: db.allCoupons().map(c => ({
+          code: c.coupon_code,
+          description: c.description,
+          discount_percentage: c.discount_percentage,
+          minimum_amount: c.minimum_amount,
+        })),
+      };
     case 'hira.api.coupons.validate_coupon': {
       const code = String(params.code || '').trim().toUpperCase();
       const subtotal = Number(params.subtotal || 0);
@@ -640,15 +649,24 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
   if (input.paymentMethod === 'cod') {
     // Prefer a purpose-built COD endpoint; fall back to the payment app's
     // handler, which some deployments configure to accept offline methods.
+    //
+    // The first endpoint's error is kept and re-thrown if nothing succeeds.
+    // Swallowing it and reporting "COD is not enabled" once hid a real ERPNext
+    // validation failure — every order carrying a coupon was being rejected and
+    // the customer was told the wrong thing.
+    let firstError: Error | null = null;
+
     for (const method of ['hira.api.orders.create_cod_order', 'square_payment.api.process_payment']) {
       try {
         const res = await call(method, payload);
         const m = res?.message;
         if (m?.order_id) return { orderId: m.order_id, paymentId: m.payment_id || 'COD', paymentLabel: label };
-      } catch {
-        /* try the next endpoint */
+      } catch (e) {
+        if (!firstError) firstError = e instanceof Error ? e : new Error(String(e));
       }
     }
+
+    if (firstError) throw firstError;
     throw new Error(
       'Cash on Delivery is not enabled on the server yet. Please pay by card, or contact us to place this order.'
     );
@@ -853,4 +871,17 @@ export async function bookingWhatsappLink(
   const res = await call('hira.api.bookings.whatsapp_message', { name, kind }, { method: 'GET' })
     .catch(() => null);
   return res?.message?.url || '';
+}
+
+/**
+ * Active coupons with their real discount and minimum spend.
+ *
+ * ERPNext's `Coupon Code` has no `minimum_amount` field — asking for it makes
+ * the whole query fail with a DataError, which is why the admin's Offers tab
+ * came back empty. Both numbers live on the linked Pricing Rule, and the `hira`
+ * app resolves them.
+ */
+export async function listCoupons(): Promise<Row[]> {
+  const res = await call('hira.api.coupons.list_public_coupons', {}, { method: 'GET' }).catch(() => null);
+  return Array.isArray(res?.message) ? (res.message as Row[]) : [];
 }

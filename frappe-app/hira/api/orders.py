@@ -65,6 +65,57 @@ def _ensure_customer(customer_info, user):
     return doc.name
 
 
+MAX_QTY_PER_LINE = 20
+
+
+def _price_items(items):
+    """Build the order lines, pricing every one from the catalogue.
+
+    The browser sends a price with each line because the cart renders from it,
+    but that number must never reach the order — anyone can edit the request and
+    buy a $600 necklace for $1. The rate is looked up from the Item record here,
+    and the client's figure is ignored entirely.
+
+    The same lookup rejects codes that don't exist or aren't for sale, so a
+    hidden product (out of stock, or a photo still showing a price tag) can't be
+    ordered by anyone who knows its code.
+    """
+    lines = []
+    for it in items:
+        code = (it.get("id") or it.get("item_code") or "").strip()
+        if not code:
+            frappe.throw("A cart line is missing its product code.")
+
+        row = frappe.db.get_value(
+            "Item", code, ["name", "standard_rate", "disabled", "is_sales_item"], as_dict=True
+        )
+        if not row:
+            frappe.throw(f"{code} is no longer available.")
+        if row.disabled or not row.is_sales_item:
+            frappe.throw(f"{code} is not available to buy at the moment.")
+
+        rate = flt(row.standard_rate)
+        if rate <= 0:
+            frappe.throw(f"{code} has no price set. Please contact us to order it.")
+
+        qty = flt(it.get("qty") or 1)
+        if qty <= 0:
+            frappe.throw("Quantity must be at least 1.")
+        if qty > MAX_QTY_PER_LINE:
+            frappe.throw(f"Please order at most {int(MAX_QTY_PER_LINE)} of any single piece.")
+
+        lines.append({
+            "item_code": row.name,
+            "qty": qty,
+            "rate": rate,
+            "delivery_date": add_days(nowdate(), 7),
+        })
+
+    if not lines:
+        frappe.throw("Your cart is empty.")
+    return lines
+
+
 @frappe.whitelist()
 def create_cod_order(
     customer=None,
@@ -100,18 +151,14 @@ def create_cod_order(
         "contact_email": info.get("email") or user,
         "contact_mobile": info.get("phone") or "",
         "coupon_code": coupon_code or None,
-        "items": [
-            {
-                "item_code": it.get("id") or it.get("item_code"),
-                "qty": flt(it.get("qty") or 1),
-                "rate": flt(it.get("price") or it.get("rate") or 0),
-                "delivery_date": add_days(nowdate(), 7),
-            }
-            for it in items
-        ],
+        "items": _price_items(items),
     })
 
-    discount = flt(discount)
+    # Clamp against the catalogue-priced subtotal so a large discount cannot
+    # drive the total below zero, whatever the browser claimed.
+    # so.items are SalesOrderItem docs, not dicts — attribute access only.
+    line_total = sum(flt(l.qty) * flt(l.rate) for l in so.items)
+    discount = max(0.0, min(flt(discount), line_total))
     if discount > 0:
         so.apply_discount_on = "Grand Total"
         so.discount_amount = discount

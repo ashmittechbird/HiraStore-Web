@@ -11,7 +11,8 @@
     "deploy": "rm -rf ../hirastore/public/store/assets/* && mkdir -p ../hirastore/public/store/assets ../hirastore/public/store/site-images ../hirastore/public/store/catalog_images ../hirastore/www/store && cp -r dist/assets/. ../hirastore/public/store/assets/ && cp -r dist/site-images/. ../hirastore/public/store/site-images/ && cp -r dist/catalog_images/. ../hirastore/public/store/catalog_images/ && cp dist/favicon.ico ../hirastore/public/store/favicon.ico && cp dist/favicon.png ../hirastore/public/store/favicon.png && cp dist/index.html ../hirastore/www/store/index.html",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "import-sheet": "node scripts/import-sheet.mjs"
+    "import-sheet": "node scripts/import-sheet.mjs",
+    "test:e2e": "node scripts/e2e-test.mjs"
   },
   "dependencies": {
     "react": "^18.3.0",

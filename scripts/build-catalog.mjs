@@ -93,6 +93,26 @@ function isSellable(status) {
   return !/sold|damage|return/.test(s);
 }
 
+/**
+ * Products whose photo shows a price tag, barcode sticker or supplier code.
+ *
+ * Hidden rather than deleted: the piece is real and still sells in store, it's
+ * the photograph that can't go in front of a customer. Replace the image and
+ * remove the line to bring it back.
+ */
+function taggedPhotos() {
+  const file = path.join(root, 'catalog_images', 'photos-with-tags.txt');
+  if (!fs.existsSync(file)) return new Set();
+  return new Set(
+    fs.readFileSync(file, 'utf8')
+      .split('\n')
+      .map(l => l.replace(/#.*$/, '').trim())
+      .filter(Boolean)
+  );
+}
+
+const TAGGED = taggedPhotos();
+
 const items = [];
 const seen = new Set();
 const skipped = { noPhoto: [], noPrice: [] };
@@ -126,7 +146,8 @@ for (const row of sheet) {
     custom_short_description: description,
     weight_per_unit: parseWeight(row.weight_raw),
     custom_is_featured: 0,
-    disabled: isSellable(row.status) ? 0 : 1,
+    // Hidden when the photo carries a tag, even if the piece is in stock.
+    disabled: isSellable(row.status) && !TAGGED.has(id) ? 0 : 1,
     is_sales_item: 1,
     // Stable ordering for "New Arrivals" — the sheet's own sequence, reversed
     // so the newest additions surface first.
@@ -163,6 +184,7 @@ console.log(`  in stock  : ${items.filter(i => !i.disabled).length}`);
 console.log(`  named     : ${named}  (${items.length - named} fall back to category + code)`);
 console.log(`  weighed   : ${weighed}  (${items.length - weighed} show no weight)`);
 console.log(`  featured  : ${featured.length}`);
+console.log(`  hidden (photo shows a tag): ${items.filter(i => TAGGED.has(i.name)).length} of ${TAGGED.size} listed`);
 console.log(`  categories: ${[...new Set(items.map(i => i.item_group))].sort().join(', ')}`);
 if (skipped.noPhoto.length) console.log(`  skipped (no photo): ${skipped.noPhoto.length} -> ${skipped.noPhoto.slice(0, 6).join(', ')}`);
 if (skipped.noPrice.length) console.log(`  skipped (no price): ${skipped.noPrice.join(', ')}`);

@@ -1,0 +1,55 @@
+# Products whose photo shows something that must not reach a customer:
+# a hanging price tag, a barcode sticker, a supplier code, or a wholesale
+# weight overlay ("Wt: 44.25", "SC 34.98", "925 Silver").
+#
+# Listed products are built into the catalogue but marked out of stock, so they
+# vanish from the shop without losing their price, name or history. Re-shoot the
+# piece, replace public/catalog_images/<CODE>.jpeg, delete the line here, then:
+#
+#   npm run catalog
+#
+# Identified by reviewing all 290 photos as contact sheets, Aug 2026.
+
+# ── hanging paper price tags ────────────────────────────────────────────────
+THSN003     # white oval tag on a red string — reported by the client
+THSB016     # white barcode tags on both bangles
+THSB017     # white barcode tags on both bangles
+THSB018     # white tag on the gold bangle
+THSB003     # small barcode tag at the clasp
+THSE056     # "PZ" tag hanging between the jhumkas
+THSE058     # tag on the display card
+THSA021     # red/white sticker on the clutch
+THSNC001    # barcode tag "13-3362 / 20,800"
+THSP006     # "PZ" tag, top left
+
+# ── barcode / price stickers ────────────────────────────────────────────────
+THSN026     # "PZ" tag on the chain
+THSN028     # barcode "14-A3755 / 47,500"
+THSN029     # white tag, right side
+THSN030     # barcode sticker
+THSN033     # tag, top right
+THSN034     # tag on the strand
+THSN035     # tag with price, right side
+THSN041     # tag at the clasp
+THSN043     # tag, top edge
+THSN044     # "PZ" tag at the clasp
+THSN045     # tag at the top
+THSN050     # small tag on the display card
+THSN051     # tag, top right
+
+# ── supplier codes and wholesale weight overlays burned into the image ──────
+THSE091     # "925 Silver", "TT - BEUW", "SC 14.98"
+THSE092     # "BWOO", "Wt:51.98"
+THSE093     # "1.5 inch", "Wt: 16.98"
+THSE094     # "925 Silver", "I - AGETU", "SC 49.55"
+THSE095     # "BQRQY", "Wt:11.65"
+THSN096     # "AIIP", "Wt:44.25"
+THSN097     # "BEYRW", "Wt: 35.97"
+THSN099     # "AEQYQ", "Wt: 78.35"
+THSN100     # "BQPUO", "Wt: 70.55"
+THSN101     # "Wt:96.25"
+THSP010     # "925 Silver", "WE - BYEWT", "SC 8.45"
+THSP011     # "AQPEUP", "Wt: 32.65"
+THSP012     # "Happy Ganesh Chaturthi" supplier promo banner
+THSP013     # "925 Silver", "WE - BYIWT", "SC 34.98"
+THSP014     # "AUIIY", "Wt: 15.25"

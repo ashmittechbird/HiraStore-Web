@@ -37,6 +37,19 @@ export default function FloatingActions() {
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const wa = whatsappLink();
 
+  /** The booking, written out for the customer to send to the store. */
+  const confirmLink = bookingId
+    ? whatsappLink(
+        `Hi, I've requested a video call with The Hira Store.\n\n` +
+          `Name: ${form.customer_name}\n` +
+          `Reference: ${bookingId}\n` +
+          (form.preferred_date ? `Preferred date: ${form.preferred_date}\n` : '') +
+          (form.preferred_time ? `Preferred time: ${form.preferred_time}\n` : '') +
+          (form.notes ? `Looking for: ${form.notes}\n` : '') +
+          `\nPlease confirm a time.`
+      )
+    : '';
+
   // Slots are server-side so the store can change its hours without a deploy.
   useEffect(() => {
     let alive = true;
@@ -132,9 +145,17 @@ export default function FloatingActions() {
                   call you to confirm a time.
                 </p>
                 <p className="hs-vc-ref">Reference <strong>{bookingId}</strong></p>
-                {wa && (
-                  <a className="hs-vc-wa-link" href={wa} target="_blank" rel="noopener noreferrer">
-                    Or message us on WhatsApp
+
+                {/* Without an outgoing mail account the store cannot send a
+                    confirmation, so this hands the customer one: it opens their
+                    own WhatsApp with the booking already written out, giving
+                    both sides a dated record in a thread they'll actually see. */}
+                {confirmLink && (
+                  <a className="hs-vc-wa-cta" href={confirmLink} target="_blank" rel="noopener noreferrer">
+                    <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+                      <path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.4A10 10 0 1012 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8.2 8.2 0 1112 20.2z" />
+                    </svg>
+                    Send me the details on WhatsApp
                   </a>
                 )}
                 <button type="button" className="hs-vc-submit" onClick={close}>Done</button>
@@ -337,6 +358,15 @@ const styles = `
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     color: #005969; letter-spacing: .04em;
   }
+  .hs-vc-wa-cta {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; margin-bottom: 12px; padding: 12px 18px;
+    border-radius: 8px; background: #25D366; color: #fff;
+    font-size: 13.5px; font-weight: 600; text-decoration: none;
+    transition: filter .18s;
+  }
+  .hs-vc-wa-cta:hover { filter: brightness(1.06); }
+
   .hs-vc-wa-link {
     display: inline-block; margin-bottom: 16px; font-size: 13px;
     color: #25D366; font-weight: 600; text-decoration: none;

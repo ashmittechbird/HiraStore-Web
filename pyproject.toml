@@ -1,0 +1,18 @@
+[project]
+name = "hira"
+version = "1.0.0"
+description = "Storefront API for The Hira Store — products, orders, coupons and video call bookings"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "license.txt" }
+authors = [{ name = "The Hira Store", email = "info@thehirastore.com" }]
+# Frappe and ERPNext are provided by the bench, never installed from PyPI.
+dependencies = []
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0,<16.0.0"
+erpnext = ">=15.0.0,<16.0.0"

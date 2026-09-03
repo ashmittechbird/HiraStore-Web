@@ -1,6 +1,0 @@
-app_name = "hira"
-app_title = "Hira"
-app_publisher = "The Hira Store"
-app_description = "Public storefront API"
-app_email = "info@thehirastore.com"
-app_license = "MIT"

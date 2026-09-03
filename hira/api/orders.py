@@ -1,15 +1,30 @@
-"""Order placement for the storefront.
+"""Order building for the storefront.
 
-The original deployment booked orders through the `square_payment` app. That app
-isn't part of this bench, so Cash on Delivery had nowhere to go. This creates a
-real ERPNext Sales Order instead, which is what the admin panel and the
-customer's order history both read.
+Nothing here is whitelisted, on purpose. An order is only ever created as the
+result of a captured card payment, so the single entry point is
+`hira.api.payments.create_card_order`. An order-creating endpoint that doesn't
+take money hands anyone a way to book stock for free — which is exactly what the
+old Cash on Delivery endpoint did.
+
+Everything the browser sends is a request, not a fact. Line prices, the coupon
+discount and the shipping charge are all recomputed here from the catalogue and
+the Pricing Rules; the numbers in the request are used only to check the shopper
+is charged the total they were shown.
 """
 
 import json
 
 import frappe
 from frappe.utils import add_days, flt, nowdate
+
+# Mirrors FREE_SHIPPING_OVER / SHIPPING_FLAT in src/lib/config.ts. Change one and
+# change the other: checkout compares its total against this one and refuses the
+# order when they disagree, so a drift here shows up as "your total changed"
+# rather than as a wrong charge.
+FREE_SHIPPING_OVER = 100.0
+SHIPPING_FLAT = 5.0
+
+MAX_QTY_PER_LINE = 20
 
 
 def _as_dict(value):
@@ -22,6 +37,11 @@ def _as_list(value):
     if isinstance(value, str):
         return json.loads(value or "[]")
     return value or []
+
+
+def shipping_for(subtotal):
+    """Flat rate below the free-shipping threshold, nothing above it."""
+    return 0.0 if flt(subtotal) >= FREE_SHIPPING_OVER else SHIPPING_FLAT
 
 
 def _ensure_customer(customer_info, user):
@@ -63,9 +83,6 @@ def _ensure_customer(customer_info, user):
         contact.insert(ignore_permissions=True)
 
     return doc.name
-
-
-MAX_QTY_PER_LINE = 20
 
 
 def _price_items(items):
@@ -116,34 +133,59 @@ def _price_items(items):
     return lines
 
 
-@frappe.whitelist()
-def create_cod_order(
-    customer=None,
-    cart_items=None,
-    coupon_code=None,
-    discount=0,
-    shipping=0,
-    payment_method="Cash on Delivery",
-    **kwargs,
-):
-    """Book a Sales Order for the signed-in shopper."""
-    user = frappe.session.user
-    if not user or user == "Guest":
-        frappe.throw("Please sign in before placing an order.", frappe.PermissionError)
+def _resolve_discount(coupon_code, subtotal):
+    """Money off, resolved from the Pricing Rule rather than from the request.
 
-    info = _as_dict(customer)
-    items = _as_list(cart_items)
-    if not items:
-        frappe.throw("Your cart is empty.")
+    An invalid or expired code raises rather than resolving to zero: the shopper
+    was shown a discounted total, and quietly charging them the full price
+    instead is worse than making them re-check the cart.
+    """
+    if not coupon_code:
+        return 0.0
 
-    customer_name = _ensure_customer(info, user)
+    from hira.api.coupons import validate_coupon
+
+    return flt(validate_coupon(code=coupon_code, subtotal=subtotal).get("discount"))
+
+
+def quote(items, coupon_code=None):
+    """Authoritative totals for a basket — what the shop will actually charge.
+
+    Returns the priced lines alongside the money so the caller doesn't have to
+    price the same cart twice.
+    """
+    lines = _price_items(items)
+    subtotal = flt(sum(flt(l["qty"]) * flt(l["rate"]) for l in lines), 2)
+
+    discount = min(_resolve_discount(coupon_code, subtotal), subtotal)
+    shipping = shipping_for(subtotal)
+
+    return {
+        "lines": lines,
+        "subtotal": subtotal,
+        "discount": flt(discount, 2),
+        "shipping": flt(shipping, 2),
+        "total": flt(subtotal - discount + shipping, 2),
+    }
+
+
+def build_draft_order(customer_info, priced, coupon_code=None, user=None):
+    """Insert an unsubmitted Sales Order for a basket already priced by `quote`.
+
+    Deliberately left in draft. The caller charges the card first and submits
+    only once the money is captured, so a declined card leaves no phantom order
+    and a successful charge always has an order waiting to attach itself to.
+    """
+    user = user or frappe.session.user
+    info = customer_info or {}
+
     company = frappe.defaults.get_defaults().get("company") or frappe.db.get_value("Company", {}, "name")
     if not company:
         frappe.throw("No company is configured on this site.")
 
     so = frappe.get_doc({
         "doctype": "Sales Order",
-        "customer": customer_name,
+        "customer": _ensure_customer(info, user),
         "company": company,
         "transaction_date": nowdate(),
         "delivery_date": add_days(nowdate(), 7),
@@ -151,24 +193,18 @@ def create_cod_order(
         "contact_email": info.get("email") or user,
         "contact_mobile": info.get("phone") or "",
         "coupon_code": coupon_code or None,
-        "items": _price_items(items),
+        "items": priced["lines"],
     })
 
-    # Clamp against the catalogue-priced subtotal so a large discount cannot
-    # drive the total below zero, whatever the browser claimed.
-    # so.items are SalesOrderItem docs, not dicts — attribute access only.
-    line_total = sum(flt(l.qty) * flt(l.rate) for l in so.items)
-    discount = max(0.0, min(flt(discount), line_total))
-    if discount > 0:
+    if priced["discount"] > 0:
         so.apply_discount_on = "Grand Total"
-        so.discount_amount = discount
+        so.discount_amount = priced["discount"]
 
-    shipping = flt(shipping)
-    if shipping > 0:
+    if priced["shipping"] > 0:
         so.append("taxes", {
             "charge_type": "Actual",
             "description": "Shipping",
-            "tax_amount": shipping,
+            "tax_amount": priced["shipping"],
             "account_head": frappe.db.get_value(
                 "Account", {"company": company, "account_type": "Chargeable", "is_group": 0}, "name"
             ) or frappe.db.get_value(
@@ -177,14 +213,10 @@ def create_cod_order(
         })
 
     # The shopper has no Sales Order permission; the storefront is the authority
-    # on what they're allowed to buy, and it has already gated on login.
+    # on what they may buy, and create_card_order has already gated on login.
     so.flags.ignore_permissions = True
     so.insert(ignore_permissions=True)
-    so.submit()
-
-    frappe.db.commit()
-
-    return {"order_id": so.name, "payment_id": payment_method.upper().replace(" ", "_")}
+    return so
 
 
 @frappe.whitelist()
@@ -216,7 +248,16 @@ def get_my_orders():
         frappe.db.get_value(
             "Sales Order",
             n.name,
-            ["name", "transaction_date", "grand_total", "status", "contact_email"],
+            [
+                "name",
+                "transaction_date",
+                "grand_total",
+                "status",
+                "contact_email",
+                "custom_payment_method",
+                "custom_payment_reference",
+                "custom_payment_receipt_url",
+            ],
             as_dict=True,
         )
         for n in names

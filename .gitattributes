@@ -1,0 +1,4 @@
+# Keep line endings LF in the repo whatever the checkout platform.
+# A Windows clone was rewriting every file to CRLF, turning "no change" into a
+# full-file diff and hiding the real one.
+* text=auto eol=lf

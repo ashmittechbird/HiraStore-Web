@@ -89,6 +89,7 @@ def _rows():
         "hira.api.coupons.validate_coupon",
         "hira.api.bookings.create_booking",
         "hira.api.session.get_csrf_token",
+        "hira.api.payments.get_payment_config",
     ):
         # frappe.guest_methods holds the function objects themselves, and it is
         # populated as modules import — get_attr does that import for us.
@@ -118,10 +119,65 @@ def _rows():
         yield (WARN, "outgoing email", detail)
 
     # ── payments ────────────────────────────────────────────────────────────
-    if "square_payment" in installed:
-        yield (OK, "card payments", "square_payment installed")
+    # Card is the only way to pay, so an unready gateway is a shop that cannot
+    # take a single order. Every branch below is a FAIL for that reason.
+    if "square_payment" not in installed:
+        yield (FAIL, "card payments", "square_payment not installed — no order can be placed")
+    elif not frappe.db.exists("DocType", "Square Payment Settings"):
+        yield (FAIL, "card payments", "Square Payment Settings missing — run: bench --site <site> migrate")
     else:
-        yield (WARN, "card payments", "square_payment not installed — the card form runs in test mode and takes no money; Cash on Delivery works")
+        s = frappe.get_single("Square Payment Settings")
+        env = (s.square_environment or "sandbox").lower()
+        token = s.get_password("square_access_token", raise_exception=False)
+
+        blanks = [
+            label
+            for label, value in (
+                ("App ID", s.square_app_id),
+                ("Location ID", s.square_location_id),
+                ("Access Token", token),
+            )
+            if not value
+        ]
+
+        if blanks:
+            yield (FAIL, "card payments", "not configured — missing " + ", ".join(blanks)
+                   + " (desk > Square Payment Settings)")
+        elif not s.enabled:
+            yield (FAIL, "card payments", "credentials are in but 'Enable Card Payments' is off")
+        elif env != "production":
+            # Sandbox takes test cards and moves no money. Correct while testing,
+            # a disaster if it reaches a live shop unnoticed.
+            yield (WARN, "card payments", "configured, but in SANDBOX — no real money is taken")
+        else:
+            yield (OK, "card payments", f"Square, production, location {s.square_location_id}")
+
+        # Square rejects a charge outright when the amount's currency differs
+        # from the location's, and the storefront prices everything in the
+        # company currency.
+        company_currency = frappe.db.get_value("Company", frappe.db.get_value("Company", {}, "name"), "default_currency")
+        gateway_currency = (s.currency or "USD").upper()
+        if company_currency and gateway_currency != company_currency:
+            yield (FAIL, "payment currency",
+                   f"gateway charges in {gateway_currency} but the company sells in {company_currency}")
+
+    # An order endpoint that takes no money lets anyone book stock for free.
+    # create_cod_order was exactly that, and it was guest-reachable through the
+    # gateway app too. Assert both are gone rather than trusting they are.
+    import hira.api.orders as orders_module
+
+    free_order_paths = [
+        name
+        for module, name in (
+            (orders_module, "create_cod_order"),
+            (frappe.get_module("square_payment.api") if "square_payment" in installed else None, "process_payment"),
+        )
+        if module is not None and getattr(module, name, None) in frappe.whitelisted
+    ]
+    if free_order_paths:
+        yield (FAIL, "checkout", "order endpoints that take no payment: " + ", ".join(free_order_paths))
+    else:
+        yield (OK, "checkout", "an order can only be created by a captured payment")
 
     # ── site config ─────────────────────────────────────────────────────────
     cc = frappe.conf.get("default_country_code")

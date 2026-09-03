@@ -42,6 +42,60 @@ ITEM_CUSTOM_FIELDS = [
     },
 ]
 
+# How the storefront's orders were paid for.
+#
+# ERPNext records payment separately, through Payment Entries against a ledger
+# account. That's the right home for the accounting, but it needs a chart of
+# accounts the client has actually configured — so the reconciliation detail
+# lives on the order itself, where the admin panel and the customer's order
+# history can both read it with no setup at all.
+SALES_ORDER_CUSTOM_FIELDS = [
+    {
+        "fieldname": "custom_payment_section",
+        "label": "Payment",
+        "fieldtype": "Section Break",
+        "insert_after": "contact_email",
+        "collapsible": 1,
+    },
+    {
+        "fieldname": "custom_payment_method",
+        "label": "Payment Method",
+        "fieldtype": "Data",
+        "insert_after": "custom_payment_section",
+        "read_only": 1,
+    },
+    {
+        "fieldname": "custom_payment_reference",
+        "label": "Payment Reference",
+        "fieldtype": "Data",
+        "insert_after": "custom_payment_method",
+        "read_only": 1,
+        "description": "The gateway's payment id. Search for it in the Square Dashboard to reconcile.",
+    },
+    {
+        "fieldname": "custom_payment_status",
+        "label": "Payment Status",
+        "fieldtype": "Data",
+        "insert_after": "custom_payment_reference",
+        "read_only": 1,
+    },
+    {
+        "fieldname": "custom_payment_card",
+        "label": "Card",
+        "fieldtype": "Data",
+        "insert_after": "custom_payment_status",
+        "read_only": 1,
+        "description": "Brand and last four digits. Full card numbers never reach this server.",
+    },
+    {
+        "fieldname": "custom_payment_receipt_url",
+        "label": "Receipt URL",
+        "fieldtype": "Data",
+        "insert_after": "custom_payment_card",
+        "read_only": 1,
+    },
+]
+
 # The codes the storefront advertises. Percentages live on a Pricing Rule.
 DEFAULT_COUPONS = [
     {"code": "HIRA30", "pct": 30, "min": 0, "desc": "30% off sitewide"},
@@ -59,18 +113,23 @@ def after_migrate():
 
 
 def setup():
-    ensure_item_fields()
+    ensure_custom_fields()
     ensure_coupons()
     frappe.db.commit()
 
 
-def ensure_item_fields():
+def ensure_custom_fields():
     from frappe.custom.doctype.custom_field.custom_field import create_custom_field
 
-    for spec in ITEM_CUSTOM_FIELDS:
-        if frappe.db.exists("Custom Field", {"dt": "Item", "fieldname": spec["fieldname"]}):
-            continue
-        create_custom_field("Item", spec, ignore_validate=True)
+    for doctype, specs in (("Item", ITEM_CUSTOM_FIELDS), ("Sales Order", SALES_ORDER_CUSTOM_FIELDS)):
+        for spec in specs:
+            if frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": spec["fieldname"]}):
+                continue
+            create_custom_field(doctype, spec, ignore_validate=True)
+
+
+# Kept so an older bench that calls this name by hand still works.
+ensure_item_fields = ensure_custom_fields
 
 
 def ensure_coupons():
@@ -128,7 +187,13 @@ def ensure_coupons():
 
 
 def before_uninstall():
-    """Leave business data alone; only drop what this app introduced."""
+    """Leave business data alone; only drop what this app introduced.
+
+    The Item fields are presentation — a blurb and a featured flag — and go.
+    The Sales Order payment fields stay: they hold the reference that ties a
+    past order to the money that paid for it, and dropping that column would
+    quietly destroy the audit trail for every order ever placed.
+    """
     for spec in ITEM_CUSTOM_FIELDS:
         name = frappe.db.get_value("Custom Field", {"dt": "Item", "fieldname": spec["fieldname"]})
         if name:

@@ -345,7 +345,7 @@ export default function HomePage() {
           { icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>, text: 'Premium Quality' },
           { icon: <><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>, text: 'Skin Friendly' },
           { icon: <><rect x="1" y="3" width="13" height="13"/><polygon points="13 3 20 3 23 6 23 16 13 16 13 3"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="17.5" cy="18.5" r="2.5"/></>, text: 'Free Shipping' },
-          { icon: <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>, text: 'Cash on Delivery' },
+          { icon: <><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></>, text: 'Secure Card Payment' },
         ].map(({ icon, text }) => (
           <div key={text} className="trust-item">
             <svg viewBox="0 0 24 24">{icon}</svg>

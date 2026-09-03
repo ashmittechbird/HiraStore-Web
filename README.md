@@ -16,8 +16,7 @@ adapts. There is no separate "demo build" — the same bundle does both.
 | Products | live ERPNext `Item` records | 286 pieces bundled from the product catalogue |
 | Accounts | Frappe users + session cookie | accounts kept in the browser |
 | Orders | ERPNext Sales Orders | stored in the browser |
-| Card payment | Square Web Payments SDK | offline form, clearly labelled, no charge |
-| Cash on Delivery | needs a server endpoint | always works |
+| Card payment | Square Web Payments SDK, real charge | no card asked for, clearly labelled |
 | Admin panel | full ERPNext CRUD | full CRUD against the local store |
 
 Demo mode exists so the site is never a dead page — a Vercel preview with no
@@ -165,14 +164,16 @@ browser re-seeds automatically — while keeping any products the admin edited.
 | `/cart` | line items, coupon validation, totals |
 | `/wishlist` | saved items, per account |
 | `/checkout` | shipping address, coupon, Buy Now bypass |
-| `/payment` | Card (Square or offline) and Cash on Delivery |
+| `/payment` | Square card form; refuses an order it can't charge for |
 | `/order-success` | confirmation |
 | `/login`, `/signup`, `/account` | auth + order history |
 | `/about` | brand story |
 | `/admin` | products, orders, customers, coupons, homepage curation |
 
-Shipping is free over **$15**, otherwise **$5** — defined once in
-`src/lib/config.ts` and used by both the cart and checkout.
+Shipping is free over **$100**, otherwise **$5** — in `src/lib/config.ts` for
+the cart and checkout, and mirrored in `hira/api/orders.py` on the server, which
+is the figure actually charged. If the two ever disagree, checkout refuses the
+order rather than billing a total the shopper wasn't shown.
 
 Seeded coupons: `HIRA30` (30%), `WELCOME10` (10%), `FESTIVE20` (20% over $100).
 

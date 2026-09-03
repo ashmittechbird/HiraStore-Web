@@ -129,9 +129,10 @@ const guestStatus = await call(guest, 'hira.api.bookings.set_booking_status',
 !guestStatus.ok ? ok('guest cannot change a booking status')
                 : bad('guest cannot change a booking status', `HTTP ${guestStatus.status}`);
 
-const guestOrder = await call(guest, 'hira.api.orders.create_cod_order', {
+const guestOrder = await call(guest, 'hira.api.payments.create_card_order', {
   customer: JSON.stringify({ fullName: 'Guest', email: 'g@x.com' }),
   cart_items: JSON.stringify([{ id: items[0]?.name, price: 10, qty: 1 }]),
+  source_id: 'cnon:fake',
 }, 'POST');
 !guestOrder.ok ? ok('guest cannot place an order without signing in')
                : bad('guest cannot place an order without signing in', `created ${guestOrder.body?.message?.order_id}`);
@@ -222,94 +223,81 @@ const adminItemCount = (aItems.body?.message || []).length;
 adminItemCount > 20 ? ok('admin lists beyond the default 20-row cap', `${adminItemCount} items`)
                     : bad('admin lists beyond the default 20-row cap', `${adminItemCount} items`);
 
-// ── orders ──────────────────────────────────────────────────────────────────
-section('Orders');
+// ── checkout ────────────────────────────────────────────────────────────────
+//
+// This suite can't complete a purchase: that needs a card token from Square's
+// browser SDK, and faking one would only prove the gateway rejects nonsense.
+// What it can do — and what matters over HTTP — is prove there is no way to get
+// an order without paying for one.
+//
+// The pricing itself (tampered prices, coupons, shipping, refunds on a failed
+// order) is covered on the server, where the gateway can be stubbed:
+//
+//     bench --site <site> execute hira.tests.checkout.run
+//
+section('Checkout');
 
 const prod = items.find(i => Number(i.standard_rate) > 50);
 const realPrice = Number(prod.standard_rate);
 
-const order = await call(admin, 'hira.api.orders.create_cod_order', {
+// Cash on Delivery created a submitted Sales Order and took no money. Anyone
+// who found the endpoint could book out the whole catalogue for free.
+const cod = await call(admin, 'hira.api.orders.create_cod_order', {
+  customer: JSON.stringify({ fullName: 'COD Probe', email: 'cod@example.com' }),
+  cart_items: JSON.stringify([{ id: prod.name, price: realPrice, qty: 1 }]),
+}, 'POST');
+!cod.ok ? ok('the Cash on Delivery endpoint is gone')
+        : bad('the Cash on Delivery endpoint is gone', `it booked ${cod.body?.message?.order_id}`);
+
+// The gateway app used to expose a guest-callable order creator that charged
+// whatever amount the browser named.
+const legacyPay = await call(guest, 'square_payment.api.process_payment', {
+  source_id: 'cnon:fake', amount_cents: 100,
+  customer: JSON.stringify({ fullName: 'Legacy Probe', email: 'legacy@example.com' }),
+  cart_items: JSON.stringify([{ id: prod.name, price: 1, qty: 1 }]),
+}, 'POST');
+!legacyPay.ok ? ok('the old guest-callable payment endpoint is gone')
+              : bad('the old guest-callable payment endpoint is gone', `it booked ${legacyPay.body?.message?.order_id}`);
+
+const payCfg = await call(guest, 'hira.api.payments.get_payment_config');
+const cfg = payCfg.body?.message;
+if (cfg && typeof cfg === 'object') {
+  ok('the checkout can ask whether card payments are ready', cfg.available ? `${cfg.provider} / ${cfg.environment}` : `unavailable (${cfg.reason})`);
+} else {
+  bad('the checkout can ask whether card payments are ready', JSON.stringify(payCfg.body).slice(0, 120));
+}
+
+// A leaked access token would let anyone charge cards on this account.
+const cfgText = JSON.stringify(cfg || {});
+!/access_token|EAAA|sq0atp/i.test(cfgText)
+  ? ok('the payment config carries no secret')
+  : bad('the payment config carries no secret', 'an access token is exposed to the browser');
+
+// A signed-in shopper with a junk token must be refused, and must leave nothing
+// behind — no draft order that could later be mistaken for a real one.
+const beforeOrders = await call(admin, 'frappe.client.get_list',
+  { doctype: 'Sales Order', fields: ['name'], limit_page_length: 500 }, 'POST');
+const beforeCount = (beforeOrders.body?.message || []).length;
+
+const badToken = await call(admin, 'hira.api.payments.create_card_order', {
   customer: JSON.stringify({ fullName: 'E2E Shopper', email: 'e2e-shopper@example.com', phone: '9000000002' }),
-  cart_items: JSON.stringify([{ id: prod.name, name: prod.item_name, price: realPrice, qty: 1, image: '' }]),
-  discount: 0, shipping: 0, payment_method: 'Cash on Delivery',
+  cart_items: JSON.stringify([{ id: prod.name, price: realPrice, qty: 1 }]),
+  source_id: 'cnon:not-a-real-token',
+  expected_total: realPrice,
 }, 'POST');
-const orderId = order.body?.message?.order_id;
-orderId ? ok('an order can be placed', orderId) : bad('an order can be placed', JSON.stringify(order.body).slice(0, 140));
+!badToken.ok ? ok('an unverified card cannot place an order')
+             : bad('an unverified card cannot place an order', `created ${badToken.body?.message?.order_id}`);
 
-const soCheck = await call(admin, 'frappe.client.get', { doctype: 'Sales Order', name: orderId }, 'POST');
-const so = soCheck.body?.message;
-so?.docstatus === 1 ? ok('the order is submitted, not left as a draft') : bad('the order is submitted', `docstatus ${so?.docstatus}`);
-Number(so?.grand_total) === realPrice ? ok('the order total matches the catalogue price', `$${so?.grand_total}`)
-                                      : bad('the order total matches the catalogue price', `$${so?.grand_total} vs $${realPrice}`);
+const afterOrders = await call(admin, 'frappe.client.get_list',
+  { doctype: 'Sales Order', fields: ['name'], limit_page_length: 500 }, 'POST');
+const afterCount = (afterOrders.body?.message || []).length;
+afterCount === beforeCount
+  ? ok('a failed payment leaves no order behind', `${afterCount} orders, unchanged`)
+  : bad('a failed payment leaves no order behind', `${beforeCount} -> ${afterCount}`);
 
-// An order carrying a coupon code exercises ERPNext's own redemption checks,
-// which a discount-free order never touches — that gap hid a bug where every
-// discounted order failed with "Allowed quantity is exhausted".
-const couponOrder = await call(admin, 'hira.api.orders.create_cod_order', {
-  customer: JSON.stringify({ fullName: 'Coupon Buyer', email: 'coupon@example.com', phone: '9000000006' }),
-  cart_items: JSON.stringify([{ id: prod.name, name: prod.item_name, price: realPrice, qty: 1, image: '' }]),
-  coupon_code: 'HIRA30', discount: Math.round(realPrice * 0.3 * 100) / 100,
-  shipping: 0, payment_method: 'Cash on Delivery',
-}, 'POST');
-const couponOrderId = couponOrder.body?.message?.order_id;
-if (couponOrderId) {
-  const co = await call(admin, 'frappe.client.get', { doctype: 'Sales Order', name: couponOrderId }, 'POST');
-  const total = Number(co.body?.message?.grand_total);
-  const expected = Math.round((realPrice * 0.7) * 100) / 100;
-  Math.abs(total - expected) < 0.02
-    ? ok('an order with a coupon books at the discounted total', )
-    : bad('an order with a coupon books at the discounted total', );
-} else {
-  bad('an order with a coupon can be placed', JSON.stringify(couponOrder.body).slice(0, 160));
-}
-
-// ── price tampering ─────────────────────────────────────────────────────────
-section('Price tampering');
-
-const tamper = await call(admin, 'hira.api.orders.create_cod_order', {
-  customer: JSON.stringify({ fullName: 'Tamper Test', email: 'tamper@example.com', phone: '9000000003' }),
-  cart_items: JSON.stringify([{ id: prod.name, name: prod.item_name, price: 1, qty: 1, image: '' }]),
-  discount: 0, shipping: 0, payment_method: 'Cash on Delivery',
-}, 'POST');
-const tamperId = tamper.body?.message?.order_id;
-if (tamperId) {
-  const t = await call(admin, 'frappe.client.get', { doctype: 'Sales Order', name: tamperId }, 'POST');
-  const total = Number(t.body?.message?.grand_total);
-  total === realPrice
-    ? ok('a tampered price is overridden by the catalogue', `$1 sent, charged $${total}`)
-    : bad('a tampered price is overridden by the catalogue',
-          `sent $1 for a $${realPrice} item and the order was booked at $${total}`);
-} else {
-  ok('a tampered price is refused outright');
-}
-
-const overDiscount = await call(admin, 'hira.api.orders.create_cod_order', {
-  customer: JSON.stringify({ fullName: 'Discount Test', email: 'disc@example.com', phone: '9000000004' }),
-  cart_items: JSON.stringify([{ id: prod.name, name: prod.item_name, price: realPrice, qty: 1, image: '' }]),
-  discount: realPrice * 10, shipping: 0, payment_method: 'Cash on Delivery',
-}, 'POST');
-const odId = overDiscount.body?.message?.order_id;
-if (odId) {
-  const t = await call(admin, 'frappe.client.get', { doctype: 'Sales Order', name: odId }, 'POST');
-  const total = Number(t.body?.message?.grand_total);
-  total >= 0 && total <= realPrice
-    ? ok('an oversized discount cannot drive the total negative', `$${total}`)
-    : bad('an oversized discount cannot drive the total negative', `total $${total}`);
-} else {
-  ok('an oversized discount is refused');
-}
-
-const negQty = await call(admin, 'hira.api.orders.create_cod_order', {
-  customer: JSON.stringify({ fullName: 'Qty Test', email: 'qty@example.com', phone: '9000000005' }),
-  cart_items: JSON.stringify([{ id: prod.name, name: prod.item_name, price: realPrice, qty: -5, image: '' }]),
-  payment_method: 'Cash on Delivery',
-}, 'POST');
-!negQty.ok ? ok('a negative quantity is rejected')
-           : bad('a negative quantity is rejected', `created ${negQty.body?.message?.order_id}`);
-
-const emptyCart = await call(admin, 'hira.api.orders.create_cod_order', {
+const emptyCart = await call(admin, 'hira.api.payments.create_card_order', {
   customer: JSON.stringify({ fullName: 'Empty', email: 'e@example.com' }),
-  cart_items: JSON.stringify([]), payment_method: 'Cash on Delivery',
+  cart_items: JSON.stringify([]), source_id: 'cnon:fake',
 }, 'POST');
 !emptyCart.ok ? ok('an empty cart is rejected') : bad('an empty cart is rejected', 'accepted');
 
@@ -325,6 +313,14 @@ const custs = await call(admin, 'frappe.client.get_list',
 const custCount = (custs.body?.message || []).length;
 custCount > 0 ? ok('customers are created from orders', `${custCount} customers`)
               : bad('customers are created from orders', 'none');
+
+// Every charge attempt, successful or not, has to leave a row the owner can
+// reconcile against the Square dashboard.
+const payLog = await call(admin, 'frappe.client.get_list',
+  { doctype: 'Square Payment Log', fields: ['name', 'status', 'payment_id'], limit_page_length: 20 }, 'POST');
+Array.isArray(payLog.body?.message)
+  ? ok('payment attempts are logged for reconciliation', `${payLog.body.message.length} entries`)
+  : bad('payment attempts are logged for reconciliation', JSON.stringify(payLog.body).slice(0, 120));
 
 // ── summary ─────────────────────────────────────────────────────────────────
 console.log(`\n${'='.repeat(64)}`);

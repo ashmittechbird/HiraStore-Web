@@ -505,23 +505,23 @@ function demoCall(method: string, params: Row): any {
     }
 
     // ── payments / orders ──
-    case 'square_payment.api.get_config':
-      // No Square credentials without a backend. The payment page reads this as
-      // "card gateway unavailable" and offers the demo/COD paths instead.
-      return { message: null };
-    case 'square_payment.api.process_payment': {
+    case 'hira.api.payments.get_payment_config':
+      // Demo mode has no gateway and takes no money. Saying so lets the payment
+      // page label itself honestly rather than imitating a real card form.
+      return { message: { available: false, reason: 'demo_mode' } };
+    case 'hira.api.payments.create_card_order': {
       const order = db.createOrder({
         customer: JSON.parse(String(params.customer || '{}')),
         cart: JSON.parse(String(params.cart_items || '[]')),
         discount: Number(params.discount || 0),
         shipping: Number(params.shipping || 0),
         couponCode: String(params.coupon_code || ''),
-        paymentMethod: String(params.payment_method || 'Demo Card'),
+        paymentMethod: 'Demo Card',
         paymentId: String(params.source_id || ''),
       });
       return { message: { order_id: order.name, payment_id: order.payment_id } };
     }
-    case 'square_payment.api.get_my_orders':
+    case 'hira.api.orders.get_my_orders':
       return { message: db.ordersFor(db.currentSession()) };
 
     case 'upload_file': {
@@ -599,16 +599,22 @@ export interface PlaceOrderInput {
   shipping: number;
   total: number;
   couponCode?: string;
-  /** 'card' tokenizes through Square; 'cod' books the order for cash on delivery. */
-  paymentMethod: 'card' | 'cod';
-  /** Square payment token. Required for 'card' against a live backend. */
+  /** Single-use card token from Square's Web Payments SDK. */
   sourceId?: string;
+  /**
+   * Stable for one attempt at one basket, so a double-clicked Pay button or a
+   * retried request cannot charge the card twice. Regenerate it only when the
+   * shopper genuinely retries — Square replays the original result for a
+   * repeated key, which would otherwise return the old decline.
+   */
+  idempotencyKey?: string;
 }
 
 export interface PlacedOrder {
   orderId: string;
   paymentId: string;
   paymentLabel: string;
+  receiptUrl?: string;
 }
 
 /**
@@ -620,7 +626,6 @@ export interface PlacedOrder {
  */
 export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
   const mode = await detectMode();
-  const label = input.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Card';
 
   if (mode === 'demo') {
     const order = db.createOrder({
@@ -629,53 +634,33 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlacedOrder> {
       discount: input.discount,
       shipping: input.shipping,
       couponCode: input.couponCode,
-      paymentMethod: label,
+      paymentMethod: 'Demo Card',
       paymentId: input.sourceId,
     });
-    return { orderId: order.name, paymentId: order.payment_id, paymentLabel: label };
+    return { orderId: order.name, paymentId: order.payment_id, paymentLabel: 'Demo Card' };
   }
 
-  const payload = {
-    source_id: input.sourceId || 'COD',
-    amount_cents: Math.round(input.total * 100),
+  // The total goes up as `expected_total` only — the server prices the basket
+  // from its own records and refuses if the two disagree, so the shopper is
+  // never charged a figure they weren't shown, and a tampered request is
+  // rejected rather than obeyed.
+  const res = await call('hira.api.payments.create_card_order', {
     customer: JSON.stringify(input.customer),
     cart_items: JSON.stringify(input.cart),
     coupon_code: input.couponCode || '',
-    discount: input.discount,
-    shipping: input.shipping,
-    payment_method: label,
-  };
+    source_id: input.sourceId,
+    idempotency_key: input.idempotencyKey,
+    expected_total: input.total,
+  });
 
-  if (input.paymentMethod === 'cod') {
-    // Prefer a purpose-built COD endpoint; fall back to the payment app's
-    // handler, which some deployments configure to accept offline methods.
-    //
-    // The first endpoint's error is kept and re-thrown if nothing succeeds.
-    // Swallowing it and reporting "COD is not enabled" once hid a real ERPNext
-    // validation failure — every order carrying a coupon was being rejected and
-    // the customer was told the wrong thing.
-    let firstError: Error | null = null;
-
-    for (const method of ['hira.api.orders.create_cod_order', 'square_payment.api.process_payment']) {
-      try {
-        const res = await call(method, payload);
-        const m = res?.message;
-        if (m?.order_id) return { orderId: m.order_id, paymentId: m.payment_id || 'COD', paymentLabel: label };
-      } catch (e) {
-        if (!firstError) firstError = e instanceof Error ? e : new Error(String(e));
-      }
-    }
-
-    if (firstError) throw firstError;
-    throw new Error(
-      'Cash on Delivery is not enabled on the server yet. Please pay by card, or contact us to place this order.'
-    );
-  }
-
-  const res = await call('square_payment.api.process_payment', payload);
   const m = res?.message;
-  if (!m?.order_id) throw new Error('Payment went through but the order could not be created. Please contact support.');
-  return { orderId: m.order_id, paymentId: m.payment_id, paymentLabel: label };
+  if (!m?.order_id) throw new Error('The payment went through but the order could not be created. Please contact us.');
+  return {
+    orderId: m.order_id,
+    paymentId: m.payment_id,
+    paymentLabel: m.payment_method || 'Card',
+    receiptUrl: m.receipt_url,
+  };
 }
 
 // ─── homepage curation ───────────────────────────────────────────────────────
@@ -771,16 +756,11 @@ export async function getStorefrontItem(name: string): Promise<Row | null> {
 }
 
 /**
- * Order history for the signed-in shopper.
- *
- * Tries this bench's own endpoint first, then the payment app's (the original
- * deployment served history from there), then the demo store.
+ * Order history for the signed-in shopper. Falls back to the demo store.
  */
 export async function getMyOrders(): Promise<Row[]> {
-  for (const method of ['hira.api.orders.get_my_orders', 'square_payment.api.get_my_orders']) {
-    const res = await call(method, {}, { method: 'GET' }).catch(() => null);
-    if (Array.isArray(res?.message)) return res.message as Row[];
-  }
+  const res = await call('hira.api.orders.get_my_orders', {}, { method: 'GET' }).catch(() => null);
+  if (Array.isArray(res?.message)) return res.message as Row[];
   return [];
 }
 

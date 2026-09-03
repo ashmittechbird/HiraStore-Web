@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
 import { call, placeOrder } from '@/lib/backend';
 import { useBackendMode } from '@/lib/frappe';
+import { whatsappLink } from '@/lib/contact';
 
 declare global {
   interface Window {
@@ -20,6 +21,19 @@ interface CheckoutData {
   total?: number;
 }
 
+/** Square caps the idempotency key at 45 characters; a UUID is 36. */
+function newIdempotencyKey(): string {
+  return crypto.randomUUID
+    ? crypto.randomUUID()
+    : `hs-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+}
+
+interface GatewayConfig {
+  app_id: string;
+  location_id: string;
+  environment: string;
+}
+
 export default function PaymentPage() {
   const navigate = useNavigate();
   const { clearCart } = useCart();
@@ -27,21 +41,24 @@ export default function PaymentPage() {
   const [checkoutData, setCheckoutData] = useState<CheckoutData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [payMethod, setPayMethod] = useState<'card' | 'cod'>('card');
 
   // Square (live backend only)
   const [squareReady, setSquareReady] = useState(false);
-  const [squareConfig, setSquareConfig] = useState<{ app_id: string; location_id: string; environment: string } | null>(null);
+  const [squareConfig, setSquareConfig] = useState<GatewayConfig | null>(null);
   const [gatewayChecked, setGatewayChecked] = useState(false);
   const cardRef = useRef<any>(null);
   const cardContainerRef = useRef<HTMLDivElement>(null);
   const initRanRef = useRef(false);
 
-  // Offline card form — used when no Square gateway is configured, so the
-  // checkout is still demonstrable end to end without taking a real payment.
-  const [testCard, setTestCard] = useState({ number: '', exp: '', cvc: '', name: '' });
+  /**
+   * Sent with the charge so a double-clicked Pay button can't bill the card
+   * twice — Square replays the original result for a repeated key. Regenerated
+   * after a failure, because replaying a decline would reject a corrected card.
+   */
+  const [idempotencyKey, setIdempotencyKey] = useState(() => newIdempotencyKey());
 
   const squareLive = !!squareConfig;
+  const demo = mode === 'demo';
 
   // Load the basket handed over by checkout
   useEffect(() => {
@@ -52,16 +69,18 @@ export default function PaymentPage() {
     } catch { navigate('/cart'); }
   }, [navigate]);
 
-  // Ask the backend whether a card gateway is configured.
+  // Ask the backend whether a card gateway is configured. Fronted by the store's
+  // own endpoint rather than the gateway app's, so swapping providers later is a
+  // server change only.
   useEffect(() => {
     let alive = true;
-    call('square_payment.api.get_config')
+    call('hira.api.payments.get_payment_config')
       .then(res => {
         if (!alive) return;
         const cfg = res?.message;
-        if (cfg?.app_id && cfg?.location_id) setSquareConfig(cfg);
+        if (cfg?.available && cfg.app_id && cfg.location_id) setSquareConfig(cfg);
       })
-      .catch(() => { /* no gateway — the offline card form takes over */ })
+      .catch(() => { /* checkout renders its "unavailable" state */ })
       .finally(() => { if (alive) setGatewayChecked(true); });
     return () => { alive = false; };
   }, []);
@@ -69,7 +88,6 @@ export default function PaymentPage() {
   // Mount the Square card element — guarded against StrictMode double-fire
   useEffect(() => {
     if (!squareConfig || !cardContainerRef.current || initRanRef.current) return;
-    if (payMethod !== 'card') return;
 
     const src = squareConfig.environment === 'production'
       ? 'https://web.squarecdn.com/v1/square.js'
@@ -88,7 +106,7 @@ export default function PaymentPage() {
     script.onload = start;
     script.onerror = () => setError('Failed to load the Square payment SDK (network or CSP issue).');
     document.head.appendChild(script);
-  }, [squareConfig, payMethod]);
+  }, [squareConfig]);
 
   async function initSquare() {
     if (!squareConfig || !cardContainerRef.current) return;
@@ -105,16 +123,6 @@ export default function PaymentPage() {
     }
   }
 
-  /** Basic client-side sanity check for the offline card form. */
-  function validateTestCard(): string {
-    const digits = testCard.number.replace(/\D/g, '');
-    if (!testCard.name.trim()) return 'Enter the name on the card';
-    if (digits.length < 13 || digits.length > 19) return 'Enter a valid card number';
-    if (!/^\d{2}\s*\/\s*\d{2,4}$/.test(testCard.exp)) return 'Enter the expiry as MM/YY';
-    if (!/^\d{3,4}$/.test(testCard.cvc)) return 'Enter a valid CVC';
-    return '';
-  }
-
   async function handlePlaceOrder() {
     if (!checkoutData) return;
     setError('');
@@ -128,35 +136,34 @@ export default function PaymentPage() {
 
     let sourceId: string | undefined;
 
-    if (payMethod === 'card') {
-      if (squareLive) {
-        if (!cardRef.current) { setError('The card form is still loading. Please wait a moment.'); return; }
-        setLoading(true);
-        try {
-          const result = await cardRef.current.tokenize();
-          if (result.status !== 'OK') {
-            throw new Error(result.errors?.map((e: any) => e.message).join(', ') || 'Card could not be verified');
-          }
-          sourceId = result.token;
-        } catch (e: any) {
-          setError(e.message || 'Card could not be verified.');
-          setLoading(false);
-          return;
-        }
-      } else {
-        const invalid = validateTestCard();
-        if (invalid) { setError(invalid); return; }
-        sourceId = 'offline_' + testCard.number.replace(/\D/g, '').slice(-4);
-        setLoading(true);
-      }
-    } else {
+    if (squareLive) {
+      if (!cardRef.current) { setError('The card form is still loading. Please wait a moment.'); return; }
       setLoading(true);
+      try {
+        const result = await cardRef.current.tokenize();
+        if (result.status !== 'OK') {
+          throw new Error(result.errors?.map((e: any) => e.message).join(', ') || 'Card could not be verified');
+        }
+        sourceId = result.token;
+      } catch (e: any) {
+        setError(e.message || 'Card could not be verified.');
+        setLoading(false);
+        return;
+      }
+    } else if (demo) {
+      // No backend at all. The demo store records the order locally and the
+      // page says so — no card details are asked for or invented.
+      setLoading(true);
+      sourceId = 'demo';
+    } else {
+      setError('Card payments are not available right now. Please contact us to place this order.');
+      return;
     }
 
     try {
       const placed = await placeOrder({
         customer, cart, subtotal, discount: discount || 0, shipping, total,
-        couponCode, paymentMethod: payMethod, sourceId,
+        couponCode, sourceId, idempotencyKey,
       });
 
       clearCart();
@@ -166,11 +173,10 @@ export default function PaymentPage() {
       sessionStorage.setItem('hs_order_success', JSON.stringify({
         orderId: placed.orderId,
         paymentId: placed.paymentId,
+        receiptUrl: placed.receiptUrl,
         customer,
         total,
-        paymentMethod: payMethod === 'cod'
-          ? 'Cash on Delivery'
-          : squareLive ? 'Square (Card)' : 'Card',
+        paymentMethod: placed.paymentLabel,
         subtotal,
         shipping,
         discount: discount || 0,
@@ -178,6 +184,10 @@ export default function PaymentPage() {
       navigate('/order-success');
     } catch (e: any) {
       setError(e?.message || 'We could not place your order. Please try again.');
+      // A fresh key for the retry: Square replays the original response for a
+      // repeated key, so reusing it would return this same failure however good
+      // the next card is.
+      setIdempotencyKey(newIdempotencyKey());
     }
     setLoading(false);
   }
@@ -236,34 +246,26 @@ export default function PaymentPage() {
 
             {/* Payment method */}
             <div className="hp-section-label">Payment Method</div>
-            <div className="hp-methods" role="radiogroup" aria-label="Payment method">
-              <button
-                type="button"
-                role="radio"
-                aria-checked={payMethod === 'card'}
-                className={`hp-method${payMethod === 'card' ? ' on' : ''}`}
-                onClick={() => { setPayMethod('card'); setError(''); }}
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                <span className="hp-method-name">Card</span>
-                <span className="hp-method-sub">Visa · Mastercard · Amex</span>
-              </button>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={payMethod === 'cod'}
-                className={`hp-method${payMethod === 'cod' ? ' on' : ''}`}
-                onClick={() => { setPayMethod('cod'); setError(''); }}
-              >
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
-                <span className="hp-method-name">Cash on Delivery</span>
-                <span className="hp-method-sub">Pay when it arrives</span>
-              </button>
+            <div className="hp-method on" aria-label="Payment method: card">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              <span className="hp-method-name">Card</span>
+              <span className="hp-method-sub">Visa · Mastercard · Amex · Discover</span>
             </div>
 
-            {payMethod === 'card' && squareLive && (
+            {!gatewayChecked && (
+              <div className="hp-loading"><div className="hp-spin-sm" /><span>Checking payment options…</span></div>
+            )}
+
+            {gatewayChecked && squareLive && (
               <>
                 <div className="hp-section-label">Card Details</div>
+                {squareConfig!.environment !== 'production' && (
+                  <div className="hp-testnote" role="note">
+                    <strong>Sandbox mode.</strong> The gateway is connected to Square's test
+                    environment, so no money moves. Orders still appear in your account and
+                    in the admin panel.
+                  </div>
+                )}
                 <div className="hp-square">
                   <div ref={cardContainerRef} id="square-card-container" />
                   {!squareReady && !error && (
@@ -276,74 +278,30 @@ export default function PaymentPage() {
               </>
             )}
 
-            {payMethod === 'card' && gatewayChecked && !squareLive && (
-              <>
-                <div className="hp-section-label">Card Details</div>
-                <div className="hp-testnote" role="note">
-                  <strong>Test mode.</strong> No live card gateway is connected, so this
-                  card is not charged — the order is still placed and appears in your
-                  account and in the admin panel. Use any well-formed card number.
-                </div>
-                <div className="hp-card-form">
-                  <label className="hp-cf-field hp-cf-wide">
-                    <span>Name on card</span>
-                    <input
-                      value={testCard.name}
-                      onChange={e => setTestCard(c => ({ ...c, name: e.target.value }))}
-                      placeholder="Priya Sharma"
-                      autoComplete="cc-name"
-                    />
-                  </label>
-                  <label className="hp-cf-field hp-cf-wide">
-                    <span>Card number</span>
-                    <input
-                      value={testCard.number}
-                      onChange={e => setTestCard(c => ({
-                        ...c,
-                        number: e.target.value.replace(/\D/g, '').slice(0, 19).replace(/(.{4})/g, '$1 ').trim(),
-                      }))}
-                      placeholder="4242 4242 4242 4242"
-                      inputMode="numeric"
-                      autoComplete="cc-number"
-                    />
-                  </label>
-                  <label className="hp-cf-field">
-                    <span>Expiry</span>
-                    <input
-                      value={testCard.exp}
-                      onChange={e => {
-                        const d = e.target.value.replace(/\D/g, '').slice(0, 4);
-                        setTestCard(c => ({ ...c, exp: d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d }));
-                      }}
-                      placeholder="MM/YY"
-                      inputMode="numeric"
-                      autoComplete="cc-exp"
-                    />
-                  </label>
-                  <label className="hp-cf-field">
-                    <span>CVC</span>
-                    <input
-                      value={testCard.cvc}
-                      onChange={e => setTestCard(c => ({ ...c, cvc: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
-                      placeholder="123"
-                      inputMode="numeric"
-                      autoComplete="cc-csc"
-                    />
-                  </label>
-                </div>
-              </>
+            {/* No backend at all — the bundled demo store. Say so rather than
+                showing a card form that would take details and discard them. */}
+            {gatewayChecked && !squareLive && demo && (
+              <div className="hp-testnote" role="note">
+                <strong>Demo mode.</strong> No store backend is connected, so no card is
+                asked for and no money is taken. The order is saved in this browser only,
+                so you can walk through the rest of the checkout.
+              </div>
             )}
 
-            {payMethod === 'card' && !gatewayChecked && (
-              <div className="hp-loading"><div className="hp-spin-sm" /><span>Checking payment options…</span></div>
-            )}
-
-            {payMethod === 'cod' && (
-              <div className="hp-cod">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 6H4a2 2 0 00-2 2v8a2 2 0 002 2h16a2 2 0 002-2V8a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="2.5"/></svg>
+            {/* Live backend, gateway not set up. Never take an order we can't
+                charge for — that reads as a sale to the customer and is not one. */}
+            {gatewayChecked && !squareLive && !demo && (
+              <div className="hp-unavailable" role="alert">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <div>
-                  <strong>Pay in cash when your order arrives.</strong>
-                  <p>Keep ${total.toFixed(2)} ready for the delivery partner. You can inspect the parcel before paying.</p>
+                  <strong>Card payments aren't available right now.</strong>
+                  <p>
+                    Your basket is saved.{' '}
+                    <a href={whatsappLink(`Hi, I'd like to place an order (${itemCount} item${itemCount !== 1 ? 's' : ''}, $${total.toFixed(2)}) but checkout says card payments are unavailable.`)} target="_blank" rel="noopener noreferrer">
+                      Message us on WhatsApp
+                    </a>{' '}
+                    and we'll complete this order with you directly.
+                  </p>
                 </div>
               </div>
             )}
@@ -359,12 +317,10 @@ export default function PaymentPage() {
               type="button"
               className="hp-pay-btn"
               onClick={handlePlaceOrder}
-              disabled={loading || (payMethod === 'card' && (!gatewayChecked || (squareLive && !squareReady)))}
+              disabled={loading || !gatewayChecked || (squareLive && !squareReady) || (!squareLive && !demo)}
             >
               {loading ? (
-                <><span className="hp-spin" />{payMethod === 'cod' ? 'Placing Order…' : 'Processing Payment…'}</>
-              ) : payMethod === 'cod' ? (
-                <>Place Order · ${total.toFixed(2)} <span aria-hidden="true">→</span></>
+                <><span className="hp-spin" />Processing Payment…</>
               ) : (
                 <>Pay ${total.toFixed(2)} <span aria-hidden="true">→</span></>
               )}
@@ -372,11 +328,11 @@ export default function PaymentPage() {
 
             <p className="hp-secure">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-              {payMethod === 'cod'
-                ? 'No payment is taken now. You pay the delivery partner in cash.'
-                : squareLive
-                  ? 'Secured by Square. Card details are never stored on our servers.'
-                  : 'Test mode — no card is charged and no card details are stored.'}
+              {squareLive
+                ? 'Secured by Square. Your card details go straight to Square and never touch our servers.'
+                : demo
+                  ? 'Demo mode — no card is asked for and no money is taken.'
+                  : 'Checkout is temporarily unavailable.'}
             </p>
           </div>
         </section>
@@ -418,33 +374,16 @@ export default function PaymentPage() {
 }
 
 const styles = `
-  /* Payment method picker */
-  .hp-methods { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:22px; }
+  /* Payment method — card is the only one, so this states it rather than asking */
   .hp-method {
     display:flex; flex-direction:column; align-items:flex-start; gap:2px;
-    padding:14px 14px 12px; border:1.5px solid #e3eef0; border-radius:10px;
-    background:#fff; cursor:pointer; text-align:left; color:#5b7a80;
-    transition:border-color .18s, background .18s, color .18s;
+    padding:14px 14px 12px; margin-bottom:22px;
+    border:1.5px solid #005969; border-radius:10px;
+    background:#f2fafb; text-align:left; color:#005969;
   }
-  .hp-method:hover { border-color:#b9d9de; }
-  .hp-method.on { border-color:#005969; background:#f2fafb; color:#005969; }
   .hp-method svg { margin-bottom:6px; }
-  .hp-method-name { font-size:13.5px; font-weight:600; color:#25454a; letter-spacing:.01em; }
-  .hp-method.on .hp-method-name { color:#005969; }
+  .hp-method-name { font-size:13.5px; font-weight:600; color:#005969; letter-spacing:.01em; }
   .hp-method-sub { font-size:11px; color:#8aa5aa; }
-
-  /* Offline card form */
-  .hp-card-form { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:18px; }
-  .hp-cf-wide { grid-column:1 / -1; }
-  .hp-cf-field { display:flex; flex-direction:column; gap:6px; }
-  .hp-cf-field span { font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#8aa5aa; }
-  .hp-cf-field input {
-    padding:12px 13px; border:1.5px solid #e3eef0; border-radius:8px;
-    font-size:14px; font-family:inherit; color:#25454a; background:#fff; outline:none;
-    transition:border-color .18s;
-  }
-  .hp-cf-field input:focus { border-color:#005969; }
-  .hp-cf-field input::placeholder { color:#b9cbcf; }
 
   .hp-testnote {
     display:block; padding:11px 13px; margin-bottom:14px;
@@ -453,19 +392,15 @@ const styles = `
   }
   .hp-testnote strong { color:#6b5228; }
 
-  /* Cash on delivery panel */
-  .hp-cod {
+  /* Live site, no gateway configured */
+  .hp-unavailable {
     display:flex; gap:12px; align-items:flex-start;
     padding:16px; margin-bottom:20px;
-    background:#f2fafb; border:1.5px solid #cfe6ea; border-radius:10px; color:#005969;
+    background:#fff8ee; border:1.5px solid #f0e0c4; border-radius:10px; color:#8a6d3b;
   }
-  .hp-cod strong { display:block; font-size:13.5px; margin-bottom:4px; color:#25454a; }
-  .hp-cod p { font-size:12.5px; line-height:1.55; color:#5b7a80; margin:0; }
-
-  @media (max-width: 560px) {
-    .hp-methods { grid-template-columns:1fr; }
-    .hp-card-form { grid-template-columns:1fr 1fr; }
-  }
+  .hp-unavailable strong { display:block; font-size:13.5px; margin-bottom:4px; color:#6b5228; }
+  .hp-unavailable p { font-size:12.5px; line-height:1.55; margin:0; }
+  .hp-unavailable a { color:#005969; font-weight:600; }
 
   /* Cover navbar + footer; own exactly one viewport */
   .hira-pay {

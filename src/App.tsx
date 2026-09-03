@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ROUTER_BASE, HOME_URL } from '@/lib/config'
 import { FrappeProvider } from '@/lib/frappe'
 import Navbar from './components/Navbar'
+import ScrollToTop from './components/ScrollToTop'
 import Footer from './components/Footer'
 import DemoBadge from './components/DemoBadge'
 import FloatingActions from './components/FloatingActions'
@@ -26,6 +27,7 @@ export default function App() {
   return (
     <FrappeProvider url={FRAPPE_URL} enableSocket={false}>
     <BrowserRouter basename={ROUTER_BASE}>
+      <ScrollToTop />
       <Navbar />
       <main>
         <Routes>

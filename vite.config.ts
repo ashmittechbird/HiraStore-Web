@@ -56,8 +56,9 @@ export default defineConfig(({ command, mode }) => ({
   },
   server: {
     // 8001 belongs to the Frappe bench — the dev server used to squat on it,
-    // so the two could never run at once on the same machine.
-    port: 5173,
+    // so the two could never run at once on the same machine. PORT wins when
+    // set, so the port can be moved without editing this file.
+    port: Number(process.env.PORT) || 5173,
     proxy: (() => {
       // changeOrigin rewrites the Host header to match the target, which is what
       // a real Frappe site expects.

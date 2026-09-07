@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useFrappePostCall, useBackendMode, useFrappeAuth } from '@/lib/frappe';
 import { useWishlist } from '@/store/wishlist';
+import { safeReturnPath } from '@/lib/returnPath';
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState('');
@@ -39,7 +40,7 @@ export default function SignupPage() {
         // auth context before navigating, or a guarded page bounces us to login.
         await updateCurrentUser();
         setWishlistUser(email);
-        navigate(returnParam && returnParam.startsWith('/') ? returnParam : '/account', { replace: true });
+        navigate(safeReturnPath(location.search), { replace: true });
         return;
       }
       setSuccess(true);

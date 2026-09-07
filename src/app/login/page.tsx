@@ -3,15 +3,10 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useFrappeAuth, useBackendMode } from '@/lib/frappe';
 import { DEMO_CREDENTIALS } from '@/lib/demoDb';
 import { useWishlist } from '@/store/wishlist';
+import { safeReturnPath } from '@/lib/returnPath';
 
 const SI = `${import.meta.env.BASE_URL}site-images`;
 const HIRA_LOGO = `${import.meta.env.BASE_URL}site-images/hira-logo.png`;
-
-function getSafeReturnPath(search: string): string {
-  const ret = new URLSearchParams(search).get('return');
-  if (ret && ret.startsWith('/') && !ret.startsWith('//')) return ret;
-  return '/account';
-}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -27,7 +22,7 @@ export default function LoginPage() {
   const signupHref = location.search ? `/signup${location.search}` : '/signup';
 
   useEffect(() => {
-    if (currentUser) navigate(getSafeReturnPath(location.search), { replace: true });
+    if (currentUser) navigate(safeReturnPath(location.search), { replace: true });
   }, [currentUser]);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -38,7 +33,7 @@ export default function LoginPage() {
     try {
       await login({ username: email, password });
       setWishlistUser(email);
-      navigate(getSafeReturnPath(location.search), { replace: true });
+      navigate(safeReturnPath(location.search), { replace: true });
     } catch (err: unknown) {
       setError((err as Error).message || 'Invalid username/email or password');
     }

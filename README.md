@@ -18,8 +18,8 @@ than at a customer's checkout.
 ```bash
 cd /path/to/frappe-bench
 
-bench get-app square_payment https://github.com/TechbirdIT/Square-Pay.git --branch develop
-bench get-app hira https://github.com/ashmittechbird/HiraStore-Web.git --branch frappe-app
+bench get-app square_payment https://github.com/TechbirdIT/HiraStore.git --branch square-pay
+bench get-app hira https://github.com/TechbirdIT/HiraStore.git --branch frappe-app
 
 bench --site your-site.local install-app square_payment
 bench --site your-site.local install-app hira

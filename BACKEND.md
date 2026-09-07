@@ -1,18 +1,22 @@
 # Backend
 
-Two Frappe apps sit behind this storefront:
+Everything lives in [TechbirdIT/HiraStore](https://github.com/TechbirdIT/HiraStore),
+on three branches. Each is a root, because `bench get-app` clones a repository
+and expects `<app>/hooks.py` at the top of it — an app in a subdirectory is
+invisible to it.
 
-| App | Where | What it does |
+| Branch | Holds | Installed with |
 |---|---|---|
-| `hira` | **`frappe-app` branch of this repository** | catalogue, coupons, checkout, video call bookings |
-| `square_payment` | [TechbirdIT/Square-Pay](https://github.com/TechbirdIT/Square-Pay) | takes card payments through Square |
+| `master` | the React storefront | Vercel, from the repo root |
+| `frappe-app` | the `hira` app — catalogue, coupons, checkout, bookings | `bench get-app` |
+| `square-pay` | the `square_payment` app — Square card payments | `bench get-app` |
 
-`square_payment` goes first — `hira` lists it in `required_apps`, so installing
+`square_payment` goes first: `hira` lists it in `required_apps`, so installing
 `hira` without it fails immediately rather than at a customer's checkout.
 
 ```bash
-bench get-app square_payment https://github.com/TechbirdIT/Square-Pay.git --branch develop
-bench get-app hira https://github.com/ashmittechbird/HiraStore-Web.git --branch frappe-app
+bench get-app square_payment https://github.com/TechbirdIT/HiraStore.git --branch square-pay
+bench get-app hira https://github.com/TechbirdIT/HiraStore.git --branch frappe-app
 
 bench --site your-site.local install-app square_payment
 bench --site your-site.local install-app hira
@@ -43,30 +47,35 @@ filled in, checkout tells shoppers card payments are unavailable and points them
 at WhatsApp — it never takes an order it cannot charge for.
 
 Full deployment notes, endpoint reference and security rationale are in the
-README on that branch.
+README on each app branch.
 
-## Why a branch and not a folder
+## Why branches and not folders
 
-`bench get-app` clones a repository and expects to find `<app>/hooks.py` at the
-root. An app kept in a subdirectory of `main` is invisible to it. An orphan
-branch gives the app its own root while keeping both halves of the project in
-one repository.
+The app branches were vendored into a `frappe-app/` folder here once. It was a
+copy `bench` could never install, and within a fortnight it had drifted from the
+one actually running — still creating its doctype at runtime, missing its
+installer. Two copies of a backend is one too many.
+
+An orphan branch gives each app its own root, which is what `bench get-app`
+needs, while keeping every part of the project in one repository.
 
 ## Changing the backend
 
-The branch has no shared history with `main`, so work on it from a separate
-checkout rather than switching branches in this one:
+The app branches share no history with `master`, so work on them from separate
+checkouts rather than switching branches in this one:
 
 ```bash
-git clone --branch frappe-app https://github.com/ashmittechbird/HiraStore-Web.git hira-backend
+git clone --branch frappe-app https://github.com/TechbirdIT/HiraStore.git hira-backend
+git clone --branch square-pay https://github.com/TechbirdIT/HiraStore.git square-pay
+
 cd hira-backend
 # edit, then
 git commit -am "..."
-git push origin frappe-app
+git push origin HEAD:frappe-app
 ```
 
-On the server, pull it with `bench update --apps hira` or
-`cd apps/hira && git pull`, then `bench --site <site> migrate`.
+On the server, pull with `bench update --apps hira` or `cd apps/hira && git
+pull`, then `bench --site <site> migrate`.
 
 ## Verifying a deployment
 

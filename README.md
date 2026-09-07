@@ -5,6 +5,38 @@ Frappe/ERPNext for inventory, orders and customers.
 
 ---
 
+## What is where
+
+The whole project is in this repository, on three branches. Each one is a root,
+because the tool that installs it expects to find its entry point at the top: a
+Frappe app in a subdirectory is invisible to `bench get-app`, and Vercel builds
+from the repo root.
+
+| Branch | Holds | Deployed by |
+|---|---|---|
+| **`master`** | this React storefront | Vercel |
+| **`frappe-app`** | the `hira` Frappe app — catalogue, coupons, checkout, video call bookings | `bench get-app` |
+| **`square-pay`** | the `square_payment` Frappe app — Square card payments | `bench get-app` |
+
+[BACKEND.md](BACKEND.md) has the install order and the Square setup. The app
+branches carry their own READMEs.
+
+```
+master
+├── src/
+│   ├── app/          one folder per route — page.tsx + its styles
+│   ├── components/   Navbar, Footer, FloatingActions, ScrollToTop, DemoBadge
+│   ├── lib/          backend.ts (the router), frappe.tsx (hooks), config, contact
+│   ├── store/        Zustand cart + wishlist
+│   └── data/         catalog.json, generated from the inventory sheet
+├── api/              Vercel serverless proxy to the Frappe host
+├── scripts/          sheet import, catalogue build, end-to-end suite
+├── public/           product photos, site imagery
+└── catalog_images/   the source sheet and its exports
+```
+
+---
+
 ## Two modes, one build
 
 The storefront detects at runtime whether a Frappe backend is answering and

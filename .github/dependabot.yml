@@ -1,0 +1,54 @@
+# Dependabot was running unconfigured, which is why it opened a PR jumping vite
+# three major versions (#15) and a second overlapping one (#14). The settings
+# below keep security fixes flowing while keeping major bumps deliberate.
+#
+# NOTE ON THIS REPO'S LAYOUT: each app lives on its own rootless branch, so a
+# single config cannot see them all. `target-branch` is what makes that work -
+# one update block per branch.
+version: 2
+
+updates:
+  # ── the React storefront (master) ──────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # One PR for all the routine churn instead of one per package.
+      minor-and-patch:
+        update-types: ["minor", "patch"]
+    ignore:
+      # Majors still get security PRs; they just stop arriving unprompted as
+      # routine version bumps that nobody has time to evaluate.
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    labels: ["dependencies", "storefront"]
+
+  # ── the hira Frappe app ────────────────────────────────────────────────────
+  - package-ecosystem: pip
+    directory: "/"
+    target-branch: frappe-app
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    labels: ["dependencies", "hira"]
+
+  # ── the square_payment Frappe app ──────────────────────────────────────────
+  - package-ecosystem: pip
+    directory: "/"
+    target-branch: square-pay
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    labels: ["dependencies", "square-payment"]
+
+  # ── the CI workflows themselves ────────────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    labels: ["ci"]

@@ -1,0 +1,171 @@
+# Integration CI for the HiraStore Frappe apps.
+#
+# The repo keeps each app on its own rootless branch, so this file lives on both
+# `frappe-app` and `square-pay`, differing only in PR_APP. Whichever branch you
+# push, CI builds a throwaway bench and installs BOTH apps in dependency order:
+# the payment path is only meaningful end to end, so testing either app alone
+# would prove very little.
+name: CI
+
+on:
+  push:
+    branches: [frappe-app]
+  pull_request:
+    branches: [frappe-app]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PR_APP: hira          # the app this branch owns; taken from the PR head
+  SITE: ci.localhost
+
+jobs:
+  test:
+    name: bench integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=10s --health-timeout=5s --health-retries=15
+      redis-cache:
+        image: redis:7-alpine
+        ports: ['13000:6379']
+      redis-queue:
+        image: redis:7-alpine
+        ports: ['11000:6379']
+
+    steps:
+      - name: Check out the app under test
+        uses: actions/checkout@v4
+        with:
+          path: app-src
+          fetch-depth: 1
+
+      # Frappe v16 pins requires-python ">=3.14,<3.15" - older interpreters cannot
+      # install it at all, so this version is forced, not chosen.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libmysqlclient-dev mariadb-client redis-tools wkhtmltopdf
+          npm install -g yarn
+
+      - name: Point MariaDB at the charset Frappe requires
+        run: |
+          mysql --host 127.0.0.1 --port 3306 -u root -proot -e "
+            SET GLOBAL character_set_server = 'utf8mb4';
+            SET GLOBAL collation_server = 'utf8mb4_unicode_ci';"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-v16-${{ hashFiles('app-src/pyproject.toml') }}
+          restore-keys: ${{ runner.os }}-pip-v16-
+
+      - name: Build a throwaway bench
+        run: |
+          set -e
+          pip install --quiet frappe-bench
+          bench init ci-bench \
+            --frappe-branch version-16 \
+            --python "$(which python)" \
+            --skip-redis-config-generation --skip-assets
+          cd ci-bench
+          bench set-config -g redis_cache    redis://127.0.0.1:13000
+          bench set-config -g redis_queue    redis://127.0.0.1:11000
+          bench set-config -g redis_socketio redis://127.0.0.1:13000
+          bench set-config -g developer_mode 1
+
+      - name: Fetch apps in dependency order
+        working-directory: ci-bench
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          AUTH="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git"
+          bench get-app erpnext --branch version-16 --skip-assets
+          # The branch under test is taken from the PR checkout, so CI proves THIS
+          # commit. Its sibling app comes from its remote branch tip.
+          if [ "$PR_APP" = "hira" ]; then
+            bench get-app square_payment "$AUTH" --branch square-pay --skip-assets
+            bench get-app hira "$GITHUB_WORKSPACE/app-src" --skip-assets
+          else
+            bench get-app square_payment "$GITHUB_WORKSPACE/app-src" --skip-assets
+            bench get-app hira "$AUTH" --branch frappe-app --skip-assets
+          fi
+          cat sites/apps.txt
+
+      - name: Create site and install apps
+        working-directory: ci-bench
+        run: |
+          set -e
+          bench new-site "$SITE" \
+            --db-root-password root --admin-password admin --no-mariadb-socket
+          # square_payment MUST precede hira: hira lists it in required_apps,
+          # so this ordering is load-bearing, not cosmetic.
+          bench --site "$SITE" install-app erpnext
+          bench --site "$SITE" install-app square_payment
+          bench --site "$SITE" install-app hira
+          bench --site "$SITE" migrate
+
+      - name: Seed the catalogue the checkout test needs
+        working-directory: ci-bench/sites
+        run: ../env/bin/python "$GITHUB_WORKSPACE/app-src/.github/scripts/seed_ci.py" "$SITE"
+
+      - name: Checkout self-test
+        working-directory: ci-bench
+        run: bench --site "$SITE" execute hira.tests.checkout.run
+
+      - name: Readiness report
+        working-directory: ci-bench
+        continue-on-error: true   # asserts production config (Square keys, SMTP) that CI has no business holding
+        run: bench --site "$SITE" execute hira.api.health.check
+
+      - name: Logs on failure
+        if: failure()
+        working-directory: ci-bench
+        run: tail -n 200 logs/*.log 2>/dev/null || true
+
+  deploy:
+    name: deploy to production
+    needs: test                       # deploy is unreachable unless CI went green
+    if: github.event_name == 'push' && github.ref == 'refs/heads/frappe-app'
+    runs-on: [self-hosted, hira-prod]
+    timeout-minutes: 30
+    concurrency:
+      group: deploy-hira-prod         # one deploy at a time across BOTH app branches
+      cancel-in-progress: false
+
+    steps:
+      # No checkout: the runner drives the bench's own working copies, and
+      # deploy.sh fetches exactly the commit this workflow was triggered for.
+      - name: Deploy ${{ env.PR_APP }} @ ${{ github.sha }}
+        run: |
+          /home/frappe/hira-cicd/bin/deploy.sh \
+            --app "$PR_APP" \
+            --ref "${{ github.sha }}"
+
+      - name: Post-deploy verification
+        run: /home/frappe/hira-cicd/bin/verify.sh
+
+      - name: Deploy log on failure
+        if: failure()
+        run: tail -n 120 "$(ls -1t /home/frappe/hira-cicd/logs/deploy-*.log | head -1)"

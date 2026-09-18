@@ -208,6 +208,32 @@ function taggedPhotos() {
   return new Set(ids);
 }
 
+/**
+ * Per-product corrections, for rows the sheet gets wrong about their own piece.
+ *
+ * Applied before anything else reads the row, so a corrected category lands in
+ * the menus and a cleared description falls through to the usual generated
+ * name — no special cases downstream.
+ */
+function corrections() {
+  const file = path.join(root, 'catalog_images', 'corrections.json');
+  if (!fs.existsSync(file)) return {};
+  const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+  delete raw._README;
+  return raw;
+}
+
+const CORRECTIONS = corrections();
+
+// Corrections are applied to the sheet rows themselves so that category
+// resolution below counts the corrected values, not the ones being replaced.
+for (const row of sheet) {
+  const fix = CORRECTIONS[String(row.product_id).trim()];
+  if (!fix) continue;
+  if (fix.category !== undefined) row.category = fix.category;
+  if (fix.description !== undefined) row.description = fix.description;
+}
+
 const TAGGED = taggedPhotos();
 const CATEGORY_NAMES = resolveCategoryNames(sheet);
 

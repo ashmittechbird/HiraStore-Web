@@ -61,14 +61,7 @@ THSP012     # "Happy Ganesh Chaturthi" supplier promo banner
 THSP013     # "925 Silver", "WE - BYIWT", "SC 34.98"
 THSP014     # "AUIIY", "Wt: 15.25"
 
-# ── photo shows a different piece than the listing ──────────────────────────
-#
-# Reported by the client, Sep 2026. In both cases the product code (THSN =
-# necklace) and the sheet's own description agree with each other and disagree
-# with the photograph, so it is most likely the image file that is wrong — but
-# that is a guess, and only the store knows which is the real product.
-#
-# Hidden until that is settled: a shopper who buys a "Pure silver choker" and
-# receives earrings is worse off than one who never saw the listing.
-THSN085     # listed "Pure silver choker" $145 — photo is a pair of kundan earrings
-THSN102     # listed "Nagas Necklace" $299 — photo is a pair of turquoise earrings
+# THSN085 and THSN102 were listed here while it was unclear whether their photo
+# or their description was wrong. The store settled it — the photograph is the
+# product — so they are corrected in catalog_images/corrections.json and back on
+# sale as earrings, rather than hidden.

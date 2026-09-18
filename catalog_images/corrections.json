@@ -1,0 +1,30 @@
+{
+  "_README": [
+    "Per-product corrections applied on top of the inventory sheet.",
+    "",
+    "The sheet is the source of truth for everything. This file exists for the",
+    "cases where a row is demonstrably wrong about its own product and the",
+    "photograph settles it — the store's decision is that the photo wins.",
+    "",
+    "Keys are product codes. Supported fields:",
+    "  category    replaces the sheet's Website Category",
+    "  description replaces the sheet's Description; \"\" clears it, and the",
+    "              product then takes the usual '<Category> <CODE>' fallback name",
+    "  note        why, for whoever reads this next. Never rendered.",
+    "",
+    "Correct the sheet and delete the entry — this is a patch, not a second",
+    "catalogue, and every line here is a line that will drift."
+  ],
+
+  "THSN085": {
+    "category": "Earrings",
+    "description": "",
+    "note": "Sheet says 'Pure silver choker' but the photo is a pair of kundan earrings. Reported by the client Sep 2026; store confirmed the photo is correct, so the row's description describes a different piece and is dropped."
+  },
+
+  "THSN102": {
+    "category": "Earrings",
+    "description": "",
+    "note": "Sheet says 'Nagas Necklace' but the photo is a pair of turquoise drop earrings. Same call as THSN085 — photo wins, description dropped."
+  }
+}

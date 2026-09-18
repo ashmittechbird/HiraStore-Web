@@ -339,7 +339,12 @@ function ShopContent() {
             aria-expanded={accRowOpen || !!accessorySelected}
             onClick={() => setAccRowOpen(o => !o)}
           >
-            {accessorySelected ? accessorySelected.slice(ACCESSORY_PREFIX.length) : 'Accessories'}
+            {/* Always "Accessories". Relabelling it to the chosen type printed
+                that type twice — once here and again, highlighted, in the row
+                directly below — and changed the pill's width, which bumped it
+                onto a line of its own. It only needs to show that something
+                inside it is selected; the row below says what. */}
+            Accessories
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
               <polyline points="6 9 12 15 18 9" />
             </svg>
@@ -622,6 +627,10 @@ function ShopContent() {
         .filter-acc { display:inline-flex; align-items:center; gap:6px; }
         .filter-acc svg { transition:transform .2s var(--ease-out); }
         .filter-acc.open svg { transform:rotate(180deg); }
+        /* Outlined, not filled, when something inside it is chosen. Filling it
+           like a normal active pill put two solid gold pills on screen and read
+           as two selections rather than a group and its choice. */
+        .filter-acc.active { background:transparent; border-color:var(--gold); color:var(--gold); }
 
         /* The accessory row reads as a level down: lighter, slightly smaller,
            and indented under the pill that opened it. */

@@ -11,6 +11,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
+  const [accOpen, setAccOpen] = useState(false);
   const [cats, setCats] = useState<CategoryCount[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const totalItems = useCart(s => s.items.reduce((sum, item) => sum + item.qty, 0));
@@ -164,19 +165,66 @@ export default function Navbar() {
               <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
-          <ul className="mobile-nav-links" onClick={() => setMobileOpen(false)}>
-            <li><Link to="/shop">Shop All</Link></li>
-            {mains.map(c => (
-              <li key={c.name}><Link to={categoryHref(c.name)}>{c.name}</Link></li>
-            ))}
-            {accessories.length > 0 && <li className="mobile-nav-head">Accessories</li>}
-            {accessories.map(c => (
-              <li key={c.name}><Link to={categoryHref(c.name)}>{c.label}</Link></li>
-            ))}
-            <li className="mobile-nav-head">More</li>
-            <li><Link to="/about">Our Story</Link></li>
-            {isAdmin && <li><Link to="/admin" className="mobile-admin-link">Admin Panel</Link></li>}
-          </ul>
+          {/* Scrolls on its own. Twenty categories plus headings came to 1107px
+              in an 812px drawer, and with the body not scrollable everything
+              from Anklets down — including Our Story and the admin link — was
+              simply unreachable on a phone. */}
+          <div className="mobile-nav-body">
+            <ul className="mobile-nav-links" onClick={() => setMobileOpen(false)}>
+              <li><Link to="/shop" className="mnav-all">Shop All</Link></li>
+              {mains.map(c => (
+                <li key={c.name}><Link to={categoryHref(c.name)}>{c.name}</Link></li>
+              ))}
+            </ul>
+
+            {/* Ten one-off lines behind a disclosure rather than ten more rows:
+                the list stays scannable and the long tail is still one tap. */}
+            {accessories.length > 0 && (
+              <div className="mnav-group">
+                <button
+                  type="button"
+                  className={`mnav-toggle${accOpen ? ' on' : ''}`}
+                  onClick={() => setAccOpen(o => !o)}
+                  aria-expanded={accOpen}
+                >
+                  Accessories
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                {accOpen && (
+                  <ul className="mobile-nav-links mnav-sub" onClick={() => setMobileOpen(false)}>
+                    {accessories.map(c => (
+                      <li key={c.name}><Link to={categoryHref(c.name)}>{c.label}</Link></li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+
+            <ul className="mobile-nav-links mnav-more" onClick={() => setMobileOpen(false)}>
+              <li><Link to="/help">Shipping &amp; Returns</Link></li>
+              <li><Link to="/about">Our Story</Link></li>
+            </ul>
+          </div>
+
+          {/* Pinned so account, wishlist and basket are always in reach,
+              whatever the category list is doing above them. */}
+          <div className="mnav-foot" onClick={() => setMobileOpen(false)}>
+            <Link to="/account" className="mnav-foot-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Account
+            </Link>
+            <Link to="/wishlist" className="mnav-foot-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              Wishlist{wishCount > 0 ? ` (${wishCount})` : ''}
+            </Link>
+            <Link to="/cart" className="mnav-foot-link">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+              Bag{totalItems > 0 ? ` (${totalItems})` : ''}
+            </Link>
+            {isAdmin && <Link to="/admin" className="mnav-foot-link admin">Admin Panel</Link>}
+          </div>
         </div>
       </div>
 
@@ -212,17 +260,12 @@ export default function Navbar() {
           color: var(--text-main); white-space: nowrap;
         }
         .nav-mega-col a::after { display: none; }
-        .nav-mega-col a:hover { background: var(--surface); color: var(--accent-gold); }
+        .nav-mega-col a:hover { background: var(--surface); color: var(--accent-gold); }
         .nav-mega-head {
           padding: 7px 16px 5px; font-size: 10px; font-weight: 600;
           letter-spacing: .14em; text-transform: uppercase; color: var(--text-light);
           border-bottom: 1px solid var(--border); margin-bottom: 4px;
-        }
-        .mobile-nav-head {
-          font-size: 10px; font-weight: 600; letter-spacing: .14em;
-          text-transform: uppercase; color: var(--text-light);
-          margin: 18px 0 2px; pointer-events: none;
-        }
+        }
         .nav-links a { font-size: 12px; font-weight: 500; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.3s; position: relative; }
         .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--text-main); transition: width 0.3s var(--ease-out); }
         .nav-links a:hover::after { width: 100%; }
@@ -236,8 +279,7 @@ export default function Navbar() {
         .nav-icon.wish-active:hover { color: #be123c; }
         .nav-admin-btn { display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: #005969; color: #fff; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; border-radius: 4px; transition: background 0.2s; }
         .nav-admin-btn:hover { background: #003d4a; color: #fff; }
-        .nav-admin-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; flex-shrink: 0; }
-        .mobile-admin-link { color: #005969 !important; font-weight: 600 !important; }
+        .nav-admin-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; flex-shrink: 0; }
 
         .hamburger { display: none; width: 40px; height: 40px; align-items: center; justify-content: center; }
         .hamburger svg { width: 24px; height: 24px; stroke: var(--text-main); stroke-width: 1.5; fill: none; }
@@ -250,8 +292,42 @@ export default function Navbar() {
         .mobile-nav-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .mobile-nav-close { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
         .mobile-nav-close svg { width: 20px; height: 20px; stroke: var(--text-main); stroke-width: 1.5; fill: none; }
-        .mobile-nav-links { list-style: none; padding: 20px 0; }
+        /* The scrolling half. flex:1 with min-height:0 is what actually lets it
+           scroll inside the flex column — without the min-height the body grows
+           to fit its content and the overflow never engages. */
+        .mobile-nav-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+        .mobile-nav-links { list-style: none; padding: 10px 0; }
         .mobile-nav-links li a { display: block; padding: 12px 24px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; border-bottom: 1px solid var(--surface); }
+        .mobile-nav-links li a:active { background: var(--surface); }
+        .mnav-all { color: var(--accent-gold) !important; }
+
+        .mnav-group { border-top: 1px solid var(--surface); }
+        .mnav-toggle {
+          width: 100%; display: flex; align-items: center; justify-content: space-between;
+          padding: 16px 24px; background: none; border: 0; cursor: pointer;
+          font-family: inherit; font-size: 14px; font-weight: 500;
+          text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-main);
+        }
+        .mnav-toggle svg { transition: transform .22s var(--ease-out); color: var(--text-light); }
+        .mnav-toggle.on svg { transform: rotate(180deg); }
+        .mnav-sub { padding: 0 0 8px; background: var(--surface); }
+        .mnav-sub li a { padding-left: 38px; font-size: 13px; border-bottom: 0; color: var(--text-light); }
+
+        .mnav-more { border-top: 1px solid var(--surface); }
+        .mnav-more li a { font-size: 12.5px; color: var(--text-light); text-transform: none; letter-spacing: 0; }
+
+        /* Pinned below the scrolling list. */
+        .mnav-foot {
+          border-top: 1px solid var(--border); background: var(--surface);
+          padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+        }
+        .mnav-foot-link {
+          display: flex; align-items: center; gap: 11px;
+          padding: 12px 24px; font-size: 13px; font-weight: 500; color: var(--text-main);
+        }
+        .mnav-foot-link svg { width: 17px; height: 17px; flex-shrink: 0; }
+        .mnav-foot-link:active { background: #fff; }
+        .mnav-foot-link.admin { color: var(--accent-gold); }
 
         @media (max-width: 768px) {
           .nav { padding: 0 16px; height: 60px; }

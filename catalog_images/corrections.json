@@ -6,25 +6,82 @@
     "cases where a row is demonstrably wrong about its own product and the",
     "photograph settles it — the store's decision is that the photo wins.",
     "",
-    "Keys are product codes. Supported fields:",
+    "'fix' keys are product codes. Supported fields:",
     "  category    replaces the sheet's Website Category",
-    "  description replaces the sheet's Description; \"\" clears it, and the",
-    "              product then takes the usual '<Category> <CODE>' fallback name",
+    "  description replaces the Description; \"\" clears it and the product takes",
+    "              the usual '<Category> <CODE>' fallback name",
+    "  price       replaces Final Price in $",
+    "  weight      replaces Weight",
     "  note        why, for whoever reads this next. Never rendered.",
+    "",
+    "'add' holds products the sheet cannot express: where one code was used for",
+    "two different pieces, only one survives the import, and the other needs a",
+    "code of its own. Each entry is a full product row. It stays out of the shop",
+    "until a photo named <CODE>.jpeg lands in public/catalog_images — then the",
+    "next build picks it up with no further edit.",
     "",
     "Correct the sheet and delete the entry — this is a patch, not a second",
     "catalogue, and every line here is a line that will drift."
   ],
 
-  "THSN085": {
-    "category": "Earrings",
-    "description": "",
-    "note": "Sheet says 'Pure silver choker' but the photo is a pair of kundan earrings. Reported by the client Sep 2026; store confirmed the photo is correct, so the row's description describes a different piece and is dropped."
+  "fix": {
+    "THSN085": {
+      "category": "Earrings",
+      "description": "",
+      "note": "Sheet says 'Pure silver choker' but the photo is a pair of kundan earrings. Store confirmed the photo is correct, so the row's description describes a different piece and is dropped."
+    },
+
+    "THSN102": {
+      "category": "Earrings",
+      "description": "",
+      "note": "Sheet says 'Nagas Necklace' but the photo is a pair of turquoise drop earrings. Same call as THSN085 — photo wins, description dropped."
+    },
+
+    "THSA005": {
+      "category": "Articles",
+      "description": "Cow Idol in pure silver with base. Makes a great gift too for any function/event.",
+      "price": 625,
+      "weight": "171",
+      "note": "THSA005 was used twice: 'Cow Idol in pure silver' (Launch-Aug 23, $625, 171g) and 'Pair of cute silver anklets' (Dec 23, $125, 26.4g). The later row won the import, so the idol's photograph was on sale under the anklets' name AND the anklets' price — a $625 piece listed at $125. The photo is the idol, so the row is restored to it. The anklets move to THSA032."
+    }
   },
 
-  "THSN102": {
-    "category": "Earrings",
-    "description": "",
-    "note": "Sheet says 'Nagas Necklace' but the photo is a pair of turquoise drop earrings. Same call as THSN085 — photo wins, description dropped."
-  }
+  "add": [
+    {
+      "product_id": "THSA030",
+      "description": "Siver anklets",
+      "category": "Accessories - Anklets",
+      "final_price_usd": 165,
+      "weight_raw": "43 grams",
+      "status": "Available",
+      "note": "Was a second THSA001, whose photo is the Silver Vilakku. Needs THSA030.jpeg."
+    },
+    {
+      "product_id": "THSA031",
+      "description": "Silver Clock with intricate detailing in an antique finish. Elevate your space with this unique look!- Home Décor",
+      "category": "Articles",
+      "final_price_usd": 175,
+      "weight_raw": "",
+      "status": "Available",
+      "note": "Was a second THSA004, whose photo is the dainty anklets. Needs THSA031.jpeg."
+    },
+    {
+      "product_id": "THSA032",
+      "description": "Pair of cute silver anklets",
+      "category": "Accessories - Anklets",
+      "final_price_usd": 125,
+      "weight_raw": "26.4",
+      "status": "Available",
+      "note": "Was a second THSA005, whose photo is the Cow Idol. Needs THSA032.jpeg."
+    },
+    {
+      "product_id": "THSP020",
+      "description": "Heavy antique pendant with fish motifs and stone detailing to up your saree game",
+      "category": "Pendants",
+      "final_price_usd": 450,
+      "weight_raw": "106.47",
+      "status": "Available",
+      "note": "Was a second THSP006, whose photo is the Kemp pendant. Needs THSP020.jpeg."
+    }
+  ]
 }

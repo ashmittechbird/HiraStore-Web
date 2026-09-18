@@ -217,21 +217,36 @@ function taggedPhotos() {
  */
 function corrections() {
   const file = path.join(root, 'catalog_images', 'corrections.json');
-  if (!fs.existsSync(file)) return {};
+  if (!fs.existsSync(file)) return { fix: {}, add: [] };
   const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
-  delete raw._README;
-  return raw;
+  return { fix: raw.fix || {}, add: raw.add || [] };
 }
 
-const CORRECTIONS = corrections();
+const { fix: CORRECTIONS, add: ADDED } = corrections();
 
-// Corrections are applied to the sheet rows themselves so that category
-// resolution below counts the corrected values, not the ones being replaced.
+// Applied to the sheet rows themselves, before anything reads them, so a
+// corrected category is counted in the menus like any other.
 for (const row of sheet) {
   const fix = CORRECTIONS[String(row.product_id).trim()];
   if (!fix) continue;
   if (fix.category !== undefined) row.category = fix.category;
   if (fix.description !== undefined) row.description = fix.description;
+  if (fix.price !== undefined) row.final_price_usd = fix.price;
+  if (fix.weight !== undefined) row.weight_raw = fix.weight;
+}
+
+// Products the sheet cannot express, because their code was taken by another
+// piece. They behave exactly like sheet rows from here on — including being
+// skipped while they have no photograph.
+const addedPending = [];
+for (const row of ADDED) {
+  const id = String(row.product_id).trim();
+  if (sheet.some(r => String(r.product_id).trim() === id)) {
+    console.error(`corrections.json: "${id}" is already in the sheet — remove it from "add".`);
+    process.exit(1);
+  }
+  sheet.push(row);
+  if (!imageFiles.has(id)) addedPending.push(id);
 }
 
 const TAGGED = taggedPhotos();
@@ -341,6 +356,14 @@ if (brokenPhoto.length) {
   console.log(`\n  hidden (photo is not a photo): ${brokenPhoto.length}`);
   console.log(`    ${brokenPhoto.join(', ')}`);
   console.log(`    Re-export these and drop them into public/catalog_images to put them back on sale.`);
+}
+if (addedPending.length) {
+  console.log(`\n  waiting on a photo to go on sale: ${addedPending.length}`);
+  for (const id of addedPending) {
+    const row = ADDED.find(r => r.product_id === id);
+    console.log(`    ${id}  $${row.final_price_usd}  ${String(row.description).slice(0, 44)}`);
+  }
+  console.log(`    Drop <CODE>.jpeg into public/catalog_images and re-run — no other edit needed.`);
 }
 if (skipped.noPhoto.length) console.log(`  skipped (no photo): ${skipped.noPhoto.length} -> ${skipped.noPhoto.slice(0, 6).join(', ')}`);
 if (skipped.noPrice.length) console.log(`  skipped (no price): ${skipped.noPrice.join(', ')}`);

@@ -427,13 +427,13 @@ function ShopContent() {
         const priceStr = price > 0 ? `$${price.toLocaleString('en-US')}` : 'Price on request';
         const qvCartQty = cartQtyMap[id] || 0;
         return (
-          <div id="qvOverlay" style={{ display:'flex',position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',backdropFilter:'blur(5px)',zIndex:1000,alignItems:'center',justifyContent:'center',padding:'16px' }}
+          <div id="qvOverlay" style={{ display:'flex',position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',backdropFilter:'blur(5px)',zIndex:8600,alignItems:'center',justifyContent:'center',padding:'16px' }}
             onClick={e => { if (e.target === e.currentTarget) closeQV(); }}>
-            <div id="qvBox" style={{ background:'#fff',maxWidth:'900px',width:'100%',maxHeight:'90vh',overflowY:'auto',position:'relative',display:'grid',gridTemplateColumns:'1fr 1fr' }}>
+            <div id="qvBox" className="qv-box" style={{ background:'#fff',maxWidth:'900px',width:'100%',maxHeight:'90vh',overflowY:'auto',position:'relative' }}>
               <button type="button" onClick={closeQV} style={{ position:'absolute',top:'16px',right:'16px',background:'rgba(255,255,255,0.9)',border:'none',width:'32px',height:'32px',borderRadius:'50%',cursor:'pointer',zIndex:10,display:'flex',alignItems:'center',justifyContent:'center' }}>
                 <svg viewBox="0 0 24 24" width="16" height="16" stroke="#2c2c2c" strokeWidth="2" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
-              <div style={{ display:'flex',flexDirection:'column',background:'#faf9f7',minHeight:'340px' }}>
+              <div className="qv-media" style={{ display:'flex',flexDirection:'column',background:'#faf9f7',minHeight:'340px' }}>
                 <div style={{ flex:1,overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center' }}>
                   <img src={imgs[qvIdx]} alt={name} style={{ width:'100%',height:'100%',objectFit:'cover',transition:'opacity 0.2s' }} key={qvIdx} />
                 </div>
@@ -447,7 +447,7 @@ function ShopContent() {
                   </div>
                 )}
               </div>
-              <div style={{ padding:'40px',display:'flex',flexDirection:'column',justifyContent:'center',gap:0 }}>
+              <div className="qv-detail" style={{ display:'flex',flexDirection:'column',justifyContent:'center',gap:0 }}>
                 <div style={{ fontSize:'10px',letterSpacing:'0.2em',textTransform:'uppercase',color:'#737373',marginBottom:'12px' }}>{cat}</div>
                 <h2 style={{ fontFamily:'Playfair Display,serif',fontSize:'28px',fontWeight:400,color:'#2c2c2c',marginBottom:'8px',lineHeight:1.2 }}>{name}</h2>
                 <div style={{ fontSize:'20px',fontWeight:600,color:'#2c2c2c',margin:'16px 0' }}>{priceStr}</div>
@@ -509,6 +509,23 @@ function ShopContent() {
         .sort-select:focus { border-color:var(--gold); }
 
         /* FILTER TABS */
+        /* Quick view.
+           The layout used to be an inline gridTemplateColumns:'1fr 1fr', which a
+           media query cannot override — so on a phone the panel kept its two
+           desktop columns and the right one ran off the screen, taking the
+           title, Add to Cart and Buy Now with it. Grid children also default to
+           min-width:auto, so they refused to shrink and pushed the box wider
+           than the viewport instead of wrapping. */
+        .qv-box { display:grid; grid-template-columns:1fr 1fr; }
+        .qv-box > * { min-width:0; }
+        .qv-detail { padding:40px; }
+        @media (max-width: 768px) {
+          .qv-box { grid-template-columns:1fr; }
+          .qv-detail { padding:24px 20px 28px; }
+          /* Image first, and short enough to leave the buttons on screen. */
+          .qv-media { min-height:0 !important; max-height:46vh; }
+        }
+
         .shop-filters { max-width:1296px; margin:0 auto 32px; padding:0 48px; display:flex; gap:10px; flex-wrap:wrap; }
         .filter-btn { padding:8px 20px; border-radius:24px; border:1.5px solid var(--border); font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text); background:transparent; cursor:pointer; transition:all 0.2s var(--ease-out); }
         .filter-btn:hover { border-color:var(--gold); color:var(--gold); }

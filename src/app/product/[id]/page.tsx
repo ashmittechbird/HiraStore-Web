@@ -78,7 +78,10 @@ export default function ProductPage() {
       category: itemCategory(item as Parameters<typeof itemCategory>[0]),
       price: itemPrice(item as Parameters<typeof itemPrice>[0]),
       image: itemImage(item as Parameters<typeof itemImage>[0]),
-      qty,
+      // Once the piece is in the basket the qty selector is replaced by the
+      // stepper, so the local `qty` is stuck at its default — buying one when
+      // the shopper had chosen three.
+      qty: cartQty > 0 ? cartQty : qty,
     }]));
     navigate('/checkout');
   }
@@ -245,11 +248,16 @@ export default function ProductPage() {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 001.98 1.61h9.72a2 2 0 001.98-1.61L23 6H6"/></svg>
                 {added ? <>Added to Cart <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></> : 'Add to Cart'}
               </button>
-              <button type="button" className="btn-buy-now" onClick={handleBuyNow}>
-                Buy Now
-              </button>
             </>
           )}
+
+          {/* Outside the branch above on purpose. Buy Now used to live in the
+              not-in-cart half, so adding a piece to the basket removed the
+              fastest route to buying it — the one moment a shopper is most
+              likely to want it. */}
+          <button type="button" className="btn-buy-now" onClick={handleBuyNow}>
+            Buy Now
+          </button>
 
           <button type="button" className={`btn-wish${wished ? ' wishlisted' : ''}`} onClick={toggleWishlist}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill={wished ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>

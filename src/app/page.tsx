@@ -166,7 +166,7 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
       </div>
 
       {qvOpen && (
-        <div style={{ display:'flex',position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',backdropFilter:'blur(5px)',zIndex:1000,alignItems:'center',justifyContent:'center',padding:'16px' }}
+        <div style={{ display:'flex',position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',backdropFilter:'blur(5px)',zIndex:8600,alignItems:'center',justifyContent:'center',padding:'16px' }}
           onClick={() => setQvOpen(false)}>
           <div style={{ background:'#fff',maxWidth:'900px',width:'100%',maxHeight:'90vh',overflowY:'auto',position:'relative',display:'grid',gridTemplateColumns:'1fr 1fr' }}
             onClick={e => e.stopPropagation()}>

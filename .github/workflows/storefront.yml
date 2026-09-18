@@ -1,0 +1,91 @@
+# Storefront pipeline: push to master -> build & typecheck -> deploy -> verify.
+#
+# Rendered from hira-cicd/templates/ci-store.yml. The storefront is static, so
+# "test" here means the build is reproducible and type-clean; the behavioural
+# tests live on the app branches, against a real bench.
+name: Storefront
+
+on:
+  push:
+    branches: [master]
+    # Docs and CI metadata cannot change what gets served.
+    paths-ignore:
+      - '**.md'
+      - '.github/dependabot.yml'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: storefront-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build + typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'          # vite 6 wants ^18 || ^20 || >=22
+          cache: npm
+
+      # `npm ci`, never `npm install`: it honours package-lock.json exactly, so
+      # what CI validates is byte-for-byte what the server will install.
+      - name: Install
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Build the same way the server does, so a base-path or catalogue error
+      # surfaces here rather than on the shop.
+      - name: Build
+        run: npm run build:vercel
+
+      - name: Assert the build produced something servable
+        run: |
+          test -f dist/index.html || { echo "no dist/index.html"; exit 1; }
+          grep -q '<div id="root"' dist/index.html || { echo "no React mount point"; exit 1; }
+          N=$(find dist/static -name '*.js' | wc -l)
+          [ "$N" -ge 2 ] || { echo "only $N js bundles"; exit 1; }
+          echo "dist: $(du -sh dist | cut -f1), $N js bundles"
+
+      - name: Audit (advisory)
+        run: npm audit --omit=dev || true
+
+  deploy:
+    name: deploy storefront
+    needs: build                      # unreachable unless the build went green
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: [self-hosted, hira-prod]
+    timeout-minutes: 20
+    concurrency:
+      # Shared with the app branches on purpose: verify-store.sh calls the Frappe
+      # API, and an app deploy restarts exactly that upstream. Serialising the
+      # two stops a storefront verify failing on a backend mid-restart.
+      group: deploy-hira-prod
+      cancel-in-progress: false
+
+    steps:
+      # No checkout: deploy-store.sh owns its own source tree and fetches the
+      # precise commit this run was triggered for.
+      - name: Deploy @ ${{ github.sha }}
+        run: /home/frappe/hira-cicd/bin/deploy-store.sh --ref "${{ github.sha }}"
+
+      - name: Verify
+        run: /home/frappe/hira-cicd/bin/verify-store.sh
+
+      - name: Release state on failure
+        if: failure()
+        run: |
+          ls -1dt /home/frappe/hira-store/releases/*/ | head -5
+          readlink -f /home/frappe/hira-store/current

@@ -1,11 +1,14 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { instagramUrl } from '@/lib/contact';
 import { loadCategories, mainCategories, accessoryCategories, categoryHref } from '@/lib/categories';
 import type { CategoryCount } from '@/lib/categories';
 
 function readSocialLinks() {
   return {
-    instagram: localStorage.getItem('hs_sm_instagram') || '',
+    // Falls back to the store's own account rather than an empty string, so the
+    // link is there on every visitor's browser without anyone setting it.
+    instagram: instagramUrl(),
     facebook:  localStorage.getItem('hs_sm_facebook')  || '',
     pinterest: localStorage.getItem('hs_sm_pinterest') || '',
     tiktok:    localStorage.getItem('hs_sm_tiktok')    || '',
@@ -60,9 +63,9 @@ export default function Footer() {
         <div className="footer-brand">
           <img src={`${import.meta.env.BASE_URL}site-images/hira-logo.png`} alt="The Hira Store" />
           <p className="footer-text">Handcrafted fine jewelry designed for every day. Each piece tells a story of elegance and artistry.</p>
-          {/* Only when a profile has actually been set in Admin > Settings.
-              An always-present fallback icon left a lone chat bubble sitting
-              under the tagline on a site with no socials configured. */}
+          {/* Instagram always resolves, so this row is always here; the rest
+              appear as they are set in Admin > Settings. The guard stays for
+              the case where the handle is deliberately cleared. */}
           {Object.values(social).some(Boolean) && (
           <div className="footer-social">
             {social.instagram && <a href={social.instagram} aria-label="Instagram" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg></a>}

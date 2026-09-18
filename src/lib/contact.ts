@@ -58,3 +58,54 @@ export const FALLBACK_SLOTS = [
   '05:00 PM - 06:00 PM',
   '06:00 PM - 07:00 PM',
 ];
+
+// ─── Instagram ───────────────────────────────────────────────────────────────
+
+/**
+ * The store's Instagram handle.
+ *
+ * Baked in for the same reason as the WhatsApp number: the previous value lived
+ * only in localStorage under `hs_sm_instagram`, which is per-browser. Setting it
+ * in Admin on one laptop linked it for that laptop and nobody else — every
+ * visitor saw no Instagram link at all, and it had to be re-entered after any
+ * cache clear or on any new device.
+ *
+ * A saved Admin value still wins, so a handle change needs no deploy.
+ */
+const STORE_INSTAGRAM = 'thehirastore';
+
+const INSTAGRAM_KEY = 'hs_sm_instagram';
+
+const DEFAULT_INSTAGRAM =
+  (import.meta.env.VITE_INSTAGRAM_HANDLE as string | undefined) || STORE_INSTAGRAM;
+
+/**
+ * Handle only — no @, no URL, no query string.
+ *
+ * Accepts whatever Admin holds: a bare handle, a profile URL, or a URL carrying
+ * the `?stkn=` share token Instagram appends when you copy a link from the app.
+ * That token belongs to the session that copied it and must never be published,
+ * so it is stripped here rather than trusted not to appear.
+ */
+export function instagramHandle(): string {
+  const raw = (() => {
+    try {
+      return localStorage.getItem(INSTAGRAM_KEY) || DEFAULT_INSTAGRAM;
+    } catch {
+      return DEFAULT_INSTAGRAM;
+    }
+  })();
+
+  return String(raw || '')
+    .trim()
+    .replace(/^https?:\/\/(www\.)?instagram\.com\//i, '')
+    .replace(/[?#].*$/, '')
+    .replace(/^@/, '')
+    .replace(/\/+$/, '');
+}
+
+/** Canonical profile URL. Empty only if the handle has been cleared outright. */
+export function instagramUrl(): string {
+  const handle = instagramHandle();
+  return handle ? `https://www.instagram.com/${handle}/` : '';
+}

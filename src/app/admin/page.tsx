@@ -614,10 +614,12 @@ export default function AdminPage() {
 
   async function saveHomepage() {
     setHpSaving(true);
-    const config = JSON.stringify({ ml: hpML, na: hpNA });
+    // The Instagram posts ride along in the same published file, so they reach
+    // every visitor instead of only this browser's localStorage.
+    const config = JSON.stringify({ ml: hpML, na: hpNA, ig: igPosts.filter(u => u.trim()) });
 
 
-    cacheHomepageConfig({ ml: hpML, na: hpNA });
+    cacheHomepageConfig({ ml: hpML, na: hpNA, ig: igPosts.filter(u => u.trim()) });
 
     // With no backend there is nothing further to publish — the local copy is
     // what the storefront reads, and it is already saved.
@@ -1187,12 +1189,16 @@ export default function AdminPage() {
                     ))}
                   </div>
                   <div style={{ marginTop: 18 }}>
-                    <button className="btn btn-gold" type="button" onClick={() => {
+                    {/* Publishes through the same path as the homepage rails.
+                        This used to write localStorage only, so the posts the
+                        shop added appeared on the admin's own browser and on no
+                        visitor's — and vanished on a cache clear. */}
+                    <button className="btn btn-gold" type="button" disabled={hpSaving} onClick={async () => {
                       const filled = igPosts.filter(u => u.trim());
                       localStorage.setItem('hs_ig_posts', JSON.stringify(filled));
                       window.dispatchEvent(new Event('hs_ig_updated'));
-                      toast('Instagram posts saved', 'success');
-                    }}>Save Posts</button>
+                      await saveHomepage();
+                    }}>{hpSaving ? 'Publishing…' : 'Save & Publish Posts'}</button>
                   </div>
                 </div>
                 <div className="settings-section">

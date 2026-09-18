@@ -672,6 +672,14 @@ export interface HomepageConfig {
   ml: string[];
   /** Item names shown in "New Arrivals". */
   na: string[];
+  /**
+   * Instagram post URLs for "Spotted in Hira".
+   *
+   * Published with the rest of this config rather than kept in localStorage,
+   * which is where it used to live — so the posts the shop added showed on the
+   * admin's own browser and on no visitor's.
+   */
+  ig?: string[];
 }
 
 /**
@@ -695,7 +703,7 @@ export async function getHomepageConfig(): Promise<HomepageConfig | null> {
     const r = await fetch(`/files/homepage_config.json?t=${Date.now()}`, { credentials: 'include' });
     if (!r.ok) return local;
     const cfg = await r.json();
-    if (cfg && (Array.isArray(cfg.ml) || Array.isArray(cfg.na))) {
+    if (cfg && (Array.isArray(cfg.ml) || Array.isArray(cfg.na) || Array.isArray(cfg.ig))) {
       localStorage.setItem(HP_LOCAL_KEY, JSON.stringify(cfg));
       return cfg as HomepageConfig;
     }

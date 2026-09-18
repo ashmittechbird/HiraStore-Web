@@ -4,6 +4,7 @@ import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { getHomepageConfig, getStorefrontItems } from '@/lib/backend';
+import { instagramHandle, instagramUrl } from '@/lib/contact';
 
 const SI = `${import.meta.env.BASE_URL}site-images`;
 
@@ -236,6 +237,8 @@ function igShortcode(url: string): string | null {
 export default function HomePage() {
   const [heroIdx, setHeroIdx] = useState(0);
   const [igPosts, setIgPosts] = useState<string[]>(readIgPosts);
+  const igHandle = instagramHandle();
+  const igProfile = instagramUrl();
   const addItem = useCart(s => s.addItem);
   useReveal();
 
@@ -245,13 +248,19 @@ export default function HomePage() {
     return () => window.removeEventListener('hs_ig_updated', handler);
   }, []);
 
-  const [hpConfig, setHpConfig] = useState<{ ml: string[]; na: string[] } | null>(() => {
+  const [hpConfig, setHpConfig] = useState<{ ml: string[]; na: string[]; ig?: string[] } | null>(() => {
     try { return JSON.parse(localStorage.getItem('hs_homepage_config') || 'null'); } catch { return null; }
   });
   useEffect(() => {
     // Server is authoritative when one is reachable; otherwise the cached copy stands.
     getHomepageConfig()
-      .then(cfg => { if (cfg) setHpConfig(cfg); })
+      .then(cfg => {
+        if (!cfg) return;
+        setHpConfig(cfg);
+        // Published posts beat this browser's copy — that is the whole point of
+        // publishing them.
+        if (Array.isArray(cfg.ig)) setIgPosts(cfg.ig);
+      })
       .catch(() => {});
     // Pick up admin edits made in another tab
     const onStorage = (e: StorageEvent) => {
@@ -538,7 +547,15 @@ export default function HomePage() {
       <section className="section">
         <div className="section-header reveal">
           <h2 className="section-title">Spotted in Hira</h2>
-          <p className="section-desc">Tag @hirastore to be featured</p>
+          {/* The handle came from a hardcoded "@hirastore", which is not the
+              store's account, and linked nowhere. */}
+          <p className="section-desc">
+            Tag{' '}
+            <a href={igProfile} target="_blank" rel="noopener noreferrer" className="ig-handle">
+              @{igHandle}
+            </a>{' '}
+            to be featured
+          </p>
         </div>
         {igPosts.length > 0 ? (
           <div className="ig-embed-grid">
@@ -561,8 +578,17 @@ export default function HomePage() {
         ) : (
           <div className="ig-grid">
             {UGC_IMAGES.map((src, i) => (
-              <div key={i} className={`ig-item reveal reveal-delay-${i + 1}`}>
-                <img src={src} alt="UGC" />
+              /* The fallback tiles used to be inert — an Instagram icon on
+                 hover that led nowhere. They open the profile now. */
+              <a
+                key={i}
+                className={`ig-item reveal reveal-delay-${i + 1}`}
+                href={igProfile}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`The Hira Store on Instagram`}
+              >
+                <img src={src} alt="" />
                 <div className="ig-overlay">
                   <svg viewBox="0 0 24 24">
                     <rect x="2" y="2" width="20" height="20" rx="5"/>
@@ -570,7 +596,7 @@ export default function HomePage() {
                     <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
                   </svg>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         )}
@@ -732,7 +758,9 @@ export default function HomePage() {
         .ig-embed-item { min-height: 320px; background: #fafafa; border: 1px solid #efefef; overflow: hidden; }
         .ig-embed-item iframe { min-height: 320px; }
         .ig-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-        .ig-item { position: relative; aspect-ratio: 1; overflow: hidden; }
+        .ig-handle { color: var(--accent-gold); font-weight: 600; text-decoration: none; border-bottom: 1px solid transparent; transition: border-color .2s; }
+        .ig-handle:hover { border-bottom-color: var(--accent-gold); }
+        .ig-item { position: relative; aspect-ratio: 1; overflow: hidden; display: block; }
         .ig-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s var(--ease-out); }
         .ig-item:hover img { transform: scale(1.05); }
         .ig-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; color: #fff; }

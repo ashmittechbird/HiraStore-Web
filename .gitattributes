@@ -1,0 +1,16 @@
+# Line endings are normalised to LF in the repo.
+#
+# A Windows checkout was rewriting photos-with-tags.txt to CRLF, and the build
+# script that reads it strips inline comments with a regex whose dot excludes
+# carriage returns — so the strip silently matched nothing, every line survived
+# whole, no product code matched, and all 38 price-tagged photos went back on
+# sale. The script now splits on either ending, but pinning the checkout removes
+# the difference between building here and building on CI.
+* text=auto eol=lf
+
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.ico  binary
+*.woff2 binary
+*.xlsx binary

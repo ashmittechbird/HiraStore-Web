@@ -103,12 +103,27 @@ function isSellable(status) {
 function taggedPhotos() {
   const file = path.join(root, 'catalog_images', 'photos-with-tags.txt');
   if (!fs.existsSync(file)) return new Set();
-  return new Set(
-    fs.readFileSync(file, 'utf8')
-      .split('\n')
-      .map(l => l.replace(/#.*$/, '').trim())
-      .filter(Boolean)
-  );
+
+  // Split on \r?\n, not \n. On a Windows checkout the file arrives CRLF, and a
+  // trailing \r breaks the comment strip below in a way that leaves no trace:
+  // `.` in a JS regex excludes \r, so /#.*$/ can never reach the end of the
+  // string and quietly matches nothing. Every line then survives whole —
+  // "THSN003     # white oval tag" becomes the product code — so nothing
+  // matches a real product and all 38 tagged photos went back on sale, with
+  // the build still cheerfully reporting a tag list it had loaded.
+  const ids = fs.readFileSync(file, 'utf8')
+    .split(/\r?\n/)
+    .map(l => l.replace(/#.*$/, '').trim())
+    .filter(Boolean);
+
+  const malformed = ids.filter(id => !/^[A-Z0-9_/-]+$/i.test(id));
+  if (malformed.length) {
+    console.error(`photos-with-tags.txt: ${malformed.length} line(s) are not product codes:`);
+    malformed.slice(0, 3).forEach(m => console.error(`  ${JSON.stringify(m)}`));
+    process.exit(1);
+  }
+
+  return new Set(ids);
 }
 
 const TAGGED = taggedPhotos();
@@ -185,6 +200,21 @@ console.log(`  named     : ${named}  (${items.length - named} fall back to categ
 console.log(`  weighed   : ${weighed}  (${items.length - weighed} show no weight)`);
 console.log(`  featured  : ${featured.length}`);
 console.log(`  hidden (photo shows a tag): ${items.filter(i => TAGGED.has(i.name)).length} of ${TAGGED.size} listed`);
+
+// A tagged code that matches no product means the photo is still reachable and
+// nobody is being told. Skipped items are fine — they never reach the shop —
+// but a code that matches nothing at all is a typo, and it fails the build.
+{
+  const inCatalogue = new Set(items.map(i => i.name));
+  const skippedIds = new Set([...skipped.noPhoto, ...skipped.noPrice]);
+  const unmatched = [...TAGGED].filter(id => !inCatalogue.has(id) && !skippedIds.has(id));
+  if (unmatched.length) {
+    console.error(`\n  photos-with-tags.txt lists ${unmatched.length} code(s) that match no product:`);
+    console.error(`    ${unmatched.join(', ')}`);
+    console.error('  Fix the code or remove the line — as written, that photo still reaches customers.');
+    process.exit(1);
+  }
+}
 console.log(`  categories: ${[...new Set(items.map(i => i.item_group))].sort().join(', ')}`);
 if (skipped.noPhoto.length) console.log(`  skipped (no photo): ${skipped.noPhoto.length} -> ${skipped.noPhoto.slice(0, 6).join(', ')}`);
 if (skipped.noPrice.length) console.log(`  skipped (no price): ${skipped.noPrice.join(', ')}`);

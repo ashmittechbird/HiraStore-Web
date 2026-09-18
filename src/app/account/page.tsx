@@ -1,17 +1,40 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useFrappeAuth, useFrappeGetDoc } from '@/lib/frappe';
-import { getMyOrders } from '@/lib/backend';
+import { getMyOrders, listCoupons } from '@/lib/backend';
 import { useWishlist } from '@/store/wishlist';
 import { HOME_URL } from '@/lib/config';
 
 interface Order { name: string; transaction_date: string; grand_total: number; status: string; }
 interface FrappeUser { full_name?: string; email?: string; }
 
-const OFFERS = [
-  { code: 'HIRA30', title: '30% Off Sitewide', desc: 'Valid on all orders above ₹999', min: 'Min. order ₹999' },
-  { code: 'FREESHIP', title: 'Free Shipping', desc: 'On orders over $100', min: 'Min. order $100' },
-];
+interface Offer {
+  code: string;
+  title: string;
+  desc: string;
+  min: string;
+}
+
+/**
+ * The offers panel showed a fixed pair, and both had drifted from the coupons
+ * the server will actually honour: FREESHIP did not exist at all, so anyone who
+ * copied it was told "Invalid coupon code" at the till, and HIRA30 was
+ * advertised as "Min. order ₹999" on a shop that prices in dollars and applies
+ * it with no minimum. Meanwhile WELCOME10 and FESTIVE20 were real and hidden.
+ *
+ * They are read from the same endpoint that validates them now, so the panel
+ * can only ever advertise codes that work.
+ */
+function toOffer(c: Record<string, unknown>): Offer {
+  const pct = Number(c.discount_percentage) || 0;
+  const min = Number(c.minimum_amount) || 0;
+  return {
+    code: String(c.code || c.coupon_code || ''),
+    title: pct ? `${pct}% Off` : 'Offer',
+    desc: String(c.description || (pct ? `${pct}% off your order` : '')),
+    min: min > 0 ? `Min. order $${min.toFixed(0)}` : 'No minimum',
+  };
+}
 
 function statusClass(s: string) {
   const l = s?.toLowerCase();
@@ -26,6 +49,7 @@ export default function AccountPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<'orders' | 'profile' | 'offers'>('orders');
   const [copied, setCopied] = useState('');
+  const [offers, setOffers] = useState<Offer[]>([]);
 
   const setWishlistUser = useWishlist(s => s.setUser);
   const { currentUser, logout, isLoading: authLoading } = useFrappeAuth();
@@ -39,6 +63,14 @@ export default function AccountPage() {
       .catch(() => { if (alive) setOrders([]); });
     return () => { alive = false; };
   }, [currentUser]);
+
+  useEffect(() => {
+    let alive = true;
+    listCoupons()
+      .then(list => { if (alive) setOffers(list.map(c => toOffer(c as Record<string, unknown>)).filter(o => o.code)); })
+      .catch(() => { if (alive) setOffers([]); });
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !currentUser) navigate('/login');
@@ -170,8 +202,15 @@ export default function AccountPage() {
                 <p>Exclusive discounts just for you</p>
               </div>
               <div className="card-body">
+                {offers.length === 0 ? (
+                  <div className="empty-state">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82zM7 7h.01"/></svg>
+                    <h3>No offers right now</h3>
+                    <p>Check back soon — new codes appear here as they go live</p>
+                  </div>
+                ) : (
                 <div className="offers-grid">
-                  {OFFERS.map(offer => (
+                  {offers.map(offer => (
                     <div key={offer.code} className="offer-card">
                       <div className="offer-code">{offer.code}</div>
                       <div className="offer-title">{offer.title}</div>
@@ -183,6 +222,7 @@ export default function AccountPage() {
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             </div>
           </div>

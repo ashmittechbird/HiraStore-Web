@@ -292,13 +292,20 @@ export default function HomePage() {
     return ids.map(id => map.get(id)).filter(Boolean) as Product[];
   }
 
+  // When the admin hasn't picked a rail by hand, fall back to pieces the sheet
+  // actually described. Around ninety have no description and are named from
+  // their category and code, and a homepage opening on "Necklace THSN117"
+  // undersells the shop. The admin's own picks are honoured as given.
+  const described = allHpItems.filter(i => String(i.custom_short_description || '').trim());
+  const fallbackPool = described.length ? described : allHpItems;
+
   const mostLoved = hpConfig?.ml?.length
     ? selectInOrder(hpConfig.ml).slice(0, 8)
-    : allHpItems.slice(0, 8);
+    : fallbackPool.slice(0, 8);
 
   const newArrivals = hpConfig?.na?.length
     ? selectInOrder(hpConfig.na).slice(0, 8)
-    : [...allHpItems].sort((a, b) => (b.name || '') > (a.name || '') ? 1 : -1).slice(0, 4);
+    : [...fallbackPool].sort((a, b) => (b.name || '') > (a.name || '') ? 1 : -1).slice(0, 4);
 
   // Diagnostic for admins: log when a selection is saved but renders empty (mismatch).
   useEffect(() => {

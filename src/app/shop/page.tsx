@@ -33,6 +33,17 @@ const PAGE_SIZE = 24;
 const normalizeCategory = (cat?: string) => (cat || '').trim() || 'Uncategorised';
 
 
+/**
+ * Did the sheet give this piece a description of its own?
+ *
+ * When it didn't, build-catalog names the product from its category and code,
+ * so `item_name` is always populated and cannot be used to tell the two apart —
+ * the short description is the only field that is empty when nothing was
+ * written for it.
+ */
+const isDescribed = (item: Product): number =>
+  String(item.custom_short_description || '').trim() ? 1 : 0;
+
 function itemWeight(item: Product): string {
   if (item.weight_per_unit) return `${item.weight_per_unit}g`;
   if (item.weight) return String(item.weight);
@@ -182,6 +193,12 @@ function ShopContent() {
     if (sort === 'price-asc') result.sort((a,b) => itemPrice(a as Parameters<typeof itemPrice>[0]) - itemPrice(b as Parameters<typeof itemPrice>[0]));
     else if (sort === 'price-desc') result.sort((a,b) => itemPrice(b as Parameters<typeof itemPrice>[0]) - itemPrice(a as Parameters<typeof itemPrice>[0]));
     else if (sort === 'name-asc') result.sort((a,b) => itemName(a as Parameters<typeof itemName>[0]).localeCompare(itemName(b as Parameters<typeof itemName>[0])));
+    // Featured order: the pieces the sheet actually described come first.
+    // Ninety-odd have no description, so their name is generated from category
+    // and code — "Necklace THSN117" — and a grid that opens on those reads like
+    // a database export. Sorting is stable, so within each half the feed's own
+    // order (newest first) is untouched.
+    else result.sort((a, b) => isDescribed(b) - isDescribed(a));
     return result;
   }, [allProducts, category, search, sort]);
 

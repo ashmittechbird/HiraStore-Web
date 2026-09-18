@@ -266,6 +266,10 @@ for (const row of sheet) {
 const byCat = new Map();
 for (const it of items) {
   if (it.disabled) continue;
+  // Only pieces the sheet described. A homepage rail headed "Most Loved" that
+  // opens on "Necklace THSN117" undersells the shop, and there are plenty of
+  // named pieces to fill twelve slots.
+  if (!it.custom_short_description) continue;
   if (!byCat.has(it.item_group)) byCat.set(it.item_group, []);
   byCat.get(it.item_group).push(it);
 }

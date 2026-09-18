@@ -240,15 +240,9 @@ function ShopContent() {
           <p className="page-subtitle" id="pageSubtitle">
             {loading
               ? 'Loading products…'
-              // Counts the filtered set, not the whole catalogue — the heading and
-              // the result count below have to agree.
-              : `${filtered.length} handcrafted ${
-                  filtered.length === 1
-                    ? 'piece'
-                    : category === 'All'
-                      ? 'jewellery pieces'
-                      : category.toLowerCase()
-                }`}
+              : category === 'All'
+                ? 'Handcrafted jewellery pieces'
+                : `Handcrafted ${category.toLowerCase()}`}
           </p>
         </div>
       </div>
@@ -275,9 +269,6 @@ function ShopContent() {
           <option value="price-desc">Price: High to Low</option>
           <option value="name-asc">Name: A to Z</option>
         </select>
-        <p className="product-count">
-          <strong>{filtered.length}</strong> product{filtered.length !== 1 ? 's' : ''} found
-        </p>
       </div>
 
       {/* Filter Tabs */}
@@ -499,8 +490,6 @@ function ShopContent() {
         .search-input::placeholder { color:var(--text-light); }
         .sort-select { padding:10px 36px 10px 14px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:var(--font-body); color:var(--text-dark); background:var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpolyline points='6 9 12 15 18 9' fill='none' stroke='%23888' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 12px center; appearance:none; outline:none; cursor:pointer; transition:border-color 0.2s; }
         .sort-select:focus { border-color:var(--gold); }
-        .product-count { margin-left:auto; font-size:13px; color:var(--text-light); white-space:nowrap; }
-        .product-count strong { color:var(--text-dark); font-weight:600; }
 
         /* FILTER TABS */
         .shop-filters { max-width:1296px; margin:0 auto 32px; padding:0 48px; display:flex; gap:10px; flex-wrap:wrap; }

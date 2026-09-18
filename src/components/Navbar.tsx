@@ -94,7 +94,7 @@ export default function Navbar() {
                     {mains.map(c => (
                       <li key={c.name} role="none">
                         <Link role="menuitem" to={categoryHref(c.name)} onClick={() => setShopOpen(false)}>
-                          {c.name}<span className="nav-mega-n">{c.count}</span>
+                          {c.name}
                         </Link>
                       </li>
                     ))}
@@ -105,7 +105,7 @@ export default function Navbar() {
                       {accessories.map(c => (
                         <li key={c.name} role="none">
                           <Link role="menuitem" to={categoryHref(c.name)} onClick={() => setShopOpen(false)}>
-                            {c.label}<span className="nav-mega-n">{c.count}</span>
+                            {c.label}
                           </Link>
                         </li>
                       ))}
@@ -212,8 +212,7 @@ export default function Navbar() {
           color: var(--text-main); white-space: nowrap;
         }
         .nav-mega-col a::after { display: none; }
-        .nav-mega-col a:hover { background: var(--surface); color: var(--accent-gold); }
-        .nav-mega-n { font-size: 10.5px; color: var(--text-light); font-variant-numeric: tabular-nums; }
+        .nav-mega-col a:hover { background: var(--surface); color: var(--accent-gold); }
         .nav-mega-head {
           padding: 7px 16px 5px; font-size: 10px; font-weight: 600;
           letter-spacing: .14em; text-transform: uppercase; color: var(--text-light);

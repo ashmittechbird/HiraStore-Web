@@ -56,6 +56,8 @@ export default function WishlistPage() {
                 <article key={item.id} className="product-card" role="listitem"
                   onClick={() => navigate(`/product/${encodeURIComponent(item.id)}`)}
                   style={{ cursor: 'pointer' }}>
+                  {/* Photo and buttons together — see .product-media in globals.css. */}
+                  <div className="product-media">
                   <div className="product-img-wrap">
                     <img src={item.image} alt={item.name} loading="lazy" />
                     {cartQty > 0 && (
@@ -72,6 +74,7 @@ export default function WishlistPage() {
                     >
                       <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
                     </button>
+                    </div>
                     <div className="product-actions">
                       {cartQty > 0 ? (
                         <div className="prod-stepper" onClick={e => e.stopPropagation()}>
@@ -172,8 +175,6 @@ export default function WishlistPage() {
         @media(max-width:768px) { .products-grid { grid-template-columns:repeat(2,1fr); gap:16px; } .wl-container { padding:0 20px 60px; } .wl-header { padding:32px 20px 20px; } }
         @media(max-width:480px) {
           .products-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
-          .product-actions { transform:translateY(0); gap:6px; padding:10px; }
-          .product-action-btn { padding:9px 4px; font-size:10px; }
           .prod-stepper { height:36px; }
           .prod-stepper-btn { width:32px; min-width:32px; font-size:17px; }
           .prod-stepper-count { font-size:13px; }

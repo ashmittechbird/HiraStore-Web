@@ -29,3 +29,43 @@ body {
 img { display: block; max-width: 100%; height: auto; }
 a { text-decoration: none; color: inherit; }
 button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+/* ─── Product card, shared ──────────────────────────────────────────────────
+ *
+ * The card's photo/buttons layout was pasted into three separate <style>
+ * blocks — the homepage, the shop and the wishlist — and promptly drifted:
+ * fixing the cramped mobile buttons on the shop left the other two with two
+ * buttons squeezed side by side, each wrapping onto a second line.
+ *
+ * These rules live here once so all three agree. Page-level styles still own
+ * whatever is genuinely theirs; this is only the part that must not differ.
+ */
+
+/* Holds the photo and its buttons together. The buttons slide up over the
+   image on a desktop and drop below it on a phone — they cannot do the second
+   from inside .product-img-wrap, which clips its overflow. */
+.product-media { position: relative; overflow: hidden; }
+
+@media (max-width: 480px) {
+  .product-card .product-media { overflow: visible; }
+
+  /* A card is about 170px wide on a phone. Side by side, each button got
+     roughly 75px, so "Add to Cart" and "Quick View" both wrapped and the pair
+     ate the height the photograph wanted. Stacked, each gets the full width
+     and one line. */
+  .product-card .product-actions {
+    position: static;
+    transform: none;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-top: 0;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 10px 0;
+  }
+  .product-card .product-action-btn { padding: 11px 8px; font-size: 10.5px; width: 100%; }
+
+  /* Taller than the desktop 3:4, using the height the buttons gave back. */
+  .product-card .product-img-wrap { aspect-ratio: 4/5; }
+}

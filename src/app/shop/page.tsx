@@ -647,7 +647,8 @@ function ShopContent() {
         .product-card:hover { box-shadow:0 8px 40px rgba(0,0,0,0.10); border-color:rgba(0,89,105,0.15); }
 
         /* Image */
-        .product-media { position:relative; overflow:hidden; }
+        /* .product-media and the mobile stacking live in globals.css — shared
+           with the homepage and wishlist cards so the three cannot drift. */
         .product-img-wrap { position:relative; overflow:hidden; aspect-ratio:3/4; background:#f5f2ee; }
         .product-img-wrap img { width:100%; height:100%; object-fit:cover; transition:transform 0.7s cubic-bezier(0.22,1,0.36,1); }
 
@@ -801,23 +802,6 @@ function ShopContent() {
           .product-name { font-size:14px; }
           .price-current { font-size:15px; }
 
-          /* On a phone the card is roughly 170px wide. Two buttons side by side
-             left each about 75px, so "Add to Cart" and "Quick View" both wrapped
-             onto two lines and the pair ate the height the photograph wanted.
-             Stacked, each gets the full width, reads on one line, and is a
-             comfortably bigger target. */
-          .product-media { overflow:visible; }
-          .product-actions {
-            position:static; transform:none; background:transparent;
-            backdrop-filter:none; -webkit-backdrop-filter:none; border-top:0;
-            flex-direction:column; gap:6px; padding:10px 10px 0;
-          }
-          .product-action-btn { padding:11px 8px; font-size:10.5px; width:100%; }
-
-          /* Taller than the 3:4 used on desktop: jewellery is small in frame and
-             a phone has the vertical room to spare now the buttons are out of
-             the image. */
-          .product-img-wrap { aspect-ratio:4/5; }
           .prod-stepper { height:36px; }
           .prod-stepper-btn { width:32px; min-width:32px; font-size:17px; }
           .prod-stepper-count { font-size:13px; }

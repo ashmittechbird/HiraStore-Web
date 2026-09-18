@@ -109,9 +109,9 @@ export default function Footer() {
           <ul>
             <li><Link to="/about">Our Story</Link></li>
             <li><Link to="/account">My Account</Link></li>
-            <li><Link to="/about#shipping">Shipping Info</Link></li>
-            <li><Link to="/about#returns">Returns</Link></li>
-            <li><Link to="/about#size-guide">Size Guide</Link></li>
+            <li><Link to="/help#shipping">Shipping Info</Link></li>
+            <li><Link to="/help#returns">Returns</Link></li>
+            <li><Link to="/help#size-guide">Size Guide</Link></li>
             <li><a href="mailto:info@Thehirastore.com">Contact Us</a></li>
           </ul>
         </div>
@@ -154,8 +154,14 @@ export default function Footer() {
         .footer-contact-item a:hover { color: var(--accent-gold); }
         .footer-col h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600; margin-bottom: 20px; }
         .footer-col ul { list-style: none; }
-        .footer-col ul li { margin-bottom: 12px; }
-        .footer-col ul li a { font-size: 13px; color: var(--text-light); transition: color 0.3s; }
+        .footer-col ul li { margin-bottom: 2px; }
+        /* Inline links were 19px tall — a small target on a phone, and easy to
+           miss between two others. Padding grows the tap area without moving
+           the text, so the column looks the same and is far easier to hit. */
+        .footer-col ul li a {
+          display: block; padding: 7px 0; font-size: 13px;
+          color: var(--text-light); transition: color 0.3s;
+        }
         .footer-col ul li a:hover { color: var(--accent-gold); }
         .newsletter-form { display: flex; border-bottom: 1px solid var(--text-main); padding-bottom: 8px; margin-top: 16px; }
         .newsletter-form input { flex: 1; border: none; background: transparent; font-size: 13px; font-family: var(--font-body); outline: none; }

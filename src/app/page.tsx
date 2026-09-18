@@ -278,8 +278,11 @@ export default function HomePage() {
         if (!cfg) return;
         setHpConfig(cfg);
         // Published posts beat this browser's copy — that is the whole point of
-        // publishing them.
-        if (Array.isArray(cfg.ig)) setIgPosts(cfg.ig);
+        // publishing them. An empty list does not: it means nobody has curated
+        // the section, not that the section should be blank, and treating it as
+        // a value let one unrelated homepage save replace the store's posts
+        // with stock portraits for every visitor.
+        if (Array.isArray(cfg.ig) && cfg.ig.length) setIgPosts(cfg.ig);
       })
       .catch(() => {});
     // Pick up admin edits made in another tab

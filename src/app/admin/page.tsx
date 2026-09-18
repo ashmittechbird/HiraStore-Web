@@ -461,7 +461,19 @@ export default function AdminPage() {
     if (!hpItemsLen || hpConfigFetched.current) return;
     hpConfigFetched.current = true;
     getHomepageConfig()
-      .then(cfg => { if (cfg) { setHpML(cfg.ml || []); setHpNA(cfg.na || []); } })
+      .then(cfg => {
+        if (!cfg) return;
+        setHpML(cfg.ml || []);
+        setHpNA(cfg.na || []);
+        // Seed the Instagram slots from what is published, not just from this
+        // browser. Without it, opening Admin anywhere the posts were not
+        // entered showed six blank boxes — and saving the homepage for an
+        // unrelated reason published an empty list, wiping the section for
+        // every visitor.
+        if (Array.isArray(cfg.ig) && cfg.ig.length) {
+          setIgPosts([...cfg.ig, ...Array(6)].slice(0, 6).map(v => (v as string) || ''));
+        }
+      })
       .catch(() => {});
   }, [hpItemsLen]);
 

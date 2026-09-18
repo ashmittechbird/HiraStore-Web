@@ -109,3 +109,24 @@ export function instagramUrl(): string {
   const handle = instagramHandle();
   return handle ? `https://www.instagram.com/${handle}/` : '';
 }
+
+/**
+ * Posts shown in "Spotted in Hira" before anyone curates the section.
+ *
+ * Read from the public profile, so the section has the store's own work in it
+ * on a fresh deploy instead of four stock portraits. Photo posts rather than
+ * reels: the grid is square and a reel embed arrives letterboxed.
+ *
+ * Whatever the admin publishes replaces this outright. Instagram renders each
+ * one, so editing or removing a post there changes the site with nothing to do
+ * here — but a post added there does NOT appear here on its own. That needs the
+ * Graph API and a token the shop has to issue.
+ */
+export const DEFAULT_IG_POSTS = [
+  'https://www.instagram.com/p/DcsHwoURNkc/',
+  'https://www.instagram.com/p/DcTkiWrsOST/',
+  'https://www.instagram.com/p/DbyelPNu5S8/',
+  'https://www.instagram.com/p/DbUTkaemlQM/',
+  'https://www.instagram.com/p/DbOcHPOB3Kl/',
+  'https://www.instagram.com/p/Da9Lx_Puvt_/',
+];

@@ -4,7 +4,7 @@ import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { getHomepageConfig, getStorefrontItems } from '@/lib/backend';
-import { instagramHandle, instagramUrl } from '@/lib/contact';
+import { instagramHandle, instagramUrl, DEFAULT_IG_POSTS } from '@/lib/contact';
 
 const SI = `${import.meta.env.BASE_URL}site-images`;
 
@@ -227,11 +227,31 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
 const HP_FIELDS = ['name','item_name','item_group','standard_rate','image','custom_item_images','weight_per_unit','disabled'];
 
 function readIgPosts(): string[] {
-  try { return JSON.parse(localStorage.getItem('hs_ig_posts') || '[]'); } catch { return []; }
+  try {
+    const saved = JSON.parse(localStorage.getItem('hs_ig_posts') || '[]');
+    if (Array.isArray(saved) && saved.length) return saved;
+  } catch {
+    /* fall through to the defaults */
+  }
+  return DEFAULT_IG_POSTS;
 }
 
-function igShortcode(url: string): string | null {
-  return url.match(/instagram\.com\/(?:p|reel)\/([A-Za-z0-9_-]+)/)?.[1] ?? null;
+/**
+ * The post id and kind from any Instagram link.
+ *
+ * Handles the two shapes a link arrives in. Opening a post gives
+ * instagram.com/p/CODE, but copying one from the profile grid gives
+ * instagram.com/<handle>/reel/CODE — and the old pattern required p or reel
+ * immediately after the domain, so anything copied from the grid matched
+ * nothing and the post silently failed to render.
+ *
+ * The kind is kept because reels only embed correctly under /reel/.
+ */
+function igEmbedSrc(url: string): string | null {
+  const m = url.match(/instagram\.com\/(?:[^/?#]+\/)?(p|reel|tv)\/([A-Za-z0-9_-]+)/i);
+  if (!m) return null;
+  const kind = m[1].toLowerCase() === 'p' ? 'p' : 'reel';
+  return `https://www.instagram.com/${kind}/${m[2]}/embed/`;
 }
 
 export default function HomePage() {
@@ -560,11 +580,12 @@ export default function HomePage() {
         {igPosts.length > 0 ? (
           <div className="ig-embed-grid">
             {igPosts.map((url, i) => {
-              const sc = igShortcode(url);
-              return sc ? (
+              const src = igEmbedSrc(url);
+              return src ? (
                 <div key={i} className="ig-embed-item">
                   <iframe
-                    src={`https://www.instagram.com/p/${sc}/embed/`}
+                    src={src}
+                    loading="lazy"
                     frameBorder="0"
                     scrolling="no"
                     allowTransparency={true}

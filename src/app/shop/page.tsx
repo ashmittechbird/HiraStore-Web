@@ -44,6 +44,27 @@ const normalizeCategory = (cat?: string) => (cat || '').trim() || 'Uncategorised
 const isDescribed = (item: Product): number =>
   String(item.custom_short_description || '').trim() ? 1 : 0;
 
+/**
+ * Mark which photo a card's strip is showing, so the dots mean something.
+ *
+ * Written straight to a data attribute rather than to state: this fires on
+ * every scroll frame, and re-rendering the grid for a dot would be absurd.
+ */
+function onSwipeScroll(e: React.UIEvent<HTMLDivElement>) {
+  const strip = e.currentTarget;
+  const dots = strip.parentElement?.querySelector<HTMLElement>('.card-swipe-dots');
+  if (!dots || !strip.clientWidth) return;
+  dots.dataset.active = String(Math.round(strip.scrollLeft / strip.clientWidth));
+}
+
+/** A missing photo falls back once; guarded so a missing fallback can't loop. */
+function onImgError(e: React.SyntheticEvent<HTMLImageElement>) {
+  const el = e.target as HTMLImageElement;
+  const fallback = `${import.meta.env.BASE_URL}site-images/product-fallback.jpg`;
+  if (el.src.endsWith('product-fallback.jpg')) return;
+  el.src = fallback;
+}
+
 function itemWeight(item: Product): string {
   if (item.weight_per_unit) return `${item.weight_per_unit}g`;
   if (item.weight) return String(item.weight);
@@ -336,15 +357,40 @@ function ShopContent() {
                 const isAdded = addedIds.has(id);
                 const cartQty = cartQtyMap[id] || 0;
                 const delayClass = `reveal-delay-${(idx % 4)+1}`;
+                const cardImages = itemImages(item as Parameters<typeof itemImages>[0]);
                 return (
                   <article key={id} className={`product-card reveal ${delayClass}`} data-category={cat} data-id={id} role="listitem" onClick={() => navigate('/product/' + encodeURIComponent(id))} style={{ cursor: 'pointer' }}>
+                    {/* Wraps the photo and the buttons together. The buttons
+                        slide up over the image on a desktop, and drop below it
+                        on a phone — they cannot do the second while they live
+                        inside .product-img-wrap, which clips its overflow. */}
+                    <div className="product-media">
                     <div className="product-img-wrap">
-                      <img src={img} alt={name} loading="lazy" onError={e => {
-                        const el = e.target as HTMLImageElement;
-                        const fallback = `${import.meta.env.BASE_URL}site-images/product-fallback.jpg`;
-                        if (el.src.endsWith('product-fallback.jpg')) return;
-                        el.src = fallback;
-                      }} />
+                      {/* Swipeable when the piece has more than one photograph,
+                          a plain image when it doesn't — dots and a swipe that
+                          went nowhere would be worse than no gallery. Scroll
+                          snapping does the gesture natively, so there is no
+                          touch handling to fight the card's own tap. */}
+                      {cardImages.length > 1 ? (
+                        <div className="card-swipe" onClick={e => e.stopPropagation()} onScroll={onSwipeScroll}>
+                          {cardImages.map((src, i) => (
+                            <img
+                              key={i}
+                              src={src}
+                              alt={i === 0 ? name : `${name} — view ${i + 1}`}
+                              loading="lazy"
+                              onError={onImgError}
+                            />
+                          ))}
+                        </div>
+                      ) : (
+                        <img src={img} alt={name} loading="lazy" onError={onImgError} />
+                      )}
+                      {cardImages.length > 1 && (
+                        <span className="card-swipe-dots" data-active="0" aria-hidden="true">
+                          {cardImages.map((_, i) => <i key={i} />)}
+                        </span>
+                      )}
                       {/* badge: cart indicator takes priority over promo label */}
                       {cartQty > 0
                         ? <span className="card-cart-badge"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> {cartQty}</span>
@@ -354,6 +400,7 @@ function ShopContent() {
                         onClick={e => { e.stopPropagation(); toggleWish(item); }}>
                         <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
                       </button>
+                      </div>
                       <div className="product-actions">
                         {cartQty > 0 ? (
                           <div className="prod-stepper" onClick={e => e.stopPropagation()}>
@@ -420,7 +467,7 @@ function ShopContent() {
         const id = itemId(qvProduct as Parameters<typeof itemId>[0]);
         const name = itemName(qvProduct as Parameters<typeof itemName>[0]);
         const price = itemPrice(qvProduct as Parameters<typeof itemPrice>[0]);
-        const imgs = itemImages(qvProduct as Parameters<typeof itemImages>[0], 4);
+        const imgs = itemImages(qvProduct as Parameters<typeof itemImages>[0]);
         const cat = itemCategory(qvProduct as Parameters<typeof itemCategory>[0]);
         const img = itemImage(qvProduct as Parameters<typeof itemImage>[0]);
         const weight = itemWeight(qvProduct);
@@ -540,8 +587,33 @@ function ShopContent() {
         .product-card:hover { box-shadow:0 8px 40px rgba(0,0,0,0.10); border-color:rgba(0,89,105,0.15); }
 
         /* Image */
+        .product-media { position:relative; overflow:hidden; }
         .product-img-wrap { position:relative; overflow:hidden; aspect-ratio:3/4; background:#f5f2ee; }
         .product-img-wrap img { width:100%; height:100%; object-fit:cover; transition:transform 0.7s cubic-bezier(0.22,1,0.36,1); }
+
+        /* Native scroll snapping rather than a gesture library: one element, no
+           touch handlers competing with the card's own tap-to-open. */
+        .card-swipe {
+          display:flex; width:100%; height:100%;
+          overflow-x:auto; scroll-snap-type:x mandatory;
+          scrollbar-width:none; -webkit-overflow-scrolling:touch;
+        }
+        .card-swipe::-webkit-scrollbar { display:none; }
+        .card-swipe img { flex:0 0 100%; scroll-snap-align:center; }
+        .card-swipe-dots {
+          position:absolute; bottom:8px; left:0; right:0;
+          display:flex; justify-content:center; gap:5px; pointer-events:none;
+        }
+        .card-swipe-dots i {
+          width:5px; height:5px; border-radius:50%;
+          background:rgba(255,255,255,.55); box-shadow:0 0 0 1px rgba(0,0,0,.12);
+          transition:background .2s, transform .2s;
+        }
+        .card-swipe-dots[data-active="0"] i:nth-child(1),
+        .card-swipe-dots[data-active="1"] i:nth-child(2),
+        .card-swipe-dots[data-active="2"] i:nth-child(3),
+        .card-swipe-dots[data-active="3"] i:nth-child(4),
+        .card-swipe-dots[data-active="4"] i:nth-child(5) { background:#fff; transform:scale(1.35); }
         .product-card:hover .product-img-wrap img { transform:scale(1.05); }
 
         /* Badge */
@@ -657,8 +729,24 @@ function ShopContent() {
           .products-grid,.skeleton-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
           .product-name { font-size:14px; }
           .price-current { font-size:15px; }
-          .product-actions { transform:translateY(0); gap:6px; padding:10px; }
-          .product-action-btn { padding:9px 4px; font-size:10px; }
+
+          /* On a phone the card is roughly 170px wide. Two buttons side by side
+             left each about 75px, so "Add to Cart" and "Quick View" both wrapped
+             onto two lines and the pair ate the height the photograph wanted.
+             Stacked, each gets the full width, reads on one line, and is a
+             comfortably bigger target. */
+          .product-media { overflow:visible; }
+          .product-actions {
+            position:static; transform:none; background:transparent;
+            backdrop-filter:none; -webkit-backdrop-filter:none; border-top:0;
+            flex-direction:column; gap:6px; padding:10px 10px 0;
+          }
+          .product-action-btn { padding:11px 8px; font-size:10.5px; width:100%; }
+
+          /* Taller than the 3:4 used on desktop: jewellery is small in frame and
+             a phone has the vertical room to spare now the buttons are out of
+             the image. */
+          .product-img-wrap { aspect-ratio:4/5; }
           .prod-stepper { height:36px; }
           .prod-stepper-btn { width:32px; min-width:32px; font-size:17px; }
           .prod-stepper-count { font-size:13px; }

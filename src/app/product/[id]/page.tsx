@@ -124,7 +124,7 @@ export default function ProductPage() {
     </div>
   );
 
-  const images = itemImages(item as Parameters<typeof itemImages>[0], 4);
+  const images = itemImages(item as Parameters<typeof itemImages>[0]);
   const price = itemPrice(item as Parameters<typeof itemPrice>[0]);
   const name = itemName(item as Parameters<typeof itemName>[0]);
   const category = itemCategory(item as Parameters<typeof itemCategory>[0]);

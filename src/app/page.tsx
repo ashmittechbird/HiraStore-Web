@@ -93,7 +93,7 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
   const cartItems = useCart(s => s.items);
   const addItemDirect = useCart(s => s.addItem);
   const imgSrc = itemImage(item as Parameters<typeof itemImage>[0]);
-  const imgs = itemImages(item as Parameters<typeof itemImages>[0], 4);
+  const imgs = itemImages(item as Parameters<typeof itemImages>[0]);
   const price = itemPrice(item as Parameters<typeof itemPrice>[0]);
   const name = itemName(item as Parameters<typeof itemName>[0]);
   const category = itemCategory(item as Parameters<typeof itemCategory>[0]);

@@ -18,21 +18,40 @@ export function itemImage(item: { image?: string; name?: string; product_id?: st
 
 // Returns array of all product images.
 // Uses custom_item_images (JSON array) from ERPNext if set, else repeats main image 4x.
-export function itemImages(item: { image?: string; custom_item_images?: string }, count = 4): string[] {
+/**
+ * Every distinct photo for a product — one entry when there is only one.
+ *
+ * This used to pad the list out to four by repeating the same file, so a
+ * product with a single photograph rendered a gallery of four identical
+ * thumbnails and a carousel that appeared to move through nothing. Today that
+ * is every product in the catalogue: 287 items, 287 photos, none with extras.
+ *
+ * Callers should treat `length === 1` as "no gallery" and hide the thumbnails,
+ * dots and swipe affordance rather than showing controls that do nothing.
+ */
+export function itemImages(item: { image?: string; custom_item_images?: string }): string[] {
+  const fallback = itemImage(item);
+
   if (item.custom_item_images) {
     try {
       const arr = JSON.parse(item.custom_item_images);
       if (Array.isArray(arr) && arr.length > 0) {
-        return arr.map((img: string) => {
-          if (!img) return itemImage(item);
-          if (img.startsWith('http')) return img;
-          if (img.startsWith('/files/')) return `${ERP_BASE}${img}`;
-          return `${CATALOG_BASE}/${img}`;
-        });
+        const urls = arr
+          .filter(Boolean)
+          .map((img: string) => {
+            if (img.startsWith('http')) return img;
+            if (img.startsWith('/files/')) return `${ERP_BASE}${img}`;
+            return `${CATALOG_BASE}/${img}`;
+          });
+        const unique = [...new Set([fallback, ...urls])];
+        if (unique.length) return unique;
       }
-    } catch {}
+    } catch {
+      // Malformed JSON in the admin field shouldn't cost the product its photo.
+    }
   }
-  return Array(count).fill(itemImage(item));
+
+  return [fallback];
 }
 
 export function itemPrice(item: { standard_rate?: number; price_usd?: number; price?: number }) {

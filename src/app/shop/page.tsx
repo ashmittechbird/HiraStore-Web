@@ -703,9 +703,17 @@ function ShopContent() {
         .btn-story:hover { background:var(--text-dark); color:#fff; }
 
         /* BACK TO TOP */
-        .back-top { position:fixed; bottom:32px; right:32px; width:44px; height:44px; background:var(--gold); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transform:translateY(12px); transition:opacity 0.3s,transform 0.3s var(--ease-out); z-index:50; border:none; cursor:pointer; }
+        /* Sits directly above the Video Call / WhatsApp column rather than in
+           its own corner. At bottom:32 right:32 it landed underneath them —
+           and behind them, at z-index 50 against their 8500 — so the arrow was
+           a sliver poking out from under the WhatsApp button.
+           The offset clears that column: it is pinned 18px from the bottom and
+           runs to 95px tall with both buttons showing. */
+        .back-top { position:fixed; bottom:127px; right:18px; width:44px; height:44px; background:var(--gold); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transform:translateY(12px); transition:opacity 0.3s,transform 0.3s var(--ease-out); z-index:8400; border:none; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.18); }
         .back-top.visible { opacity:1; pointer-events:auto; transform:translateY(0); }
         .back-top svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.5; }
+        /* The floating column tightens to right:14 bottom:14 below 620px. */
+        @media (max-width:620px) { .back-top { bottom:119px; right:14px; } }
 
         /* RESPONSIVE */
         @media (max-width:1024px) {

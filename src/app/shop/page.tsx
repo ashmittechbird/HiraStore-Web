@@ -577,7 +577,7 @@ function ShopContent() {
         }
 
         /* PAGE HEADER */
-        .page-header { padding:60px 48px 40px; max-width:1296px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:20px; }
+        .page-header { padding:30px 48px 18px; max-width:1296px; margin:0 auto; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:20px; }
         .breadcrumb { font-size:12px; color:var(--text-light); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
         .breadcrumb a:hover { color:var(--gold); }
         .breadcrumb-sep { opacity:0.4; }
@@ -585,7 +585,7 @@ function ShopContent() {
         .page-subtitle { font-size:15px; color:var(--text-light); margin-top:8px; }
 
         /* TOOLBAR */
-        .shop-toolbar { max-width:1296px; margin:0 auto 24px; padding:0 48px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
+        .shop-toolbar { max-width:1296px; margin:0 auto 16px; padding:0 48px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
         .search-wrap { position:relative; flex:1; min-width:220px; max-width:400px; }
         .search-wrap svg { position:absolute; left:14px; top:50%; transform:translateY(-50%); width:16px; height:16px; fill:none; stroke:var(--text-light); stroke-width:2; pointer-events:none; }
         .search-input { width:100%; padding:10px 14px 10px 40px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:var(--font-body); color:var(--text-dark); background:var(--surface); outline:none; transition:border-color 0.2s,box-shadow 0.2s; }
@@ -612,7 +612,7 @@ function ShopContent() {
           .qv-media { min-height:0 !important; max-height:46vh; }
         }
 
-        .shop-filters { max-width:1296px; margin:0 auto 32px; padding:0 48px; display:flex; gap:10px; flex-wrap:wrap; }
+        .shop-filters { max-width:1296px; margin:0 auto 22px; padding:0 48px; display:flex; gap:10px; flex-wrap:wrap; }
         /* Tighter than before: 20px of side padding on twenty pills was most of
            why the row ran to three lines. */
         .filter-btn { padding:7px 15px; border-radius:24px; border:1.5px solid var(--border); font-size:11.5px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text); background:transparent; cursor:pointer; transition:all 0.2s var(--ease-out); }
@@ -771,7 +771,7 @@ function ShopContent() {
           .products-grid,.skeleton-grid { grid-template-columns:repeat(3,1fr); }
         }
         @media (max-width:768px) {
-          .page-header { padding:32px 16px 20px; }
+          .page-header { padding:18px 16px 12px; }
           .shop-toolbar { padding:0 16px; flex-wrap:wrap; gap:10px; }
           .search-wrap { max-width:100%; flex:1 1 100%; }
           .sort-select { width:100%; }

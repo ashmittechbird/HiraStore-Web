@@ -1,6 +1,13 @@
-# Products whose photo shows something that must not reach a customer:
-# a hanging price tag, a barcode sticker, a supplier code, or a wholesale
-# weight overlay ("Wt: 44.25", "SC 34.98", "925 Silver").
+# Products whose photo must not reach a customer. Two reasons:
+#
+#   1. it shows something it shouldn't — a hanging price tag, a barcode
+#      sticker, a supplier code, or a wholesale weight overlay
+#      ("Wt: 44.25", "SC 34.98", "925 Silver");
+#   2. it shows a different piece entirely, so the listing and the photograph
+#      describe two different products.
+#
+# A photo that is not a photograph at all — the 165x4 grey slivers — needs no
+# line here: build-catalog rejects anything under 50px on a side by itself.
 #
 # Listed products are built into the catalogue but marked out of stock, so they
 # vanish from the shop without losing their price, name or history. Re-shoot the
@@ -53,3 +60,15 @@ THSP011     # "AQPEUP", "Wt: 32.65"
 THSP012     # "Happy Ganesh Chaturthi" supplier promo banner
 THSP013     # "925 Silver", "WE - BYIWT", "SC 34.98"
 THSP014     # "AUIIY", "Wt: 15.25"
+
+# ── photo shows a different piece than the listing ──────────────────────────
+#
+# Reported by the client, Sep 2026. In both cases the product code (THSN =
+# necklace) and the sheet's own description agree with each other and disagree
+# with the photograph, so it is most likely the image file that is wrong — but
+# that is a guess, and only the store knows which is the real product.
+#
+# Hidden until that is settled: a shopper who buys a "Pure silver choker" and
+# receives earrings is worse off than one who never saw the listing.
+THSN085     # listed "Pure silver choker" $145 — photo is a pair of kundan earrings
+THSN102     # listed "Nagas Necklace" $299 — photo is a pair of turquoise earrings

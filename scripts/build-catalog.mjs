@@ -31,6 +31,52 @@ for (const f of fs.readdirSync(path.join(root, 'public/catalog_images'))) {
   imageFiles.set(f.replace(/\.[^.]+$/, ''), f);
 }
 
+/**
+ * Pixel dimensions, read from the file header — JPEG SOF marker or PNG IHDR.
+ *
+ * No dependency: this runs in the catalogue build, and pulling an image library
+ * in to read two integers would be the larger cost.
+ */
+function imageSize(file) {
+  const b = fs.readFileSync(file);
+
+  if (b.length > 24 && b[0] === 0x89 && b[1] === 0x50) {
+    return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  }
+
+  if (b.length > 4 && b[0] === 0xff && b[1] === 0xd8) {
+    let i = 2;
+    while (i < b.length - 9) {
+      if (b[i] !== 0xff) { i++; continue; }
+      const marker = b[i + 1];
+      // SOF0..SOF15 carry the frame header; DHT/JPG/DAC do not.
+      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+        return { h: b.readUInt16BE(i + 5), w: b.readUInt16BE(i + 7) };
+      }
+      const len = b.readUInt16BE(i + 2);
+      if (len <= 0) break;
+      i += 2 + len;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Below this on either side, the file is not a photograph.
+ *
+ * Fifteen products shipped with a 165x4 pixel grey sliver — an export that had
+ * gone wrong — and eleven of them were on sale, including necklaces at $450 and
+ * $525. Nothing caught it: the file existed, so the build counted it as a photo
+ * and the page rendered a 4-pixel line where the product should be.
+ *
+ * Deliberately far below any real photo rather than near it. The catalogue has
+ * genuine thumbnails down to 111x166, and a threshold chosen to look tidy would
+ * have pulled fifty saleable products out of the shop to catch fifteen broken
+ * ones. Nothing legitimate is anywhere near 50 pixels.
+ */
+const MIN_PHOTO_PX = 50;
+
 /** Collapse the sheet's 25 free-text category spellings onto the 8 shop tabs. */
 function normalizeCategory(cat) {
   const c = String(cat || '').toLowerCase();
@@ -131,6 +177,7 @@ const TAGGED = taggedPhotos();
 const items = [];
 const seen = new Set();
 const skipped = { noPhoto: [], noPrice: [] };
+const brokenPhoto = [];
 
 for (const row of sheet) {
   const rawId = String(row.product_id).trim();
@@ -145,6 +192,11 @@ for (const row of sheet) {
   if (!Number.isFinite(price) || price <= 0) { skipped.noPrice.push(rawId); continue; }
 
   seen.add(id);
+
+  // A file that exists is not the same as a usable photograph.
+  const dims = imageSize(path.join(root, 'public/catalog_images', file));
+  const photoUnusable = !dims || dims.w < MIN_PHOTO_PX || dims.h < MIN_PHOTO_PX;
+  if (photoUnusable) brokenPhoto.push(`${id} (${dims ? `${dims.w}x${dims.h}` : 'unreadable'})`);
 
   const category = normalizeCategory(row.category);
   const description = cleanDescription(row.description);
@@ -161,8 +213,10 @@ for (const row of sheet) {
     custom_short_description: description,
     weight_per_unit: parseWeight(row.weight_raw),
     custom_is_featured: 0,
-    // Hidden when the photo carries a tag, even if the piece is in stock.
-    disabled: isSellable(row.status) && !TAGGED.has(id) ? 0 : 1,
+    // Out of the shop when the piece isn't sellable, when its photo carries a
+    // price tag, or when the photo isn't a photo. In stock is not enough — a
+    // listing a customer can't see the goods in shouldn't take their money.
+    disabled: isSellable(row.status) && !TAGGED.has(id) && !photoUnusable ? 0 : 1,
     is_sales_item: 1,
     // Stable ordering for "New Arrivals" — the sheet's own sequence, reversed
     // so the newest additions surface first.
@@ -216,5 +270,10 @@ console.log(`  hidden (photo shows a tag): ${items.filter(i => TAGGED.has(i.name
   }
 }
 console.log(`  categories: ${[...new Set(items.map(i => i.item_group))].sort().join(', ')}`);
+if (brokenPhoto.length) {
+  console.log(`\n  hidden (photo is not a photo): ${brokenPhoto.length}`);
+  console.log(`    ${brokenPhoto.join(', ')}`);
+  console.log(`    Re-export these and drop them into public/catalog_images to put them back on sale.`);
+}
 if (skipped.noPhoto.length) console.log(`  skipped (no photo): ${skipped.noPhoto.length} -> ${skipped.noPhoto.slice(0, 6).join(', ')}`);
 if (skipped.noPrice.length) console.log(`  skipped (no price): ${skipped.noPrice.join(', ')}`);

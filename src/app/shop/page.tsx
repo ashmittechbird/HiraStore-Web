@@ -4,7 +4,7 @@ import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { getStorefrontItems } from '@/lib/backend';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
-import { categoriesOf } from '@/lib/categories';
+import { categoriesOf, ACCESSORY_PREFIX } from '@/lib/categories';
 import { asset } from '@/lib/config';
 
 const SITE_IMAGES = asset('site-images');
@@ -93,6 +93,7 @@ function ShopContent() {
   const [sort, setSort] = useState('default');
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
+  const [accRowOpen, setAccRowOpen] = useState(false);
 
   // Sync category when URL params change (navbar links)
   useEffect(() => {
@@ -192,10 +193,15 @@ function ShopContent() {
 
   // The tabs on offer are whatever is actually in stock, commonest first, with
   // the Accessories family last. Nothing to edit when the sheet gains a line.
-  const categoryTabs = useMemo(
-    () => ['All', ...categoriesOf(allProducts as Array<{ item_group?: string; category?: string }>).map(c => c.name)],
+  const allCategories = useMemo(
+    () => categoriesOf(allProducts as Array<{ item_group?: string; category?: string }>).map(c => c.name),
     [allProducts]
   );
+  const filterMains = useMemo(() => allCategories.filter(c => !c.startsWith(ACCESSORY_PREFIX)), [allCategories]);
+  const filterAccessories = useMemo(() => allCategories.filter(c => c.startsWith(ACCESSORY_PREFIX)), [allCategories]);
+
+  /** The accessory currently filtered on, if any — keeps its row open. */
+  const accessorySelected = category.startsWith(ACCESSORY_PREFIX) ? category : '';
 
   // Derived: filter + sort. useMemo avoids the setState-in-effect render loop.
   const filtered = useMemo(() => {
@@ -310,14 +316,47 @@ function ShopContent() {
       </div>
 
       {/* Filter Tabs */}
+      {/* Ten of the twenty categories begin "Accessories - ", and spelling that
+          prefix out on every pill pushed the row to three lines on a desktop
+          and a long sideways scroll on a phone. They fold into one pill that
+          opens a second row with the prefix dropped, so the common categories
+          stay on one line and the long tail is one tap away. */}
       <div className="shop-filters" role="group" aria-label="Filter by category">
-        {categoryTabs.map(cat => (
+        <button type="button" className={`filter-btn${category === 'All' ? ' active' : ''}`}
+          onClick={() => { setCategory('All'); setAccRowOpen(false); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
+          All
+        </button>
+        {filterMains.map(cat => (
           <button type="button" key={cat} className={`filter-btn${category === cat ? ' active' : ''}`} data-cat={cat}
             onClick={() => { setCategory(cat); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
             {cat}
           </button>
         ))}
+        {filterAccessories.length > 0 && (
+          <button
+            type="button"
+            className={`filter-btn filter-acc${accRowOpen || accessorySelected ? ' open' : ''}${accessorySelected ? ' active' : ''}`}
+            aria-expanded={accRowOpen || !!accessorySelected}
+            onClick={() => setAccRowOpen(o => !o)}
+          >
+            {accessorySelected ? accessorySelected.slice(ACCESSORY_PREFIX.length) : 'Accessories'}
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        )}
       </div>
+
+      {(accRowOpen || accessorySelected) && filterAccessories.length > 0 && (
+        <div className="shop-filters shop-filters-sub" role="group" aria-label="Filter by accessory type">
+          {filterAccessories.map(cat => (
+            <button type="button" key={cat} className={`filter-btn filter-btn-sm${category === cat ? ' active' : ''}`} data-cat={cat}
+              onClick={() => { setCategory(cat); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
+              {cat.slice(ACCESSORY_PREFIX.length)}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Products */}
       <div className="products-container">
@@ -574,9 +613,21 @@ function ShopContent() {
         }
 
         .shop-filters { max-width:1296px; margin:0 auto 32px; padding:0 48px; display:flex; gap:10px; flex-wrap:wrap; }
-        .filter-btn { padding:8px 20px; border-radius:24px; border:1.5px solid var(--border); font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text); background:transparent; cursor:pointer; transition:all 0.2s var(--ease-out); }
+        /* Tighter than before: 20px of side padding on twenty pills was most of
+           why the row ran to three lines. */
+        .filter-btn { padding:7px 15px; border-radius:24px; border:1.5px solid var(--border); font-size:11.5px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text); background:transparent; cursor:pointer; transition:all 0.2s var(--ease-out); }
         .filter-btn:hover { border-color:var(--gold); color:var(--gold); }
         .filter-btn.active { background:var(--gold); border-color:var(--gold); color:#fff; }
+
+        .filter-acc { display:inline-flex; align-items:center; gap:6px; }
+        .filter-acc svg { transition:transform .2s var(--ease-out); }
+        .filter-acc.open svg { transform:rotate(180deg); }
+
+        /* The accessory row reads as a level down: lighter, slightly smaller,
+           and indented under the pill that opened it. */
+        .shop-filters-sub { margin-top:-22px; margin-bottom:30px; padding-left:60px; }
+        .filter-btn-sm { padding:6px 13px; font-size:11px; border-color:#ece5da; color:var(--text-light); }
+        .filter-btn-sm.active { color:#fff; }
 
         /* PRODUCTS GRID */
         .products-container { max-width:1296px; margin:0 auto; padding:0 48px 80px; }
@@ -727,6 +778,9 @@ function ShopContent() {
           .shop-filters { padding:0 16px; overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
           .shop-filters::-webkit-scrollbar { display:none; }
           .filter-btn { flex-shrink:0; }
+          /* No room to indent on a phone, and the negative pull-up belongs to
+             the wrapped desktop row, not to a scrolling strip. */
+          .shop-filters-sub { padding-left:16px; margin-top:8px; margin-bottom:24px; }
           .products-container { padding:0 16px 60px; }
           .products-grid,.skeleton-grid { grid-template-columns:repeat(2,1fr); gap:16px; }
           .heritage-section { grid-template-columns:1fr; }

@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { loadCategories, mainCategories, accessoryCategories, categoryHref } from '@/lib/categories';
+import type { CategoryCount } from '@/lib/categories';
 
 function readSocialLinks() {
   return {
@@ -12,6 +14,7 @@ function readSocialLinks() {
 
 export default function Footer() {
   const [social, setSocial] = useState(readSocialLinks);
+  const [cats, setCats] = useState<CategoryCount[]>([]);
   const [nlEmail, setNlEmail] = useState('');
   const [nlMsg, setNlMsg] = useState<{ ok: boolean; text: string } | null>(null);
   useEffect(() => {
@@ -19,6 +22,15 @@ export default function Footer() {
     window.addEventListener('hs_social_updated', handler);
     return () => window.removeEventListener('hs_social_updated', handler);
   }, []);
+
+  useEffect(() => {
+    let alive = true;
+    loadCategories().then(c => { if (alive) setCats(c); });
+    return () => { alive = false; };
+  }, []);
+
+  const mains = mainCategories(cats);
+  const accessories = accessoryCategories(cats);
 
   function handleNewsletter(e: React.FormEvent) {
     e.preventDefault();
@@ -75,13 +87,22 @@ export default function Footer() {
           <h4>Shop</h4>
           <ul>
             <li><Link to="/shop">All Jewelry</Link></li>
-            <li><Link to="/shop?cat=Necklaces">Necklaces</Link></li>
-            <li><Link to="/shop?cat=Earrings">Earrings</Link></li>
-            <li><Link to="/shop?cat=Rings">Rings</Link></li>
-            <li><Link to="/shop?cat=Bracelets">Bracelets</Link></li>
-            <li><Link to="/shop?cat=Sets">Gift Sets</Link></li>
+            {mains.map(c => (
+              <li key={c.name}><Link to={categoryHref(c.name)}>{c.name}</Link></li>
+            ))}
           </ul>
         </div>
+
+        {accessories.length > 0 && (
+          <div className="footer-col">
+            <h4>Accessories</h4>
+            <ul>
+              {accessories.map(c => (
+                <li key={c.name}><Link to={categoryHref(c.name)}>{c.label}</Link></li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="footer-col">
           <h4>Help</h4>
@@ -117,7 +138,9 @@ export default function Footer() {
 
       <style>{`
         footer { background: #effcff; color: var(--text-main); padding: 80px 40px 40px; border-top: 1px solid var(--border); }
-        .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1.5fr; gap: 60px; max-width: 1300px; margin: 0 auto; }
+        /* Five columns since the Accessories family got its own: brand, Shop,
+           Accessories, Help, newsletter. */
+        .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1.4fr; gap: 44px; max-width: 1300px; margin: 0 auto; }
         .footer-brand img { height: 62px; margin-bottom: 24px; filter: contrast(1.2); }
         .footer-text { font-size: 13px; color: var(--text-light); line-height: 1.6; margin-bottom: 24px; max-width: 300px; }
         .footer-social { display: flex; gap: 16px; }
@@ -138,6 +161,11 @@ export default function Footer() {
         .newsletter-form input { flex: 1; border: none; background: transparent; font-size: 13px; font-family: var(--font-body); outline: none; }
         .newsletter-form button { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-main); }
         .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; text-align: center; font-size: 12px; color: var(--text-light); display: flex; justify-content: space-between; align-items: center; }
+        /* Five columns need more room than four did; drop to two before the
+           link lists start wrapping mid-word. */
+        @media (max-width: 1100px) {
+          .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+        }
         @media (max-width: 768px) {
           .footer-grid { grid-template-columns: 1fr; gap: 40px; }
           footer { padding: 60px 20px 40px; }

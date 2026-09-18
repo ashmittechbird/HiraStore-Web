@@ -1217,10 +1217,22 @@ export default function AdminPage() {
                 <div className="form-group"><label className="form-label">Price (USD) <span className="req">*</span></label><input className="form-input" type="number" min="0" max="999999" step="0.01" placeholder="0.00" value={pf.price} onChange={e => setPf(p => ({ ...p, price: e.target.value }))} /></div>
                 <div className="form-group"><label className="form-label">Weight</label><input className="form-input" type="text" placeholder="e.g. 22 grams" value={pf.weight} onChange={e => setPf(p => ({ ...p, weight: e.target.value }))} /></div>
                 <div className="form-group"><label className="form-label">Category <span className="req">*</span></label>
-                  <select className="form-select" value={pf.category} onChange={e => setPf(p => ({ ...p, category: e.target.value }))}>
-                    <option value="">Select category…</option>
-                    {['Earrings', 'Necklaces', 'Rings', 'Bracelets', 'Anklets', 'Sets', 'Pendants', 'Other'].map(c => <option key={c}>{c}</option>)}
-                  </select>
+                  {/* A text field with suggestions, not a fixed dropdown. The
+                      old list offered "Rings" and "Anklets", neither of which
+                      the shop stocks, so filing a product under one hid it —
+                      and it had no way to enter a category the shop had just
+                      started carrying. The suggestions are the categories in
+                      use; anything else typed here creates one. */}
+                  <input
+                    className="form-input"
+                    list="adm-categories"
+                    placeholder="Start typing, or pick one…"
+                    value={pf.category}
+                    onChange={e => setPf(p => ({ ...p, category: e.target.value }))}
+                  />
+                  <datalist id="adm-categories">
+                    {categories.map(c => <option key={c} value={c} />)}
+                  </datalist>
                 </div>
                 <div className="form-group"><label className="form-label">Material</label><input className="form-input" type="text" placeholder="e.g. 925 Silver" value={pf.material} onChange={e => setPf(p => ({ ...p, material: e.target.value }))} /></div>
                 <div className="form-group full"><label className="form-label">Short Description</label><textarea className="form-textarea" placeholder="Brief description…" maxLength={500} value={pf.desc} onChange={e => setPf(p => ({ ...p, desc: e.target.value }))} /></div>

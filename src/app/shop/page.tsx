@@ -4,6 +4,7 @@ import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { getStorefrontItems } from '@/lib/backend';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
+import { categoriesOf } from '@/lib/categories';
 import { asset } from '@/lib/config';
 
 const SITE_IMAGES = asset('site-images');
@@ -17,23 +18,19 @@ interface Product {
 }
 
 
-const CATEGORIES = ['All', 'Earrings', 'Necklaces', 'Rings', 'Bracelets', 'Pendants', 'Bangles', 'Sets', 'Accessories'];
 const BADGE_CYCLE = ['New', 'Bestseller', '', 'Limited', 'Trending', '', ''];
 const PAGE_SIZE = 24;
 
-function normalizeCategory(cat?: string) {
-  if (!cat) return 'Other';
-  const c = cat.toLowerCase();
-  if (c.includes('earring') || c.includes('ear cuff')) return 'Earrings';
-  if (c.includes('necklace') || c.includes('choker')) return 'Necklaces';
-  if (c.includes('bracelet')) return 'Bracelets';
-  if (c.includes('pendant')) return 'Pendants';
-  if (c.includes('bangle')) return 'Bangles';
-  if (c.includes('ring') && !c.includes('earring')) return 'Rings';
-  if (c.includes('set')) return 'Sets';
-  if (['accessories','anklet','charm','hair','waist','arm','toe','bag','watch'].some(w => c.includes(w))) return 'Accessories';
-  return 'Other';
-}
+/**
+ * The item's category, exactly as the catalogue holds it.
+ *
+ * There was a second collapsing function here, mapping everything onto the same
+ * eight tabs the filter row offered. It disagreed with the build's version in
+ * places — an "Accessories - Ring" landed under Rings here and Accessories
+ * there — and between them they hid ten real categories. The catalogue is now
+ * the single authority; nothing is reinterpreted at render time.
+ */
+const normalizeCategory = (cat?: string) => (cat || '').trim() || 'Uncategorised';
 
 
 function itemWeight(item: Product): string {
@@ -161,6 +158,13 @@ function ShopContent() {
 
 
 
+  // The tabs on offer are whatever is actually in stock, commonest first, with
+  // the Accessories family last. Nothing to edit when the sheet gains a line.
+  const categoryTabs = useMemo(
+    () => ['All', ...categoriesOf(allProducts as Array<{ item_group?: string; category?: string }>).map(c => c.name)],
+    [allProducts]
+  );
+
   // Derived: filter + sort. useMemo avoids the setState-in-effect render loop.
   const filtered = useMemo(() => {
     let result = [...allProducts];
@@ -278,7 +282,7 @@ function ShopContent() {
 
       {/* Filter Tabs */}
       <div className="shop-filters" role="group" aria-label="Filter by category">
-        {CATEGORIES.map(cat => (
+        {categoryTabs.map(cat => (
           <button type="button" key={cat} className={`filter-btn${category === cat ? ' active' : ''}`} data-cat={cat}
             onClick={() => { setCategory(cat); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
             {cat}

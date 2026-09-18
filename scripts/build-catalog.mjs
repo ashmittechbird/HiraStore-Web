@@ -77,29 +77,65 @@ function imageSize(file) {
  */
 const MIN_PHOTO_PX = 50;
 
-/** Collapse the sheet's 25 free-text category spellings onto the 8 shop tabs. */
-function normalizeCategory(cat) {
-  const c = String(cat || '').toLowerCase();
-  if (c.includes('ear cuff') || c.includes('earring')) return 'Earrings';
-  if (c.includes('necklace') || c.includes('choker')) return 'Necklaces';
-  if (c.includes('bracelet')) return 'Bracelets';
-  if (c.includes('bangle')) return 'Bangles';
-  if (c.includes('pendant')) return 'Pendants';
-  if (c.includes('set')) return 'Sets';
-  if (c.includes('ring')) return 'Rings';
-  return 'Accessories';
+/**
+ * The sheet's own category, tidied but never reinterpreted.
+ *
+ * This used to collapse all 25 spellings onto eight shop tabs, which quietly
+ * threw away most of what the sheet says: anklets, toe rings, hip belts, arm
+ * cuffs, watch sliders, bags, charms, hair accessories and home articles all
+ * became the single word "Accessories", and no customer could find any of them.
+ *
+ * Only typing artifacts are fixed — stray whitespace, the missing space in
+ * "Accessories -Ring", and case. Singular and plural of one word are one
+ * category, so "Necklace" / "Necklaces" / "necklace" merge; two different words
+ * never do.
+ */
+function canonicalCategory(cat) {
+  const s = String(cat || '').replace(/\s+/g, ' ').trim().replace(/\s*-\s*/g, ' - ');
+  if (!s) return '';
+  return s.replace(/\b[a-z]/g, c => c.toUpperCase());
 }
 
-const SINGULAR = {
-  Earrings: 'Earrings',
-  Necklaces: 'Necklace',
-  Rings: 'Ring',
-  Bracelets: 'Bracelet',
-  Bangles: 'Bangles',
-  Pendants: 'Pendant',
-  Sets: 'Jewellery Set',
-  Accessories: 'Accessory',
-};
+/** Plural-insensitive key, so Pendant and Pendants group together. */
+const categoryKey = s => s.toLowerCase().replace(/s\b/g, '').replace(/[^a-z ]/g, '').trim();
+
+/**
+ * One display spelling per category, chosen from the sheet itself.
+ *
+ * Where a category appears both singular and plural, the plural wins — it is
+ * the form a shop tab takes, and both spellings are the sheet's own.
+ */
+function resolveCategoryNames(rows) {
+  const byKey = new Map();
+  for (const r of rows) {
+    const c = canonicalCategory(r.category);
+    if (!c) continue;
+    const k = categoryKey(c);
+    if (!byKey.has(k)) byKey.set(k, new Map());
+    const tally = byKey.get(k);
+    tally.set(c, (tally.get(c) || 0) + 1);
+  }
+
+  const display = new Map();
+  for (const [k, tally] of byKey) {
+    const spellings = [...tally.entries()].sort((a, b) => {
+      const plural = x => (/s$/i.test(x[0]) ? 1 : 0);
+      return plural(b) - plural(a) || b[1] - a[1];
+    });
+    display.set(k, spellings[0][0]);
+  }
+  return display;
+}
+
+/** Singular form for the "<thing> THSE001" fallback name. */
+function singularOf(category) {
+  return category.replace(/\bRings\b/, 'Ring')
+    .replace(/\bNecklaces\b/, 'Necklace')
+    .replace(/\bPendants\b/, 'Pendant')
+    .replace(/\bBracelets\b/, 'Bracelet')
+    .replace(/\bEarrings\b/, 'Earrings')
+    .replace(/\bSets\b/, 'Set');
+}
 
 /**
  * Material, only where the sheet's own description states it.
@@ -173,6 +209,7 @@ function taggedPhotos() {
 }
 
 const TAGGED = taggedPhotos();
+const CATEGORY_NAMES = resolveCategoryNames(sheet);
 
 const items = [];
 const seen = new Set();
@@ -198,14 +235,14 @@ for (const row of sheet) {
   const photoUnusable = !dims || dims.w < MIN_PHOTO_PX || dims.h < MIN_PHOTO_PX;
   if (photoUnusable) brokenPhoto.push(`${id} (${dims ? `${dims.w}x${dims.h}` : 'unreadable'})`);
 
-  const category = normalizeCategory(row.category);
+  const category = CATEGORY_NAMES.get(categoryKey(canonicalCategory(row.category))) || 'Uncategorised';
   const description = cleanDescription(row.description);
 
   items.push({
     name: id,
     // The sheet's description is the product name. Where it has none, fall back
     // to category + code rather than inventing one.
-    item_name: description || `${SINGULAR[category] || category} ${id}`,
+    item_name: description || `${singularOf(category)} ${id}`,
     item_group: category,
     standard_rate: Math.round(price * 100) / 100,
     image: file,

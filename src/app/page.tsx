@@ -15,10 +15,19 @@ const HERO_IMAGES = [
 
 const BADGE_CYCLE = ['New', 'Bestseller', '', 'Limited', 'Trending', '', ''];
 
+/**
+ * The homepage tiles stay hand-picked — each has its own photograph, so this is
+ * a shortlist rather than the full menu, which lives in the nav and footer.
+ *
+ * `cat` must be a category the catalogue actually uses. The Rings tile pointed
+ * at "Rings", which stopped existing when categories started coming from the
+ * sheet verbatim: the sheet calls them "Accessories - Ring", so the tile led to
+ * an empty shop.
+ */
 const CATEGORIES = [
   { name: 'Necklaces', img: `${SI}/cat-necklaces.jpg`,    cat: 'Necklaces' },
   { name: 'Earrings',  img: `${SI}/cat-earrings.jpg`,     cat: 'Earrings' },
-  { name: 'Rings',     img: `${SI}/product-fallback.jpg`, cat: 'Rings' },
+  { name: 'Rings',     img: `${SI}/product-fallback.jpg`, cat: 'Accessories - Ring' },
   { name: 'Bracelets', img: `${SI}/hero-bracelet.jpg`,    cat: 'Bracelets' },
   { name: 'Gift Sets', img: `${SI}/cat-giftsets.jpg`,     cat: 'Sets' },
 ];

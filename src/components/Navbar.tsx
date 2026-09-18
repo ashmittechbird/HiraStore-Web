@@ -4,10 +4,14 @@ import { useFrappeAuth } from '@/lib/frappe';
 import { call } from '@/lib/backend';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
+import { loadCategories, mainCategories, accessoryCategories, categoryHref } from '@/lib/categories';
+import type { CategoryCount } from '@/lib/categories';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
+  const [cats, setCats] = useState<CategoryCount[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const totalItems = useCart(s => s.items.reduce((sum, item) => sum + item.qty, 0));
   const wishCount = useWishlist(s => s.items.length);
@@ -23,6 +27,23 @@ export default function Navbar() {
   useEffect(() => {
     setWishlistUser(currentUser ?? null);
   }, [currentUser, setWishlistUser]);
+
+  useEffect(() => {
+    let alive = true;
+    loadCategories().then(c => { if (alive) setCats(c); });
+    return () => { alive = false; };
+  }, []);
+
+  // Close the Shop menu on Escape, and whenever the page changes under it.
+  useEffect(() => {
+    if (!shopOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setShopOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [shopOpen]);
+
+  const mains = mainCategories(cats);
+  const accessories = accessoryCategories(cats);
 
   useEffect(() => {
     if (!currentUser) { setIsAdmin(false); return; }
@@ -58,10 +79,44 @@ export default function Navbar() {
             <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
           <ul className="nav-links">
-            <li><Link to="/shop">Shop All</Link></li>
-            <li><Link to="/shop?cat=Necklaces">Necklaces</Link></li>
-            <li><Link to="/shop?cat=Earrings">Earrings</Link></li>
-            <li><Link to="/shop?cat=Rings">Rings</Link></li>
+            <li
+              className="nav-shop"
+              onMouseEnter={() => setShopOpen(true)}
+              onMouseLeave={() => setShopOpen(false)}
+            >
+              <Link to="/shop" aria-expanded={shopOpen} aria-haspopup="true">Shop All</Link>
+
+              {/* Every category the shop actually stocks. The bar itself can
+                  only carry a handful, and the sheet has twenty. */}
+              {shopOpen && cats.length > 0 && (
+                <div className="nav-mega" role="menu">
+                  <ul className="nav-mega-col">
+                    {mains.map(c => (
+                      <li key={c.name} role="none">
+                        <Link role="menuitem" to={categoryHref(c.name)} onClick={() => setShopOpen(false)}>
+                          {c.name}<span className="nav-mega-n">{c.count}</span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  {accessories.length > 0 && (
+                    <ul className="nav-mega-col">
+                      <li className="nav-mega-head" role="none">Accessories</li>
+                      {accessories.map(c => (
+                        <li key={c.name} role="none">
+                          <Link role="menuitem" to={categoryHref(c.name)} onClick={() => setShopOpen(false)}>
+                            {c.label}<span className="nav-mega-n">{c.count}</span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </li>
+            {mains.slice(0, 3).map(c => (
+              <li key={c.name}><Link to={categoryHref(c.name)}>{c.name}</Link></li>
+            ))}
             <li><Link to="/about">Our Story</Link></li>
           </ul>
         </div>
@@ -111,10 +166,14 @@ export default function Navbar() {
           </div>
           <ul className="mobile-nav-links" onClick={() => setMobileOpen(false)}>
             <li><Link to="/shop">Shop All</Link></li>
-            <li><Link to="/shop?cat=Necklaces">Necklaces</Link></li>
-            <li><Link to="/shop?cat=Earrings">Earrings</Link></li>
-            <li><Link to="/shop?cat=Rings">Rings</Link></li>
-            <li><Link to="/shop?cat=Bracelets">Bracelets</Link></li>
+            {mains.map(c => (
+              <li key={c.name}><Link to={categoryHref(c.name)}>{c.name}</Link></li>
+            ))}
+            {accessories.length > 0 && <li className="mobile-nav-head">Accessories</li>}
+            {accessories.map(c => (
+              <li key={c.name}><Link to={categoryHref(c.name)}>{c.label}</Link></li>
+            ))}
+            <li className="mobile-nav-head">More</li>
             <li><Link to="/about">Our Story</Link></li>
             {isAdmin && <li><Link to="/admin" className="mobile-admin-link">Admin Panel</Link></li>}
           </ul>
@@ -134,6 +193,37 @@ export default function Navbar() {
         .nav-center { flex: 0 0 auto; }
         .nav-logo img { height: 48px; width: auto; filter: contrast(1.2); }
         .nav-links { display: flex; gap: 32px; list-style: none; }
+
+        /* Shop dropdown — twenty categories won't fit on the bar itself. */
+        .nav-shop { position: relative; }
+        .nav-mega {
+          position: absolute; top: 100%; left: -18px; margin-top: 14px;
+          display: flex; gap: 8px; padding: 18px 8px;
+          background: #fff; border: 1px solid var(--border);
+          box-shadow: 0 18px 44px rgba(0,0,0,.10);
+          z-index: 200; border-radius: 4px;
+        }
+        /* Keeps the pointer inside the element while it travels to the panel. */
+        .nav-shop::after { content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 16px; }
+        .nav-mega-col { list-style: none; min-width: 178px; }
+        .nav-mega-col a {
+          display: flex; justify-content: space-between; gap: 14px; align-items: baseline;
+          padding: 7px 16px; font-size: 12.5px; text-transform: none; letter-spacing: 0;
+          color: var(--text-main); white-space: nowrap;
+        }
+        .nav-mega-col a::after { display: none; }
+        .nav-mega-col a:hover { background: var(--surface); color: var(--accent-gold); }
+        .nav-mega-n { font-size: 10.5px; color: var(--text-light); font-variant-numeric: tabular-nums; }
+        .nav-mega-head {
+          padding: 7px 16px 5px; font-size: 10px; font-weight: 600;
+          letter-spacing: .14em; text-transform: uppercase; color: var(--text-light);
+          border-bottom: 1px solid var(--border); margin-bottom: 4px;
+        }
+        .mobile-nav-head {
+          font-size: 10px; font-weight: 600; letter-spacing: .14em;
+          text-transform: uppercase; color: var(--text-light);
+          margin: 18px 0 2px; pointer-events: none;
+        }
         .nav-links a { font-size: 12px; font-weight: 500; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.3s; position: relative; }
         .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--text-main); transition: width 0.3s var(--ease-out); }
         .nav-links a:hover::after { width: 100%; }

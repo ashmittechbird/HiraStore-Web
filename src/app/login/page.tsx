@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useFrappeAuth, useBackendMode } from '@/lib/frappe';
+import { isDegraded } from '@/lib/backend';
 import { DEMO_CREDENTIALS } from '@/lib/demoDb';
 import { useWishlist } from '@/store/wishlist';
 import { safeReturnPath } from '@/lib/returnPath';
@@ -19,6 +20,7 @@ export default function LoginPage() {
   const setWishlistUser = useWishlist(s => s.setUser);
   const { login, currentUser } = useFrappeAuth();
   const mode = useBackendMode();
+  const degraded = mode === 'demo' && isDegraded();
   const signupHref = location.search ? `/signup${location.search}` : '/signup';
 
   useEffect(() => {
@@ -68,7 +70,11 @@ export default function LoginPage() {
           <h1 className="ha-title">Welcome Back</h1>
           <p className="ha-sub">Sign in to continue your story with Hira.</p>
 
-          {mode === 'demo' && (
+          {/* Only a genuinely backend-less deploy gets the demo shortcut. On a
+              live shop whose bench is down, offering a published admin password
+              would be alarming and useless — sign-in is refused in that state
+              anyway, so say what is actually happening. */}
+          {mode === 'demo' && !degraded && (
             <button
               type="button"
               className="ha-demo-hint"
@@ -77,6 +83,13 @@ export default function LoginPage() {
               <span className="ha-demo-title">Demo store — tap to fill the manager account</span>
               <span className="ha-demo-line">{DEMO_CREDENTIALS.email} · {DEMO_CREDENTIALS.password}</span>
             </button>
+          )}
+
+          {degraded && (
+            <p className="ha-outage" role="status">
+              We can&rsquo;t reach the store right now, so sign-in is paused.
+              Please try again in a few minutes.
+            </p>
           )}
 
           <form onSubmit={handleSubmit} className="ha-form">
@@ -254,6 +267,11 @@ const styles = `
   }
   .ha-pwd-toggle:hover { color: #005969; background: rgba(0,89,105,0.05); }
 
+  .ha-outage {
+    margin: 0 0 18px; padding: 11px 14px; border-radius: 9px;
+    background: #fdf3f0; border: 1px solid #f0d7cf;
+    font-size: 13px; line-height: 1.55; color: #a3543c;
+  }
   .ha-demo-hint {
     display: flex; flex-direction: column; gap: 3px; width: 100%;
     padding: 11px 14px; margin-bottom: 20px; cursor: pointer; text-align: left;

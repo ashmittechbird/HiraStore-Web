@@ -13,6 +13,8 @@
  * appears in the shop by itself, and one that sells out stops being offered.
  */
 
+import { getStorefrontItems } from './backend';
+
 /** The sheet groups ten small lines under this prefix; menus nest them. */
 export const ACCESSORY_PREFIX = 'Accessories - ';
 
@@ -74,13 +76,17 @@ export function categoryHref(name: string): string {
  * The navbar and footer both want the category list on every page. One
  * in-flight promise is shared between them and reused for the session, so the
  * menus cost a single request rather than one per component per navigation.
+ *
+ * Imported statically. This was a dynamic `import('./backend')`, which bought
+ * nothing — the navbar renders on every page and thirteen other modules import
+ * backend directly, so it was always already in the main chunk. All it did was
+ * make every build print a warning about a chunk that could not be split.
  */
 let pending: Promise<CategoryCount[]> | null = null;
 
 export function loadCategories(): Promise<CategoryCount[]> {
   if (!pending) {
-    pending = import('./backend')
-      .then(m => m.getStorefrontItems(500))
+    pending = getStorefrontItems(500)
       .then(items => categoriesOf(items as HasGroup[]))
       // A menu is not worth breaking a page over; an empty list just renders
       // the static links and the next navigation tries again.

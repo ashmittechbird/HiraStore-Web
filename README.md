@@ -175,14 +175,42 @@ whenever the bench was unreachable.
 
 ### The catalogue
 
-`npm run catalog` reads `catalog_images/catalog_data.json` (the original
-spreadsheet export) and emits Frappe-shaped `Item` records: SKU, name, category,
-price, weight, material and description. Products without a photo or a price are
-skipped. Names come from the sheet's description column where it has one, and
-are composed from the product's real attributes where it doesn't.
+`npm run catalog` reads `catalog_images/catalog_sheet.json` (written by
+`npm run import-sheet` straight from the master .xlsx) and emits Frappe-shaped
+`Item` records: SKU, name, category, price, weight, material and description.
+Products without a photo or a price are skipped. Names come from the sheet's
+description column where it has one, and are composed from the product's real
+attributes where it doesn't. The same step regenerates `public/sitemap.xml`, so
+the sitemap cannot drift from the catalogue.
+
+Photographs come out of the workbook too. `node scripts/extract-photos.mjs`
+matches each embedded image to the Product ID on its row and fills in any
+product whose picture is missing or damaged. It validates itself against the
+photos already known to be correct and refuses to write if fewer than 90% of
+them agree — a photo on the wrong product is worse than no photo. Pass
+`--write` to apply.
 
 The generated file carries a signature. When it changes, a returning visitor's
 browser re-seeds automatically — while keeping any products the admin edited.
+
+#### Keeping the backend in step
+
+`catalog.json` only feeds the bundled catalogue. A live shop serves its products
+from ERPNext, so **rebuilding the catalogue is not enough — the backend has to be
+reseeded too**, or the site keeps showing the old names, categories and prices:
+
+```bash
+scp src/data/catalog.json <bench-host>:~/frappe-bench/sites/catalog.json
+bench --site <site> execute hira.api.seed.seed_catalog
+```
+
+The seeder is idempotent: it updates existing Items and creates missing ones,
+so it is safe to run as often as you like. `npm run catalog` prints this
+reminder at the end of every run.
+
+Skipping it is not a theoretical problem. A pair of earrings stayed listed as
+"Nagas Necklace" under Necklaces on the live site for weeks after the correction
+was made here, because only the static catalogue had been rebuilt.
 
 ---
 

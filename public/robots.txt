@@ -1,11 +1,17 @@
 # robots.txt for The Hira Store
 User-agent: *
-Allow: /store/
-Disallow: /store/admin
-Disallow: /store/payment
-Disallow: /store/order-success
+Allow: /
+
+# Nothing here is useful in search results, and the admin panel should not be
+# indexed at all. Paths are site-root relative: the store is served at /.
+Disallow: /admin
+Disallow: /payment
+Disallow: /order-success
+Disallow: /checkout
+Disallow: /cart
+Disallow: /account
+Disallow: /login
+Disallow: /signup
 Disallow: /api/
 
-# Sitemap
-# Sitemap: https://TODO_DOMAIN/sitemap.xml
-# NOTE: Update the Sitemap URL above once the canonical domain is confirmed.
+Sitemap: https://hirastore.techbirdit.in/sitemap.xml

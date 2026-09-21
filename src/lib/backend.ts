@@ -47,6 +47,70 @@ function setMode(m: Mode) {
 const PROBE_CACHE_MS = 60_000;
 const PROBE_CACHE_KEY = 'hs_backend_mode';
 
+/**
+ * Sticky record that this browser has talked to a real bench.
+ *
+ * Demo mode exists for deploys that have no backend at all. On a live store it
+ * means something else entirely: the bench is down. The difference matters,
+ * because the demo store happily "accepts" an order into localStorage — the
+ * shopper gets a confirmation screen, the merchant never sees the order, and
+ * no card is ever charged. Once a browser has seen a real backend, a failed
+ * probe is an outage, so writes are refused instead of faked.
+ *
+ * localStorage, not sessionStorage: an outage should not be forgotten just
+ * because the shopper opened a new tab.
+ */
+const SEEN_REAL_KEY = 'hs_backend_real';
+
+function markRealBackendSeen(): void {
+  try {
+    localStorage.setItem(SEEN_REAL_KEY, '1');
+  } catch {
+    /* private mode — degraded detection just falls back to plain demo */
+  }
+}
+
+/** True when this browser has previously reached a live bench. */
+export function hasSeenRealBackend(): boolean {
+  try {
+    return localStorage.getItem(SEEN_REAL_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Demo mode on a store that is meant to have a backend — i.e. an outage.
+ * Browsing still works off the bundled catalogue; anything that writes does not.
+ */
+export function isDegraded(): boolean {
+  return resolvedMode === 'demo' && hasSeenRealBackend();
+}
+
+/** Shown wherever a write is refused during an outage. */
+export const STORE_UNAVAILABLE =
+  'The store is temporarily unavailable. Nothing was charged or saved — please try again in a moment.';
+
+/**
+ * Calls that must never be answered by the demo store on a real shop.
+ *
+ * Reads are safe to serve from the bundle: the catalogue is accurate and a
+ * browsable site beats a dead one. These are the ones that would silently
+ * invent something — an order nobody will ship, a booking nobody will keep, or
+ * a sign-in to the demo manager account with its published password.
+ */
+const NEVER_FAKE = new Set([
+  'login',
+  'frappe.core.doctype.user.user.sign_up',
+  'frappe.client.insert',
+  'frappe.client.set_value',
+  'frappe.client.delete',
+  'hira.api.bookings.create_booking',
+  'hira.api.bookings.set_booking_status',
+  'hira.api.payments.create_card_order',
+  'upload_file',
+]);
+
 function readCachedMode(): Mode | null {
   try {
     const raw = sessionStorage.getItem(PROBE_CACHE_KEY);
@@ -60,6 +124,7 @@ function readCachedMode(): Mode | null {
 }
 
 function cacheMode(mode: Mode): Mode {
+  if (mode === 'frappe') markRealBackendSeen();
   try {
     sessionStorage.setItem(PROBE_CACHE_KEY, JSON.stringify({ mode, at: Date.now() }));
   } catch {
@@ -377,6 +442,11 @@ function demoGetDoc(doctype: string, name: string): Row {
 // ─── demo method router ──────────────────────────────────────────────────────
 
 function demoCall(method: string, params: Row): any {
+  // On a store that has a real backend, an outage must look like an outage.
+  // Faking these is worse than failing: the shopper walks away believing an
+  // order exists.
+  if (isDegraded() && NEVER_FAKE.has(method)) throw new BackendError(STORE_UNAVAILABLE);
+
   switch (method) {
     case 'ping':
       return { message: 'pong' };
@@ -563,6 +633,11 @@ export async function call(
     // A thrown BackendError is a real answer from a live backend (bad password,
     // validation failure) — surface it. Anything else means the transport died,
     // so drop to demo rather than showing the user a dead screen.
+    //
+    // `demoCall` refuses the writes that matter once a real backend has been
+    // seen, so a checkout whose connection drops mid-flight now reports an
+    // outage instead of returning a confirmation for an order that does not
+    // exist. Reads still fall through to the bundled catalogue.
     if (e instanceof BackendError) throw e;
     cacheMode('demo');
     modePromise = Promise.resolve('demo');

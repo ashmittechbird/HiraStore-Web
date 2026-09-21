@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ROUTER_BASE, HOME_URL } from '@/lib/config'
 import { FrappeProvider } from '@/lib/frappe'
@@ -19,7 +20,11 @@ import Checkout from './app/checkout/page'
 import Payment from './app/payment/page'
 import OrderSuccess from './app/order-success/page'
 import Product from './app/product/[id]/page'
-import Admin from './app/admin/page'
+
+// The admin panel is the single largest thing in the app and no shopper ever
+// opens it, so it is fetched only when /admin is visited rather than riding
+// along in the bundle every customer downloads.
+const Admin = lazy(() => import('./app/admin/page'))
 
 // Empty string = same origin (works in Frappe context and with Vite proxy in dev)
 const FRAPPE_URL = (import.meta.env.VITE_FRAPPE_URL as string) || ''
@@ -45,7 +50,15 @@ export default function App() {
           <Route path="/payment" element={<Payment />} />
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/product/:id" element={<Product />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin" element={
+            <Suspense fallback={
+              <div style={{ textAlign: 'center', padding: '120px 24px', minHeight: '60vh', color: '#737373', fontSize: '14px' }}>
+                Loading the admin panel…
+              </div>
+            }>
+              <Admin />
+            </Suspense>
+          } />
           <Route path="*" element={
             <div style={{ textAlign: 'center', padding: '120px 24px 80px', minHeight: '60vh' }}>
               <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: '48px', fontWeight: 400, color: '#005969', marginBottom: '16px' }}>Page Not Found</h1>

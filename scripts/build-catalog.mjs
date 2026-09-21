@@ -327,6 +327,8 @@ featured.forEach(it => { it.custom_is_featured = 1; });
 fs.mkdirSync(path.join(root, 'src/data'), { recursive: true });
 fs.writeFileSync(path.join(root, 'src/data/catalog.json'), JSON.stringify(items));
 
+writeSitemap(items);
+
 const named = items.filter(i => i.custom_short_description).length;
 const weighed = items.filter(i => i.weight_per_unit > 0).length;
 
@@ -367,3 +369,65 @@ if (addedPending.length) {
 }
 if (skipped.noPhoto.length) console.log(`  skipped (no photo): ${skipped.noPhoto.length} -> ${skipped.noPhoto.slice(0, 6).join(', ')}`);
 if (skipped.noPrice.length) console.log(`  skipped (no price): ${skipped.noPrice.join(', ')}`);
+
+// This file is only half the catalogue. A live shop reads its products from
+// ERPNext, so a rebuild that is deployed without reseeding leaves the site
+// showing the old names, categories and prices — which is exactly how a pair
+// of earrings stayed listed as "Nagas Necklace" under Necklaces long after the
+// correction was made here. Said out loud on every build so it cannot be
+// forgotten again.
+console.log(`
+  Deploying this? The backend needs the same data:
+    scp src/data/catalog.json <bench-host>:~/frappe-bench/sites/catalog.json
+    bench --site <site> execute hira.api.seed.seed_catalog
+  Safe to re-run — it updates existing products rather than duplicating them.`);
+
+/**
+ * Write public/sitemap.xml from the catalogue that was just built.
+ *
+ * Hand-maintained, it listed three pages against a literal `TODO_DOMAIN`, so
+ * search engines had nothing valid to crawl and not one of the 287 products
+ * was discoverable. Generating it here means it can never drift from the
+ * catalogue again: every in-stock product is listed, sold-out ones are left
+ * out, and the file is rebuilt on every deploy.
+ *
+ * SITE_URL overrides the domain for a staging build.
+ */
+function writeSitemap(items) {
+  const site = (process.env.SITE_URL || 'https://hirastore.techbirdit.in').replace(/\/+$/, '');
+  const today = new Date().toISOString().slice(0, 10);
+
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+
+  const url = (loc, priority, changefreq) =>
+    `  <url><loc>${esc(site + loc)}</loc><lastmod>${today}</lastmod>` +
+    `<changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
+
+  const lines = [
+    url('/', '1.0', 'weekly'),
+    url('/shop', '0.9', 'weekly'),
+    url('/about', '0.6', 'monthly'),
+    url('/help', '0.5', 'monthly'),
+  ];
+
+  // One entry per category, so the collection pages are crawled too.
+  for (const cat of [...new Set(items.map(i => i.item_group).filter(Boolean))].sort()) {
+    lines.push(url(`/shop?category=${encodeURIComponent(cat)}`, '0.7', 'weekly'));
+  }
+
+  // Sold-out pieces are one-of-a-kind and will not come back; indexing them
+  // just earns the store dead-end results.
+  for (const it of items.filter(i => !i.disabled)) {
+    lines.push(url(`/product/${encodeURIComponent(it.name)}`, '0.8', 'monthly'));
+  }
+
+  const xml =
+    '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    lines.join('\n') +
+    '\n</urlset>\n';
+
+  fs.writeFileSync(path.join(root, 'public/sitemap.xml'), xml);
+  console.log(`  sitemap   : ${lines.length} urls -> ${site}/sitemap.xml`);
+}

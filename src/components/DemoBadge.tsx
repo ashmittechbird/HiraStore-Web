@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useBackendMode } from '@/lib/frappe';
+import { isDegraded } from '@/lib/backend';
 import { DEMO_CREDENTIALS } from '@/lib/demoDb';
 
 /**
@@ -15,6 +16,9 @@ export default function DemoBadge() {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(() => sessionStorage.getItem('hs_demo_badge_off') === '1');
 
+  // Recomputed on every mode change, which is the only thing that moves it.
+  const degraded = mode === 'demo' && isDegraded();
+
   useEffect(() => {
     if (mode === 'demo') document.body.classList.add('hs-demo');
     else document.body.classList.remove('hs-demo');
@@ -22,9 +26,15 @@ export default function DemoBadge() {
 
   if (mode !== 'demo' || hidden) return null;
 
+  // Same underlying state, two very different situations. A deploy with no
+  // backend is a demo and should say so. A live shop whose bench has gone down
+  // is an outage — showing a shopper "demo mode" and a published admin password
+  // would be both confusing and wrong, so it gets an honest service notice.
+  const outage = degraded;
+
   return (
     <>
-      <div className={`hs-demo-badge${open ? ' open' : ''}`}>
+      <div className={`hs-demo-badge${open ? ' open' : ''}${outage ? ' outage' : ''}`}>
         <button
           type="button"
           className="hs-demo-pill"
@@ -32,22 +42,37 @@ export default function DemoBadge() {
           aria-expanded={open}
         >
           <span className="hs-demo-dot" aria-hidden="true" />
-          Demo mode
+          {outage ? 'Service notice' : 'Demo mode'}
         </button>
 
         {open && (
-          <div className="hs-demo-panel" role="region" aria-label="Demo mode details">
-            <p>
-              No store backend is connected, so the site is running on its built-in
-              catalogue. Browsing, cart, wishlist, coupons, checkout and the admin
-              panel all work — but <strong>orders are saved in this browser only</strong> and
-              never reach the merchant.
-            </p>
-            <p className="hs-demo-creds">
-              Admin sign-in
-              <code>{DEMO_CREDENTIALS.email}</code>
-              <code>{DEMO_CREDENTIALS.password}</code>
-            </p>
+          <div
+            className="hs-demo-panel"
+            role="region"
+            aria-label={outage ? 'Service notice' : 'Demo mode details'}
+          >
+            {outage ? (
+              <p>
+                We can&rsquo;t reach the store right now, so you&rsquo;re browsing a saved copy
+                of the catalogue. <strong>Orders and sign-in are paused</strong> until the
+                connection is back — nothing you do here will be charged or lost.
+                Please try again in a few minutes.
+              </p>
+            ) : (
+              <>
+                <p>
+                  No store backend is connected, so the site is running on its built-in
+                  catalogue. Browsing, cart, wishlist, coupons, checkout and the admin
+                  panel all work — but <strong>orders are saved in this browser only</strong> and
+                  never reach the merchant.
+                </p>
+                <p className="hs-demo-creds">
+                  Admin sign-in
+                  <code>{DEMO_CREDENTIALS.email}</code>
+                  <code>{DEMO_CREDENTIALS.password}</code>
+                </p>
+              </>
+            )}
             <button
               type="button"
               className="hs-demo-hide"
@@ -86,6 +111,13 @@ const styles = `
     width: 6px; height: 6px; border-radius: 50%; background: #d9a441;
     box-shadow: 0 0 0 3px rgba(217,164,65,.18);
   }
+  /* An outage is not a demo — warmer red so it reads as "something is wrong
+     right now" rather than "this is a sandbox". */
+  .hs-demo-badge.outage .hs-demo-dot {
+    background: #dc6a4a; box-shadow: 0 0 0 3px rgba(220,106,74,.18);
+  }
+  .hs-demo-badge.outage .hs-demo-pill { color: #a3543c; border-color: #f0d7cf; }
+  .hs-demo-badge.outage .hs-demo-pill:hover { color: #8c4430; border-color: #e6bfb2; }
   .hs-demo-panel {
     width: 290px; padding: 15px 16px; border-radius: 12px;
     background: #fff; border: 1px solid #dce9eb;

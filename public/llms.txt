@@ -6,9 +6,9 @@
 The Hira Store is an online jewelry brand founded in 2023, offering premium silver and demi-fine jewelry. Each piece is crafted by artisans using ethically sourced materials. The store ships from San Jose, CA and offers free shipping on orders over $100.
 
 ## Pages
-- [Shop All Jewelry](/store/shop): Browse the full catalog of 500+ handcrafted pieces with search, filters, and sorting.
-- [Our Story](/store/about): The brand story, values, and craftsmanship process.
-- [Homepage](/store/): Featured collections, new arrivals, and bestsellers.
+- [Shop All Jewelry](/shop): Browse the full catalog of 224 handcrafted pieces with search, filters, and sorting.
+- [Our Story](/about): The brand story, values, and craftsmanship process.
+- [Homepage](/): Featured collections, new arrivals, and bestsellers.
 
 ## Contact
 - Email: info@Thehirastore.com

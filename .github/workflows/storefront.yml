@@ -65,7 +65,13 @@ jobs:
   deploy:
     name: deploy storefront
     needs: build                      # unreachable unless the build went green
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    # workflow_dispatch included deliberately: without it a manual run can only
+    # ever build, never deploy - and the case where you most need a manual
+    # deploy is commits that were pushed while Actions was disabled, which is
+    # exactly how master ended up 22 commits behind production.
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      && github.ref == 'refs/heads/master'
     runs-on: [self-hosted, hira-prod]
     timeout-minutes: 20
     concurrency:

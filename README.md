@@ -197,20 +197,38 @@ browser re-seeds automatically — while keeping any products the admin edited.
 
 `catalog.json` only feeds the bundled catalogue. A live shop serves its products
 from ERPNext, so **rebuilding the catalogue is not enough — the backend has to be
-reseeded too**, or the site keeps showing the old names, categories and prices:
+reseeded too**, or the site keeps showing the old names, categories and prices.
+
+**On deploy this is automatic.** The Storefront workflow hands the catalogue the
+build produced to the deploy job and runs the seeder on the bench, so ERPNext
+and the deployed storefront can no longer drift apart. Nobody has to remember
+anything.
+
+It reads two optional repository variables (Settings → Secrets and variables →
+Actions → Variables). Neither is normally needed:
+
+| Variable | Default | Set it when |
+|---|---|---|
+| `BENCH_PATH` | `/home/frappe/frappe-bench` | the bench lives elsewhere |
+| `BENCH_SITE` | read from `sites/currentsite.txt` | the bench serves several sites |
+
+If either is wrong the deploy fails with a message naming the variable to set —
+it never skips the sync quietly, because a silent skip is exactly what caused
+the drift in the first place.
+
+To run it by hand against a bench you have a shell on:
 
 ```bash
 scp src/data/catalog.json <bench-host>:~/frappe-bench/sites/catalog.json
 bench --site <site> execute hira.api.seed.seed_catalog
 ```
 
-The seeder is idempotent: it updates existing Items and creates missing ones,
-so it is safe to run as often as you like. `npm run catalog` prints this
-reminder at the end of every run.
+The seeder is idempotent: it updates existing Items and creates missing ones, so
+it is safe to run as often as you like.
 
 Skipping it is not a theoretical problem. A pair of earrings stayed listed as
-"Nagas Necklace" under Necklaces on the live site for weeks after the correction
-was made here, because only the static catalogue had been rebuilt.
+"Nagas Necklace" under Necklaces on the live site long after the correction was
+made here, because only the static catalogue had been rebuilt.
 
 ---
 

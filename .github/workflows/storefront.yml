@@ -62,6 +62,21 @@ jobs:
       - name: Audit (advisory)
         run: npm audit --omit=dev || true
 
+      # The catalogue is half the deploy. Products are served from ERPNext, not
+      # from the bundle, so shipping dist/ alone leaves the shop showing the old
+      # names, categories and prices — which is how a pair of earrings stayed
+      # listed as "Nagas Necklace" under Necklaces long after it was corrected
+      # here. Handed to the deploy job as an artifact rather than re-read on the
+      # server, so the products seeded are exactly the ones this run built and
+      # typechecked.
+      - name: Hand the catalogue to the deploy job
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalog
+          path: src/data/catalog.json
+          if-no-files-found: error
+          retention-days: 7
+
   deploy:
     name: deploy storefront
     needs: build                      # unreachable unless the build went green
@@ -86,6 +101,63 @@ jobs:
       # precise commit this run was triggered for.
       - name: Deploy @ ${{ github.sha }}
         run: /home/frappe/hira-cicd/bin/deploy-store.sh --ref "${{ github.sha }}"
+
+      # Downloaded into the runner's workspace, not the release tree, so this
+      # stays independent of however deploy-store.sh lays its source out.
+      - name: Fetch the catalogue built by this run
+        uses: actions/download-artifact@v4
+        with:
+          name: catalog
+          path: catalog-sync
+
+      # Brings ERPNext's Item records in step with the catalogue just deployed.
+      # `seed_catalog` is idempotent — it updates existing products and creates
+      # missing ones, never duplicates — so running it on every deploy is the
+      # point: the two can no longer drift apart.
+      #
+      # Override BENCH_PATH / BENCH_SITE as repository variables if the bench
+      # ever moves or the site is renamed.
+      - name: Sync the catalogue into ERPNext
+        env:
+          BENCH_PATH: ${{ vars.BENCH_PATH || '/home/frappe/frappe-bench' }}
+          BENCH_SITE: ${{ vars.BENCH_SITE }}
+        run: |
+          set -euo pipefail
+
+          if [ ! -d "$BENCH_PATH/sites" ]; then
+            echo "No bench at $BENCH_PATH."
+            echo "Set the BENCH_PATH repository variable to the bench directory."
+            exit 1
+          fi
+
+          SITE="${BENCH_SITE:-}"
+          if [ -z "$SITE" ] && [ -f "$BENCH_PATH/sites/currentsite.txt" ]; then
+            SITE=$(tr -d '[:space:]' < "$BENCH_PATH/sites/currentsite.txt")
+          fi
+          if [ -z "$SITE" ]; then
+            echo "Could not work out the site name."
+            echo "Set the BENCH_SITE repository variable to it."
+            exit 1
+          fi
+
+          # A runner's shell is not a login shell, so bench is often not on PATH
+          # even though it works fine when the frappe user types it.
+          BENCH=$(command -v bench || true)
+          for c in "$HOME/.local/bin/bench" /home/frappe/.local/bin/bench /usr/local/bin/bench; do
+            [ -n "$BENCH" ] && break
+            [ -x "$c" ] && BENCH="$c"
+          done
+          if [ -z "$BENCH" ]; then
+            echo "Could not find the bench command."
+            echo "Add it to the runner's PATH, or set BENCH_PATH and install bench for that user."
+            exit 1
+          fi
+
+          cp catalog-sync/catalog.json "$BENCH_PATH/sites/catalog.json"
+          echo "seeding $(grep -o '"name"' "$BENCH_PATH/sites/catalog.json" | wc -l) products into $SITE"
+
+          cd "$BENCH_PATH"
+          "$BENCH" --site "$SITE" execute hira.api.seed.seed_catalog
 
       - name: Verify
         run: /home/frappe/hira-cicd/bin/verify-store.sh

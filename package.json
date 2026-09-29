@@ -12,7 +12,9 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "import-sheet": "node scripts/import-sheet.mjs",
-    "test:e2e": "node scripts/e2e-test.mjs"
+    "test:e2e": "node scripts/e2e-test.mjs",
+    "photos:audit": "node scripts/audit-photos.mjs",
+    "photos:extract": "node scripts/extract-photos.mjs"
   },
   "dependencies": {
     "react": "^18.3.0",

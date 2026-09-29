@@ -183,12 +183,29 @@ description column where it has one, and are composed from the product's real
 attributes where it doesn't. The same step regenerates `public/sitemap.xml`, so
 the sitemap cannot drift from the catalogue.
 
-Photographs come out of the workbook too. `node scripts/extract-photos.mjs`
-matches each embedded image to the Product ID on its row and fills in any
-product whose picture is missing or damaged. It validates itself against the
-photos already known to be correct and refuses to write if fewer than 90% of
-them agree — a photo on the wrong product is worse than no photo. Pass
-`--write` to apply.
+Photographs come out of the workbook too. `npm run photos:extract` matches each
+embedded image to the Product ID on its row and fills in any product whose
+picture is missing or damaged. It validates itself against the photos already
+known to be correct and refuses to write if fewer than 90% of them agree — a
+photo on the wrong product is worse than no photo. Pass `--write` to apply.
+
+`npm run photos:audit` is the stronger check and the one to run after any
+photo change. It hashes the bytes rather than comparing dimensions, so it can
+say which product each picture actually is:
+
+| | |
+|---|---|
+| `ok` | matches the workbook image for that code |
+| `WRONG` | it is a **different product's** photograph |
+| `stale` | matches nothing in the workbook (re-encoded, or supplied by hand) |
+| `missing` | the workbook has a photo, nothing is on disk |
+
+This is not hypothetical. The original extraction shifted six photos onto
+neighbouring rows — `THSNC003`, a hair ornament, served `THSE064`'s fish
+earrings, and `THSN102` served `THSE096`'s. Worse, the mix-up got mistaken for
+a data error: `THSN102` was "corrected" to Earrings to match a photograph that
+was never its own. **Run this before concluding that a row contradicts its
+photo.** `--write` repairs the `WRONG` ones from the workbook.
 
 The generated file carries a signature. When it changes, a returning visitor's
 browser re-seeds automatically — while keeping any products the admin edited.

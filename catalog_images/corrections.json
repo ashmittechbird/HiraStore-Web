@@ -28,13 +28,7 @@
     "THSN085": {
       "category": "Earrings",
       "description": "",
-      "note": "Sheet says 'Pure silver choker' but the photo is a pair of kundan earrings. Store confirmed the photo is correct, so the row's description describes a different piece and is dropped."
-    },
-
-    "THSN102": {
-      "category": "Earrings",
-      "description": "",
-      "note": "Sheet says 'Nagas Necklace' but the photo is a pair of turquoise drop earrings. Same call as THSN085 — photo wins, description dropped."
+      "note": "Sheet says 'Pure silver choker' but the photo is a pair of kundan earrings. Verified against the workbook by scripts/audit-photos.mjs: this photograph really is THSN085's, byte for byte, so the row and the picture genuinely disagree. Store confirmed the photo is correct, so the row's description describes a different piece and is dropped. THSN102 once had an identical-looking entry here and was wrong — there the photo belonged to another product. Do not add one of these without running the audit first."
     },
 
     "THSA005": {

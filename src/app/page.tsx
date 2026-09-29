@@ -5,6 +5,7 @@ import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { getHomepageConfig, getStorefrontItems } from '@/lib/backend';
 import { instagramHandle, instagramUrl, DEFAULT_IG_POSTS } from '@/lib/contact';
+import { categoryHref } from '@/lib/categories';
 
 const SI = `${import.meta.env.BASE_URL}site-images`;
 
@@ -29,7 +30,7 @@ const CATEGORIES = [
   { name: 'Necklaces', img: `${SI}/cat-necklaces.jpg`,    cat: 'Necklaces' },
   { name: 'Earrings',  img: `${SI}/cat-earrings.jpg`,     cat: 'Earrings' },
   { name: 'Rings',     img: `${SI}/product-fallback.jpg`, cat: 'Accessories - Ring' },
-  { name: 'Bracelets', img: `${SI}/hero-bracelet.jpg`,    cat: 'Bracelets' },
+  { name: 'Bangles & Bracelets', img: `${SI}/hero-bracelet.jpg`, cat: 'Bangles & Bracelets' },
   { name: 'Gift Sets', img: `${SI}/cat-giftsets.jpg`,     cat: 'Sets' },
 ];
 
@@ -413,7 +414,7 @@ export default function HomePage() {
         </div>
         <div className="cat-grid">
           {CATEGORIES.map((c, i) => (
-            <Link key={c.cat} to={`/shop?cat=${c.cat}`} className={`cat-card reveal reveal-delay-${(i % 4) + 1}`}>
+            <Link key={c.cat} to={categoryHref(c.cat)} className={`cat-card reveal reveal-delay-${(i % 4) + 1}`}>
               <div className="cat-img-wrap">
                 <img src={c.img} alt={c.name} />
               </div>

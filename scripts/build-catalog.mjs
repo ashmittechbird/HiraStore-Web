@@ -127,12 +127,32 @@ function resolveCategoryNames(rows) {
   return display;
 }
 
+/**
+ * Sheet categories the store sells as one section.
+ *
+ * The rule above keeps two different words apart, and that is right in
+ * general — but it split one shelf three ways: "Bangles" (12), "Bracelets" (9)
+ * and "Bangle Pair" (2), the last a whole menu entry for two pieces. The store
+ * wants them as a single section, so they are grouped here by the same
+ * plural-insensitive key the rest of the build uses. The sheet is untouched;
+ * each product still carries its own word in its fallback name ("Bangle
+ * THSB024", not "Bangles & Bracelets THSB024").
+ *
+ * Add a line to fold another family together. Keys are categoryKey() output.
+ */
+const CATEGORY_MERGE = new Map([
+  ['bangle', 'Bangles & Bracelets'],
+  ['bracelet', 'Bangles & Bracelets'],
+  ['bangle pair', 'Bangles & Bracelets'],
+]);
+
 /** Singular form for the "<thing> THSE001" fallback name. */
 function singularOf(category) {
   return category.replace(/\bRings\b/, 'Ring')
     .replace(/\bNecklaces\b/, 'Necklace')
     .replace(/\bPendants\b/, 'Pendant')
     .replace(/\bBracelets\b/, 'Bracelet')
+    .replace(/\bBangles\b/, 'Bangle')
     .replace(/\bEarrings\b/, 'Earrings')
     .replace(/\bSets\b/, 'Set');
 }
@@ -276,14 +296,18 @@ for (const row of sheet) {
   const photoUnusable = !dims || dims.w < MIN_PHOTO_PX || dims.h < MIN_PHOTO_PX;
   if (photoUnusable) brokenPhoto.push(`${id} (${dims ? `${dims.w}x${dims.h}` : 'unreadable'})`);
 
-  const category = CATEGORY_NAMES.get(categoryKey(canonicalCategory(row.category))) || 'Uncategorised';
+  const catKey = categoryKey(canonicalCategory(row.category));
+  // The sheet's own word, before any merge — it names the piece in the
+  // fallback, so a bangle is still called a bangle inside a combined section.
+  const ownCategory = CATEGORY_NAMES.get(catKey) || 'Uncategorised';
+  const category = CATEGORY_MERGE.get(catKey) || ownCategory;
   const description = cleanDescription(row.description);
 
   items.push({
     name: id,
     // The sheet's description is the product name. Where it has none, fall back
     // to category + code rather than inventing one.
-    item_name: description || `${singularOf(category)} ${id}`,
+    item_name: description || `${singularOf(ownCategory)} ${id}`,
     item_group: category,
     standard_rate: Math.round(price * 100) / 100,
     image: file,
@@ -413,7 +437,7 @@ function writeSitemap(items) {
 
   // One entry per category, so the collection pages are crawled too.
   for (const cat of [...new Set(items.map(i => i.item_group).filter(Boolean))].sort()) {
-    lines.push(url(`/shop?category=${encodeURIComponent(cat)}`, '0.7', 'weekly'));
+    lines.push(url(`/shop?cat=${encodeURIComponent(cat)}`, '0.7', 'weekly'));
   }
 
   // Sold-out pieces are one-of-a-kind and will not come back; indexing them

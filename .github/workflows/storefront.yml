@@ -70,7 +70,7 @@ jobs:
       # server, so the products seeded are exactly the ones this run built and
       # typechecked.
       - name: Hand the catalogue to the deploy job
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: catalog
           path: src/data/catalog.json

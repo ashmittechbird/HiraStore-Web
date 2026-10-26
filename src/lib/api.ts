@@ -1,5 +1,20 @@
 // Single source of truth for where product photos live — see lib/config.ts.
 import { CATALOG_BASE } from './config';
+import photoVersions from '@/data/photo-versions.json';
+
+/**
+ * URL of a bundled product photo, carrying a fingerprint of its contents.
+ *
+ * Photos are cached for a week and keep their filename when replaced, so
+ * without this a returning visitor kept seeing the old file after a deploy.
+ * The fingerprint (written by scripts/build-catalog.mjs) changes only when the
+ * file does. An unknown file — one uploaded through the admin, say — gets no
+ * fingerprint rather than a wrong one.
+ */
+function catalogUrl(file: string): string {
+  const v = (photoVersions as Record<string, string>)[file];
+  return `${CATALOG_BASE}/${file}${v ? `?v=${v}` : ''}`;
+}
 
 // Frappe file URLs (/files/...) are same-origin: the Vite proxy handles them in
 // development, api/[...path].js on Vercel.
@@ -8,12 +23,12 @@ const ERP_BASE = '';
 export function itemImage(item: { image?: string; name?: string; product_id?: string }) {
   if (!item.image) {
     const id = item.name || item.product_id;
-    if (id) return `${CATALOG_BASE}/${id}.jpeg`;
+    if (id) return catalogUrl(`${id}.jpeg`);
     return `${import.meta.env.BASE_URL}site-images/product-fallback.jpg`;
   }
   if (item.image.startsWith('http')) return item.image;
   if (item.image.startsWith('/files/')) return `${ERP_BASE}${item.image}`;
-  return `${CATALOG_BASE}/${item.image}`;
+  return catalogUrl(item.image);
 }
 
 // Returns array of all product images.
@@ -41,7 +56,7 @@ export function itemImages(item: { image?: string; custom_item_images?: string }
           .map((img: string) => {
             if (img.startsWith('http')) return img;
             if (img.startsWith('/files/')) return `${ERP_BASE}${img}`;
-            return `${CATALOG_BASE}/${img}`;
+            return catalogUrl(img);
           });
         const unique = [...new Set([fallback, ...urls])];
         if (unique.length) return unique;

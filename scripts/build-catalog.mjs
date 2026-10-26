@@ -14,6 +14,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -373,6 +374,7 @@ fs.mkdirSync(path.join(root, 'src/data'), { recursive: true });
 fs.writeFileSync(path.join(root, 'src/data/catalog.json'), JSON.stringify(items));
 
 writeSitemap(items);
+writePhotoVersions();
 
 const named = items.filter(i => i.custom_short_description).length;
 const weighed = items.filter(i => i.weight_per_unit > 0).length;
@@ -475,4 +477,27 @@ function writeSitemap(items) {
 
   fs.writeFileSync(path.join(root, 'public/sitemap.xml'), xml);
   console.log(`  sitemap   : ${lines.length} urls -> ${site}/sitemap.xml`);
+}
+
+/**
+ * A short fingerprint of every product photo, written to
+ * src/data/photo-versions.json and appended to each photo URL as ?v=… .
+ *
+ * The server tells browsers to keep a photo for seven days, and a photo keeps
+ * its filename when it is replaced — THSN067.jpeg before and after. So a
+ * sharper photo went live and anyone who had looked at that product in the
+ * past week went on seeing the old blurry one, with nothing to suggest the
+ * deploy had worked. The fingerprint changes exactly when the file does: a
+ * replaced photo gets a new URL and is fetched again, and every untouched one
+ * stays cached.
+ */
+function writePhotoVersions() {
+  const dir = path.join(root, 'public/catalog_images');
+  const versions = {};
+  for (const f of fs.readdirSync(dir).sort()) {
+    if (!/\.(jpe?g|png|webp)$/i.test(f)) continue;
+    versions[f] = crypto.createHash('sha1').update(fs.readFileSync(path.join(dir, f))).digest('hex').slice(0, 8);
+  }
+  fs.writeFileSync(path.join(root, 'src/data/photo-versions.json'), JSON.stringify(versions));
+  console.log(`  photo versions: ${Object.keys(versions).length}`);
 }

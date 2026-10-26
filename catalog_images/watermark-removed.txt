@@ -1,0 +1,43 @@
+# Product photos edited to remove a lotus watermark that is not the store's.
+#
+# The mark was a small grey lotus, usually in a bottom corner — another
+# seller's or photographer's watermark, not the Hira logo. It was removed by
+# inpainting from the surrounding background (texture-matched where the
+# background is textured), checked by eye before and after on every photo.
+# The jewellery itself was never touched.
+#
+# These files no longer match the workbook byte for byte, so
+# `npm run photos:audit` lists them as "stale" rather than "ok". That is
+# expected; "WRONG" must stay at 0. The unedited originals are in git
+# history (commit before "Remove a third-party lotus watermark").
+#
+# Not done: THSN112 — the mark there is too faint to locate with confidence.
+# Not done: the 13 photos that are screenshots of another online store
+# (heart icon, slideshow arrows); see the photo review list.
+
+THSA004
+THSB023
+THSB025
+THSE076
+THSE085
+THSE097
+THSE098
+THSE099
+THSE100
+THSE103
+THSE104
+THSE118
+THSE119
+THSE142
+THSE155
+THSN095
+THSN107
+THSN109
+THSN115
+THSN119
+THSN143
+THSN144
+THSN149     # two lotus marks, one in each stacked panel
+THSN151
+THSR015
+THSR016

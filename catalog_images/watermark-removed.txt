@@ -12,8 +12,6 @@
 # history (commit before "Remove a third-party lotus watermark").
 #
 # Not done: THSN112 — the mark there is too faint to locate with confidence.
-# Not done: the 13 photos that are screenshots of another online store
-# (heart icon, slideshow arrows); see the photo review list.
 
 THSA004
 THSB023
@@ -41,3 +39,21 @@ THSN149     # two lotus marks, one in each stacked panel
 THSN151
 THSR015
 THSR016
+
+# Screenshots of another online store: its wishlist heart, slideshow arrows,
+# dots and slider bar removed the same way.
+
+THSE064     # slider bar along the bottom edge — trimmed 4px
+THSE081
+THSE127
+THSE130
+THSE132
+THSE136
+THSE139
+THSN069
+THSN075     # lotus tips at the bottom edge — trimmed 20px; a faint panel outline behind the pearls is left
+THSN088
+THSN089
+THSN091
+THSN147
+THSN149     # heart, in addition to the two lotus marks above

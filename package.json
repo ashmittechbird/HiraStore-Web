@@ -14,7 +14,8 @@
     "import-sheet": "node scripts/import-sheet.mjs",
     "test:e2e": "node scripts/e2e-test.mjs",
     "photos:audit": "node scripts/audit-photos.mjs",
-    "photos:extract": "node scripts/extract-photos.mjs"
+    "photos:extract": "node scripts/extract-photos.mjs",
+    "photos:import": "node scripts/import-photos.mjs"
   },
   "dependencies": {
     "react": "^18.3.0",
@@ -29,6 +30,7 @@
     "@vitejs/plugin-basic-ssl": "^1.2.0",
     "@vitejs/plugin-react": "^4.3.1",
     "exceljs": "^4.4.0",
+    "sharp": "^0.34.5",
     "typescript": "^5",
     "vite": "^6.4.3"
   },

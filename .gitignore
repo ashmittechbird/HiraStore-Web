@@ -155,3 +155,6 @@ sessions.json
 *AGENTS.md
 *CLAUDE.md
 .trae/
+
+# Contact sheets written by scripts/import-photos.mjs for review
+.photo-review/

@@ -121,8 +121,14 @@ const SEED_COUPONS: DemoCoupon[] = [
 function catalogSignature(): string {
   const items = catalog as DemoItem[];
   let h = 0;
+  // Every field, not just name and price. This used to hash only
+  // name + item_name + standard_rate, so a returning visitor's saved copy
+  // never picked up a category change, a new photo, a product hidden for a
+  // price tag, or a gallery — all of which leave those three untouched. In an
+  // outage that saved copy is what the shop is browsed from, so it must not
+  // go stale.
   for (const it of items) {
-    const s = `${it.name}${it.item_name}${it.standard_rate}`;
+    const s = JSON.stringify(it);
     for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
   }
   return `${items.length}:${h >>> 0}`;

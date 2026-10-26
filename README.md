@@ -189,6 +189,31 @@ picture is missing or damaged. It validates itself against the photos already
 known to be correct and refuses to write if fewer than 90% of them agree — a
 photo on the wrong product is worse than no photo. Pass `--write` to apply.
 
+#### Full-resolution photos
+
+The workbook only holds cell-sized thumbnails — the median was 271px wide,
+stretched 2–4× on a phone, which is why the shop looked soft. Real camera
+originals replace them with `npm run photos:import`:
+
+```bash
+npm run photos:import -- <folder of originals>                  # match + contact sheets
+npm run photos:import -- <folder> --approve <list.txt>          # write the approved ones
+npm run photos:import -- <folder> --approve <list.txt> --aspect 3:4   # crop to card shape
+```
+
+Originals are matched to products by what they show, since camera files are
+named `IMG_5103.JPG`, not by product code. Nothing is written on a guess: the
+first run only scores matches and renders side-by-side sheets (original |
+current photo) for review, and only the `CODE  filename` lines in the approval
+file are written. Each is resized to 1600px, rotated per EXIF, and stripped of
+metadata — phone photos carry GPS coordinates. Use `--aspect 3:4` for a
+landscape original whose piece sits off-centre, or the portrait shop card will
+crop it in half.
+
+Extra angles go beside the main photo as `<CODE>.2.jpeg`, `<CODE>.3.jpeg`, …
+and appear in that product's gallery after the next `npm run catalog`. A dot,
+not a dash — the sheet has real codes like `THSC001-2`.
+
 `npm run photos:audit` is the stronger check and the one to run after any
 photo change. It hashes the bytes rather than comparing dimensions, so it can
 say which product each picture actually is:

@@ -32,6 +32,24 @@ for (const f of fs.readdirSync(path.join(root, 'public/catalog_images'))) {
 }
 
 /**
+ * Extra gallery photos: THSN023.2.jpeg, THSN023.3.jpeg, … sit beside the main
+ * THSN023.jpeg and are shown after it on the product page. Drop the file in,
+ * rebuild — no other bookkeeping.
+ *
+ * A dot, not a dash: the sheet has real codes like "THSC001-2", so a dash
+ * suffix would one day hand a product another product's photo. Product codes
+ * never contain a dot.
+ */
+function galleryFor(id) {
+  const out = [];
+  for (let n = 2; n <= 9; n++) {
+    const f = imageFiles.get(`${id}.${n}`);
+    if (f) out.push(f);
+  }
+  return out;
+}
+
+/**
  * Pixel dimensions, read from the file header — JPEG SOF marker or PNG IHDR.
  *
  * No dependency: this runs in the catalogue build, and pulling an image library
@@ -311,6 +329,9 @@ for (const row of sheet) {
     item_group: category,
     standard_rate: Math.round(price * 100) / 100,
     image: file,
+    // Only present when there is something to show, so the seeder can tell
+    // "no extra photos here" apart from "clear the gallery an admin set".
+    ...(galleryFor(id).length ? { custom_item_images: JSON.stringify([file, ...galleryFor(id)]) } : {}),
     custom_material: deriveMaterial(description),
     custom_short_description: description,
     weight_per_unit: parseWeight(row.weight_raw),

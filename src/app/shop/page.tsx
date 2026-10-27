@@ -3,7 +3,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { getStorefrontItems } from '@/lib/backend';
-import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
+import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId, cardSrcSet, CARD_SIZES } from '@/lib/api';
 import { categoriesOf, ACCESSORY_PREFIX } from '@/lib/categories';
 import { asset } from '@/lib/config';
 
@@ -421,6 +421,8 @@ function ShopContent() {
                             <img
                               key={i}
                               src={src}
+                              srcSet={cardSrcSet(src)}
+                              sizes={CARD_SIZES}
                               alt={i === 0 ? name : `${name} — view ${i + 1}`}
                               loading="lazy"
                               onError={onImgError}
@@ -428,7 +430,7 @@ function ShopContent() {
                           ))}
                         </div>
                       ) : (
-                        <img src={img} alt={name} loading="lazy" onError={onImgError} />
+                        <img src={img} srcSet={cardSrcSet(img)} sizes={CARD_SIZES} alt={name} loading="lazy" onError={onImgError} />
                       )}
                       {cardImages.length > 1 && (
                         <span className="card-swipe-dots" data-active="0" aria-hidden="true">

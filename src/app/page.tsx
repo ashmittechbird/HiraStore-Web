@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId } from '@/lib/api';
+import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId, cardSrcSet, CARD_SIZES } from '@/lib/api';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { getHomepageConfig, getStorefrontItems } from '@/lib/backend';
@@ -129,7 +129,7 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
         {/* Photo and buttons together — see .product-media in globals.css. */}
         <div className="product-media">
         <div className="product-img-wrap">
-          <img src={imgSrc} alt={name} loading="lazy" />
+          <img src={imgSrc} srcSet={cardSrcSet(imgSrc)} sizes={CARD_SIZES} alt={name} loading="lazy" />
           {cartQty > 0
             ? <span className="card-cart-badge"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg> {cartQty}</span>
             : badge && <span className="product-badge">{badge}</span>

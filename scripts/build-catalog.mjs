@@ -500,4 +500,18 @@ function writePhotoVersions() {
   }
   fs.writeFileSync(path.join(root, 'src/data/photo-versions.json'), JSON.stringify(versions));
   console.log(`  photo versions: ${Object.keys(versions).length}`);
+
+  // Pixel widths of every photo that has a small card-size copy beside it
+  // (<CODE>.sm.jpeg), so the shop can offer both in a srcset with honest
+  // width descriptors — the browser picks by them.
+  const widths = {};
+  for (const f of Object.keys(versions)) {
+    const m = f.match(/^(.+)\.sm\.jpe?g$/i);
+    if (!m || !versions[`${m[1]}.jpeg`]) continue;
+    const full = imageSize(path.join(dir, `${m[1]}.jpeg`));
+    const small = imageSize(path.join(dir, f));
+    if (full && small) widths[`${m[1]}.jpeg`] = [full.w, small.w];
+  }
+  fs.writeFileSync(path.join(root, 'src/data/photo-widths.json'), JSON.stringify(widths));
+  console.log(`  card-size copies: ${Object.keys(widths).length}`);
 }

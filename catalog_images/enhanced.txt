@@ -1,0 +1,16 @@
+# Product photos upscaled with Real-ESRGAN under colour and design locks
+# (scripts/faithful-sr.py). Each has a card-size copy <CODE>.sm.jpeg.
+#
+# Colour comes only from the original; AI detail is capped where the original
+# is smooth; the result is back-projected until it reproduces the original
+# when scaled down. Measured against the original at shopper scale
+# (CIE Lab, 1.5px smoothing): mean dE about 1 — the threshold of visibility.
+#
+# Homepage first (Oct 2026). The remaining low-resolution products follow.
+
+THSE082
+THSE083
+THSE089
+THSE090
+THSN091
+THSV001     # photo also shows a hanging barcode tag and appears rotated 90 degrees

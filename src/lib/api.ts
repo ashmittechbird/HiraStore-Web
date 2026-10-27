@@ -1,6 +1,7 @@
 // Single source of truth for where product photos live — see lib/config.ts.
 import { CATALOG_BASE } from './config';
 import photoVersions from '@/data/photo-versions.json';
+import photoWidths from '@/data/photo-widths.json';
 
 /**
  * URL of a bundled product photo, carrying a fingerprint of its contents.
@@ -15,6 +16,27 @@ function catalogUrl(file: string): string {
   const v = (photoVersions as Record<string, string>)[file];
   return `${CATALOG_BASE}/${file}${v ? `?v=${v}` : ''}`;
 }
+
+/**
+ * srcset for a product photo shown in a grid card, or undefined.
+ *
+ * Enhanced photos come in two sizes: <CODE>.jpeg (up to 1200px, for the
+ * product page) and <CODE>.sm.jpeg (up to 600px). A shop card is ~165-280 CSS
+ * px wide, so on any screen the small copy is enough — and a grid of 24 then
+ * downloads a fraction of the bytes. Widths come from photo-widths.json,
+ * written by the catalogue build; a photo without a small copy gets no srcset
+ * and the browser simply uses src.
+ */
+export function cardSrcSet(src: string): string | undefined {
+  const m = src.match(/\/catalog_images\/([^/?]+)\.jpe?g(?:\?|$)/i);
+  if (!m) return undefined;
+  const widths = (photoWidths as Record<string, number[]>)[`${m[1]}.jpeg`];
+  if (!widths || widths.length < 2) return undefined;
+  return `${catalogUrl(`${m[1]}.sm.jpeg`)} ${widths[1]}w, ${src} ${widths[0]}w`;
+}
+
+/** sizes attribute matching the shop grid: two columns on phones, ~300px otherwise. */
+export const CARD_SIZES = '(max-width: 768px) 50vw, 300px';
 
 // Frappe file URLs (/files/...) are same-origin: the Vite proxy handles them in
 // development, api/[...path].js on Vercel.

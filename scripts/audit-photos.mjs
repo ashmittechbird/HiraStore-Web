@@ -142,6 +142,7 @@ const missing = [];
 let ok = 0;
 
 for (const [code, file] of [...onDisk].sort()) {
+  if (/\.sm$/.test(code) || /\.\d$/.test(code)) continue; // card-size copies and gallery extras are derived, not catalogue photos
   const buf = fs.readFileSync(path.join(dir, file));
   const h = sha(buf);
   const want = byCode.get(code);

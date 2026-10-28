@@ -29,6 +29,9 @@ THSA021     # red/white sticker on the clutch
 THSNC001    # barcode tag "13-3362 / 20,800"
 THSNC003    # "P2" barcode tag resting on the marble, lower right
 THSP006     # "PZ" tag, top left
+THSV001     # barcode tag hanging off the cuff (found Oct 2026)
+THSN061     # paper tag on a string, top right (Drive original)
+THSN063     # paper tag on a string beside the necklace (Drive original)
 
 # ── barcode / price stickers ────────────────────────────────────────────────
 THSN026     # "PZ" tag on the chain
@@ -47,21 +50,6 @@ THSN051     # tag, top right
 
 # ── supplier codes and wholesale weight overlays burned into the image ──────
 THSE091     # "925 Silver", "TT - BEUW", "SC 14.98"
-THSE092     # "BWOO", "Wt:51.98"
-THSE093     # "1.5 inch", "Wt: 16.98"
-THSE094     # "925 Silver", "I - AGETU", "SC 49.55"
-THSE095     # "BQRQY", "Wt:11.65"
-THSN096     # "AIIP", "Wt:44.25"
-THSN097     # "BEYRW", "Wt: 35.97"
-THSN099     # "AEQYQ", "Wt: 78.35"
-THSN100     # "BQPUO", "Wt: 70.55"
-THSN101     # "Wt:96.25"
-THSN102     # "BYQUY", "Wt:72.98", "12 inch"
-THSP010     # "925 Silver", "WE - BYEWT", "SC 8.45"
-THSP011     # "AQPEUP", "Wt: 32.65"
-THSP012     # "Happy Ganesh Chaturthi" supplier promo banner
-THSP013     # "925 Silver", "WE - BYIWT", "SC 34.98"
-THSP014     # "AUIIY", "Wt: 15.25"
 
 # THSN085 is corrected in catalog_images/corrections.json rather than hidden:
 # its photograph really is its own (verified byte for byte against the workbook
@@ -73,3 +61,7 @@ THSP014     # "AUIIY", "Wt: 15.25"
 # of earrings. Its real photograph carries a supplier watermark, so it is listed
 # above and the correction has been withdrawn: it is a Nagas Necklace, as the
 # sheet always said.
+
+# Supplier codes, sizes and weights were removed from 15 of the 16 photos in the
+# overlay section (Oct 2026) — see catalog_images/watermark-removed.txt. THSE091
+# stays: its earrings sit in front of the "925 Silver" block.

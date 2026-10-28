@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useFrappeAuth, useFrappeGetDoc } from '@/lib/frappe';
 import { getMyOrders, listCoupons } from '@/lib/backend';
 import { useWishlist } from '@/store/wishlist';

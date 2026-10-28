@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId, cardSrcSet, CARD_SIZES } from '@/lib/api';
 import { useCart } from '@/store/cart';
@@ -223,8 +223,6 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
     </>
   );
 }
-
-const HP_FIELDS = ['name','item_name','item_group','standard_rate','image','custom_item_images','weight_per_unit','disabled'];
 
 function readIgPosts(): string[] {
   try {

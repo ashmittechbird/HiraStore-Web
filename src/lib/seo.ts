@@ -107,7 +107,6 @@ export function useSeo(seo: Seo | null) {
       s.textContent = JSON.stringify(seo.jsonLd).replace(/</g, '\\u003c');
       document.head.appendChild(s);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 }
 

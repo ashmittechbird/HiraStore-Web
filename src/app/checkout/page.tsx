@@ -8,14 +8,13 @@ import { validateCoupon } from '@/lib/backend';
 interface FrappeUser { full_name?: string; email?: string; }
 
 export default function CheckoutPage() {
-  const { items, totalPrice } = useCart();
+  const { items } = useCart();
   const navigate = useNavigate();
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', address: '', city: '', state: '', zip: '' });
   const [coupon, setCoupon] = useState('');
   const [discount, setDiscount] = useState(0);
   const [couponMsg, setCouponMsg] = useState('');
   const [appliedCode, setAppliedCode] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   // Buy Now: single item bypassing cart
@@ -185,7 +184,7 @@ export default function CheckoutPage() {
             </div>
 
             {error && <div className="form-error">{error}</div>}
-            <button type="submit" className="btn-primary" disabled={loading}>
+            <button type="submit" className="btn-primary">
               Continue to Payment →
             </button>
             <p className="security-note">

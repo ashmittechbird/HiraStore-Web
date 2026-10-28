@@ -19,10 +19,10 @@ import { whatsappLink } from '@/lib/contact';
  * jewellery, not claims about this shop, so they are safe to state plainly.
  *
  * POLICY below is the part that is neither: commitments only the store can
- * make. The 30-day returns window and the one-year warranty are confirmed by
- * the owner (Oct 2026) and match what every product page promises. The
- * dispatch and delivery times are still conservative estimates. Change them
- * here and both the page and its summary update together — and keep
+ * make. All of them — the 30-day returns window, the one-year warranty, and
+ * the dispatch and delivery times — are confirmed by the owner (Oct 2026), and
+ * match what every product page promises. Change them here and both the page
+ * and its summary update together — and keep
  * RETURN_DAYS in lib/structuredData.mjs in step, which tells Google.
  */
 const POLICY = {

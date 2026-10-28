@@ -4,6 +4,11 @@ import { getStorefrontItem } from '@/lib/backend';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory } from '@/lib/api';
+import { categoryHref } from '@/lib/categories';
+import { useSeo, type Seo } from '@/lib/seo';
+import {
+  absoluteUrl, breadcrumbLd, displayCategory, productDescription, productLd, productTitle,
+} from '@/lib/structuredData.mjs';
 
 interface Product {
   name?: string; item_name?: string; item_group?: string; category?: string;
@@ -12,6 +17,37 @@ interface Product {
   custom_material?: string; custom_short_description?: string;
   weight_per_unit?: number; weight?: string | number;
   [key: string]: unknown;
+}
+
+function productSeo(item: Product, code: string): Seo {
+  const name = itemName(item as Parameters<typeof itemName>[0]);
+  const group = itemCategory(item as Parameters<typeof itemCategory>[0]);
+  const price = Number(itemPrice(item as Parameters<typeof itemPrice>[0])) || 0;
+  const seoItem = {
+    name: code, item_name: name, item_group: group, standard_rate: price,
+    custom_short_description: item.custom_short_description,
+    custom_material: item.custom_material,
+    weight_per_unit: Number(item.weight_per_unit) || 0,
+  };
+  const images = itemImages(item as Parameters<typeof itemImages>[0]).map(absoluteUrl);
+  const path = `/product/${encodeURIComponent(code)}`;
+  return {
+    title: productTitle(seoItem),
+    description: productDescription(seoItem),
+    path,
+    image: images[0],
+    type: 'product',
+    meta: { 'product:price:amount': price.toFixed(2), 'product:price:currency': 'USD' },
+    jsonLd: [
+      productLd(seoItem, images),
+      breadcrumbLd([
+        { name: 'Home', path: '/' },
+        { name: 'Shop', path: '/shop' },
+        ...(group ? [{ name: displayCategory(group), path: categoryHref(group) }] : []),
+        { name, path },
+      ]),
+    ],
+  };
 }
 
 function stripHtml(html: string): string {
@@ -34,6 +70,12 @@ export default function ProductPage() {
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [id]);
+  const code = decodeURIComponent(id);
+  useSeo(item
+    ? productSeo(item, item.name || item.product_id || code)
+    : loading
+      ? null
+      : { title: 'Product not found', noindex: true });
   const [activeIdx, setActiveIdx] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const [qty, setQty] = useState(1);

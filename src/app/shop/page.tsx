@@ -6,6 +6,8 @@ import { getStorefrontItems } from '@/lib/backend';
 import { itemImage, itemImages, itemPrice, itemName, itemCategory, itemId, cardSrcSet, CARD_SIZES } from '@/lib/api';
 import { categoriesOf, ACCESSORY_PREFIX } from '@/lib/categories';
 import { asset } from '@/lib/config';
+import { useSeo } from '@/lib/seo';
+import { breadcrumbLd, displayCategory } from '@/lib/structuredData.mjs';
 
 const SITE_IMAGES = asset('site-images');
 
@@ -72,7 +74,7 @@ function itemWeight(item: Product): string {
 }
 
 function ShopContent() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const initialCat = searchParams.get('cat') || 'All';
   const initialSearch = searchParams.get('search') || '';
 
@@ -88,7 +90,42 @@ function ShopContent() {
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, []);
+  const urlCat = searchParams.get('cat') || '';
+  const urlSearch = searchParams.get('search') || '';
+  const catCount = urlCat ? allProducts.filter(p => itemCategory(p as Parameters<typeof itemCategory>[0]) === urlCat).length : 0;
+  // Search results are thin, endlessly varied pages; Google asks sites not to
+  // index them. Category pages are the collections people search for.
+  useSeo(urlSearch
+    ? { title: `Search results for "${urlSearch}"`, noindex: true }
+    : urlCat
+      ? {
+          title: `${displayCategory(urlCat)} | Handcrafted Jewelry`,
+          description: `Shop ${catCount ? catCount + ' ' : ''}handcrafted ${displayCategory(urlCat).toLowerCase()} at The Hira Store — silver and fine jewelry made for every day. Free US shipping over $100.`,
+          path: `/shop?cat=${encodeURIComponent(urlCat)}`,
+          jsonLd: breadcrumbLd([
+            { name: 'Home', path: '/' },
+            { name: 'Shop', path: '/shop' },
+            { name: displayCategory(urlCat), path: `/shop?cat=${encodeURIComponent(urlCat)}` },
+          ]),
+        }
+      : {
+          title: 'Shop All Jewelry',
+          description: `Browse ${allProducts.length || 'all'} handcrafted pieces — earrings, necklaces, bangles & bracelets, pendants, rings and more. Free US shipping over $100.`,
+          path: '/shop',
+          jsonLd: breadcrumbLd([{ name: 'Home', path: '/' }, { name: 'Shop', path: '/shop' }]),
+        });
   const [category, setCategory] = useState(initialCat);
+
+  // The tabs write the category into the address bar, so a filtered view can
+  // be shared or bookmarked and Back returns to the previous one.
+  function chooseCategory(cat: string) {
+    setCategory(cat);
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      if (cat === 'All') next.delete('cat'); else next.set('cat', cat);
+      return next;
+    });
+  }
   const [search, setSearch] = useState(initialSearch);
   const [sort, setSort] = useState('default');
   const navigate = useNavigate();
@@ -323,12 +360,12 @@ function ShopContent() {
           stay on one line and the long tail is one tap away. */}
       <div className="shop-filters" role="group" aria-label="Filter by category">
         <button type="button" className={`filter-btn${category === 'All' ? ' active' : ''}`}
-          onClick={() => { setCategory('All'); setAccRowOpen(false); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
+          onClick={() => { chooseCategory('All'); setAccRowOpen(false); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
           All
         </button>
         {filterMains.map(cat => (
           <button type="button" key={cat} className={`filter-btn${category === cat ? ' active' : ''}`} data-cat={cat}
-            onClick={() => { setCategory(cat); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
+            onClick={() => { chooseCategory(cat); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
             {cat}
           </button>
         ))}
@@ -356,7 +393,7 @@ function ShopContent() {
         <div className="shop-filters shop-filters-sub" role="group" aria-label="Filter by accessory type">
           {filterAccessories.map(cat => (
             <button type="button" key={cat} className={`filter-btn filter-btn-sm${category === cat ? ' active' : ''}`} data-cat={cat}
-              onClick={() => { setCategory(cat); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
+              onClick={() => { chooseCategory(cat); window.scrollTo({ top: 300, behavior: 'smooth' }); }}>
               {cat.slice(ACCESSORY_PREFIX.length)}
             </button>
           ))}
@@ -383,7 +420,7 @@ function ShopContent() {
             <div className="empty-state-icon"><svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="#005969" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
             <h3>No products found</h3>
             <p>Try a different search term or category filter.</p>
-            <button type="button" onClick={() => { setCategory('All'); setSearch(''); }}>Clear Filters</button>
+            <button type="button" onClick={() => { chooseCategory('All'); setSearch(''); }}>Clear Filters</button>
           </div>
         ) : (
           <>
@@ -466,7 +503,7 @@ function ShopContent() {
                     </div>
                     <div className="product-info">
                       {metaLine && <p className="product-meta">{metaLine}</p>}
-                      <h3 className="product-name">{name}</h3>
+                      <h3 className="product-name"><Link to={`/product/${encodeURIComponent(id)}`} className="card-link" onClick={e => e.stopPropagation()}>{name}</Link></h3>
                       <p className="product-code">{id}</p>
                       <div className="product-price">
                         <span className="price-current">{price > 0 ? `$${price.toLocaleString('en-US')}` : 'Price on request'}</span>

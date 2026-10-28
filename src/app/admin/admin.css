@@ -44,7 +44,8 @@
 .sb-nav{flex:1;padding:20px 12px;overflow-y:auto}
 .sb-section{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.25);padding:0 10px;margin:18px 0 8px}
 .sb-section:first-child{margin-top:0}
-.sb-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;font-size:13px;font-weight:400;color:rgba(255,255,255,.55);transition:.15s;cursor:pointer;margin-bottom:2px;position:relative}
+.sb-item{width:100%;background:none;border:0;font-family:inherit;text-align:left;display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;font-size:13px;font-weight:400;color:rgba(255,255,255,.55);transition:.15s;cursor:pointer;margin-bottom:2px;position:relative}
+.sb-item:focus-visible{outline:2px solid #007a8c;outline-offset:2px}
 .sb-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8)}
 .sb-item.active{background:rgba(0,89,105,.15);color:#007a8c}
 .sb-item.active::before{content:'';position:absolute;left:-12px;top:50%;transform:translateY(-50%);width:3px;height:20px;background:#005969;border-radius:0 2px 2px 0}

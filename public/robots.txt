@@ -1,17 +1,30 @@
 # robots.txt for The Hira Store
+#
+# Every crawler, search and AI alike, is welcome to the catalogue: being found
+# in ChatGPT, Claude, Perplexity or Gemini answers is as much a storefront now
+# as a Google result. What is shut off is the private side of the shop — the
+# admin panel, a shopper's cart and account, checkout — and search-result
+# pages, which are endless thin variations of /shop.
+#
+# Paths are site-root relative: the store is served at /.
+
 User-agent: *
 Allow: /
-
-# Nothing here is useful in search results, and the admin panel should not be
-# indexed at all. Paths are site-root relative: the store is served at /.
 Disallow: /admin
+Disallow: /app
+Disallow: /api/
+Disallow: /cart
+Disallow: /checkout
 Disallow: /payment
 Disallow: /order-success
-Disallow: /checkout
-Disallow: /cart
 Disallow: /account
 Disallow: /login
 Disallow: /signup
-Disallow: /api/
+Disallow: /wishlist
+Disallow: /update-password
+Disallow: /*?search=
+Disallow: /*&search=
 
 Sitemap: https://hirastore.techbirdit.in/sitemap.xml
+
+# A plain-text guide to the store for AI assistants: https://hirastore.techbirdit.in/llms.txt

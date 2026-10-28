@@ -1,13 +1,117 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useFrappeAuth, useBackendMode } from '@/lib/frappe';
-import { isDegraded } from '@/lib/backend';
+import { call, isDegraded } from '@/lib/backend';
 import { DEMO_CREDENTIALS } from '@/lib/demoDb';
 import { useWishlist } from '@/store/wishlist';
 import { safeReturnPath } from '@/lib/returnPath';
 
 const SI = `${import.meta.env.BASE_URL}site-images`;
 const HIRA_LOGO = `${import.meta.env.BASE_URL}site-images/hira-logo.png`;
+
+/**
+ * The two-panel layout every sign-in screen shares: photo on the left, form on
+ * the right. Also used by /update-password, where the links in Frappe's
+ * welcome and password-reset emails land.
+ */
+export function AuthShell({ title, sub, children }: { title: string; sub: string; children: React.ReactNode }) {
+  return (
+    <div className="hira-auth">
+      {/* LEFT — hero panel */}
+      <aside className="ha-hero" aria-hidden="true">
+        <img className="ha-hero-img" src={`${SI}/hero-necklace-1.jpg`} alt="" />
+        <div className="ha-hero-overlay" />
+        <div className="ha-hero-content">
+          <div className="ha-monogram">H</div>
+          <p className="ha-eyebrow">The Hira Store</p>
+          <h2 className="ha-tagline">Everyday Elegance<br />Redefined.</h2>
+          <p className="ha-blurb">Handcrafted demi-fine jewelry, made for the moments that matter.</p>
+        </div>
+      </aside>
+
+      {/* RIGHT — form */}
+      <div className="ha-form-wrap">
+        <Link to="/" className="ha-back" aria-label="Back to store">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Back to Store
+        </Link>
+
+        <div className="ha-form-inner">
+          <img className="ha-logo" src={HIRA_LOGO} alt="The Hira Store" />
+          <h1 className="ha-title">{title}</h1>
+          <p className="ha-sub">{sub}</p>
+          {children}
+        </div>
+      </div>
+
+      <style>{styles}</style>
+    </div>
+  );
+}
+
+export function AuthError({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="ha-error" role="alert">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {children}
+    </div>
+  );
+}
+
+/**
+ * "Forgot password?": asks Frappe to email a reset link. Frappe answers the
+ * same way whether or not the address has an account, so the page does too —
+ * it must not become a way to find out who shops here.
+ */
+function ForgotPassword({ initialEmail, onBack }: { initialEmail: string; onBack: () => void }) {
+  const [email, setEmail] = useState(initialEmail.includes('@') ? initialEmail : '');
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    if (!/.+@.+\..+/.test(email.trim())) { setError('Enter the email address you signed up with'); return; }
+    setLoading(true);
+    try {
+      await call('frappe.core.doctype.user.user.reset_password', { user: email.trim() });
+      setSent(true);
+    } catch (err: unknown) {
+      setError((err as Error).message || 'We could not send the link. Please try again.');
+    }
+    setLoading(false);
+  }
+
+  if (sent) {
+    return (
+      <>
+        <p className="ha-note" role="status">
+          If <strong>{email.trim()}</strong> has an account with us, a link to choose a new
+          password is on its way. It can take a few minutes — check your spam folder too.
+        </p>
+        <button type="button" className="ha-submit" onClick={onBack}>Back to sign in</button>
+      </>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="ha-form">
+      <label className="ha-field">
+        <span>Email</span>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+          placeholder="your@email.com" autoComplete="email" autoFocus />
+      </label>
+      {error && <AuthError>{error}</AuthError>}
+      <button type="submit" className="ha-submit" disabled={loading}>
+        {loading ? <><span className="ha-spin" />Sending…</> : 'Send reset link'}
+      </button>
+      <button type="button" className="ha-link" onClick={onBack}>Back to sign in</button>
+    </form>
+  );
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -22,6 +126,7 @@ export default function LoginPage() {
   const mode = useBackendMode();
   const degraded = mode === 'demo' && isDegraded();
   const signupHref = location.search ? `/signup${location.search}` : '/signup';
+  const [forgot, setForgot] = useState(() => new URLSearchParams(location.search).has('forgot'));
 
   useEffect(() => {
     if (currentUser) navigate(safeReturnPath(location.search), { replace: true });
@@ -42,34 +147,16 @@ export default function LoginPage() {
     setLoading(false);
   }
 
+  if (forgot) {
+    return (
+      <AuthShell title="Reset your password" sub="We'll email you a link to choose a new one.">
+        <ForgotPassword initialEmail={email} onBack={() => setForgot(false)} />
+      </AuthShell>
+    );
+  }
+
   return (
-    <div className="hira-auth">
-      {/* LEFT — hero panel */}
-      <aside className="ha-hero" aria-hidden="true">
-        <img className="ha-hero-img" src={`${SI}/hero-necklace-1.jpg`} alt="" />
-        <div className="ha-hero-overlay" />
-        <div className="ha-hero-content">
-          <div className="ha-monogram">H</div>
-          <p className="ha-eyebrow">The Hira Store</p>
-          <h2 className="ha-tagline">Everyday Elegance<br />Redefined.</h2>
-          <p className="ha-blurb">Handcrafted demi-fine jewelry, made for the moments that matter.</p>
-        </div>
-      </aside>
-
-      {/* RIGHT — form */}
-      <main className="ha-form-wrap">
-        <Link to="/" className="ha-back" aria-label="Back to store">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-          </svg>
-          Back to Store
-        </Link>
-
-        <div className="ha-form-inner">
-          <img className="ha-logo" src={HIRA_LOGO} alt="The Hira Store" />
-          <h1 className="ha-title">Welcome Back</h1>
-          <p className="ha-sub">Sign in to continue your story with Hira.</p>
-
+    <AuthShell title="Welcome Back" sub="Sign in to continue your story with Hira.">
           {/* Only a genuinely backend-less deploy gets the demo shortcut. On a
               live shop whose bench is down, offering a published admin password
               would be alarming and useless — sign-in is refused in that state
@@ -130,12 +217,11 @@ export default function LoginPage() {
               </div>
             </label>
 
-            {error && (
-              <div className="ha-error" role="alert">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                {error}
-              </div>
-            )}
+            <button type="button" className="ha-link ha-forgot" onClick={() => setForgot(true)}>
+              Forgot password?
+            </button>
+
+            {error && <AuthError>{error}</AuthError>}
 
             <button type="submit" className="ha-submit" disabled={loading}>
               {loading ? <><span className="ha-spin" />Signing in…</> : 'Sign In'}
@@ -145,11 +231,7 @@ export default function LoginPage() {
           <p className="ha-footer">
             New here? <Link to={signupHref}>Create an account</Link>
           </p>
-        </div>
-      </main>
-
-      <style>{styles}</style>
-    </div>
+    </AuthShell>
   );
 }
 
@@ -307,6 +389,19 @@ const styles = `
     border-radius: 50%; animation: spin .7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ha-link {
+    background: none; border: 0; padding: 0; cursor: pointer;
+    font-family: inherit; font-size: 12.5px; font-weight: 500; color: #005969;
+    align-self: center;
+  }
+  .ha-link:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .ha-forgot { align-self: flex-end; margin-top: -8px; }
+  .ha-note {
+    margin: 0 0 18px; padding: 12px 14px; border-radius: 9px;
+    background: #f2fafb; border: 1px solid #cfe6ea;
+    font-size: 13px; line-height: 1.6; color: #25454a;
+  }
 
   .ha-footer {
     margin-top: 24px;

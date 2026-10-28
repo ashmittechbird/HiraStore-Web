@@ -115,7 +115,7 @@ export default function HelpPage() {
           </div>
         </nav>
 
-        <main className="help-main">
+        <div className="help-main">
           {/* ── Shipping ─────────────────────────────────────────────────── */}
           <section id="shipping" className="help-section">
             <h2>Shipping</h2>
@@ -289,7 +289,7 @@ export default function HelpPage() {
               <Link className="help-btn ghost" to="/shop">Back to the shop</Link>
             </div>
           </div>
-        </main>
+        </div>
       </div>
 
       <style>{styles}</style>

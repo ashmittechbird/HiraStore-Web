@@ -99,7 +99,7 @@ export default function WishlistPage() {
                   </div>
                   <div className="product-info">
                     <p className="product-meta">{item.category}</p>
-                    <h3 className="product-name">{item.name}</h3>
+                    <h3 className="product-name"><Link to={`/product/${encodeURIComponent(item.id)}`} className="card-link" onClick={e => e.stopPropagation()}>{item.name}</Link></h3>
                     <div className="product-price">
                       <span className="price-current">{priceStr}</span>
                       <div className="product-rating"><span className="stars">★★★★★</span></div>

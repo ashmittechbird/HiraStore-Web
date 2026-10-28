@@ -1,15 +1,40 @@
 # The Hira Store
 
-> Handcrafted silver jewelry designed for everyday elegance. Earrings, necklaces, rings, bracelets, and gift sets.
+> Handcrafted silver and fine jewelry made for everyday wear — earrings, necklaces, bangles and bracelets, pendants, rings and accessories. 252 pieces from $15 to $1,100, shipped from San Jose, California.
 
-## About
-The Hira Store is an online jewelry brand founded in 2023, offering premium silver and demi-fine jewelry. Each piece is crafted by artisans using ethically sourced materials. The store ships from San Jose, CA and offers free shipping on orders over $100.
+Prices are in US dollars. Most pieces are one of a kind: once sold, a piece leaves the shop.
 
-## Pages
-- [Shop All Jewelry](/shop): Browse the full catalog of 224 handcrafted pieces with search, filters, and sorting.
-- [Our Story](/about): The brand story, values, and craftsmanship process.
-- [Homepage](/): Featured collections, new arrivals, and bestsellers.
+## Policies
+- Shipping: free within the US on orders of $100 or more; a flat $5 below that. Packed by hand and dispatched within 2-3 working days.
+- Returns: damaged or wrong items are repaired, replaced or refunded. Unworn pieces in their original packaging can be returned; worn earrings and made-to-order pieces cannot. Details: https://hirastore.techbirdit.in/help/
+- Payment: by card at checkout.
+- Video call: shoppers can book a video call to see pieces live before buying.
 
 ## Contact
 - Email: info@Thehirastore.com
-- Location: San Jose, CA
+- Instagram: https://www.instagram.com/thehirastore/
+- Studio: San Jose, California, USA
+
+## Pages
+- [Shop all jewelry](https://hirastore.techbirdit.in/shop/): the full catalogue with search, filters and sorting
+- [Our story](https://hirastore.techbirdit.in/about/): who we are and how the pieces are made
+- [Shipping, returns & size guide](https://hirastore.techbirdit.in/help/): ring, necklace and bangle size charts
+- [Every piece on sale](https://hirastore.techbirdit.in/llms-full.txt): name, price, weight and link for each product
+
+## Collections
+- [Earrings](https://hirastore.techbirdit.in/shop/?cat=Earrings): 95 pieces, $15–$295
+- [Necklaces](https://hirastore.techbirdit.in/shop/?cat=Necklaces): 80 pieces, $50–$950
+- [Bangles & Bracelets](https://hirastore.techbirdit.in/shop/?cat=Bangles%20%26%20Bracelets): 17 pieces, $65–$595
+- [Pendants](https://hirastore.techbirdit.in/shop/?cat=Pendants): 16 pieces, $35–$255
+- [Ring](https://hirastore.techbirdit.in/shop/?cat=Accessories%20-%20Ring): 14 pieces, $30–$135
+- [Articles](https://hirastore.techbirdit.in/shop/?cat=Articles): 13 pieces, $50–$750
+- [Toe Rings](https://hirastore.techbirdit.in/shop/?cat=Accessories%20-%20Toe%20Rings): 4 pieces, $25
+- [Ear Cuffs](https://hirastore.techbirdit.in/shop/?cat=Accessories%20-%20Ear%20Cuffs): 2 pieces, $15–$30
+- [Hair Accessories](https://hirastore.techbirdit.in/shop/?cat=Hair%20Accessories): 2 pieces, $155–$1,100
+- [Hip Belts](https://hirastore.techbirdit.in/shop/?cat=Accessories%20-%20Hip%20Belts): 2 pieces, $600–$725
+- [Sets](https://hirastore.techbirdit.in/shop/?cat=Sets): 2 pieces, $60–$225
+- [Anklets](https://hirastore.techbirdit.in/shop/?cat=Accessories%20-%20Anklets): 1 piece, $75
+- [Bags](https://hirastore.techbirdit.in/shop/?cat=Accessories%20-%20Bags): 1 piece, $500
+- [Charms](https://hirastore.techbirdit.in/shop/?cat=Accessories%20-%20Charms): 1 piece, $25
+- [Waist Keychain](https://hirastore.techbirdit.in/shop/?cat=Accessories%20-%20Waist%20Keychain): 1 piece, $345
+- [Watch Sliders](https://hirastore.techbirdit.in/shop/?cat=Accessories%20-%20Watch%20Sliders): 1 piece, $40

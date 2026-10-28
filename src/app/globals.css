@@ -69,3 +69,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   /* Taller than the desktop 3:4, using the height the buttons gave back. */
   .product-card .product-img-wrap { aspect-ratio: 4/5; }
 }
+
+/* Product names in grid cards are real links (keyboard, screen readers,
+   crawlers) but look exactly as the plain heading did. */
+.card-link { color: inherit; text-decoration: none; }
+.card-link:focus-visible { outline: 2px solid #005969; outline-offset: 2px; }

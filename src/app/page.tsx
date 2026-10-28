@@ -162,7 +162,7 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
         </div>
         <div className="product-info">
           <p className="product-meta">{category || 'Jewellery'}</p>
-          <h3 className="product-name">{name}</h3>
+          <h3 className="product-name"><Link to={`/product/${encodeURIComponent(id)}`} className="card-link" onClick={e => e.stopPropagation()}>{name}</Link></h3>
           <div className="product-price">
             <span className="price-current">{priceStr}</span>
             <div className="product-rating"><span className="stars">★★★★★</span></div>

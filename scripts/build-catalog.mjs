@@ -18,6 +18,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SITE_URL = (process.env.SITE_URL || 'https://hirastore.techbirdit.in').replace(/\/+$/, '');
 
 const sheetPath = path.join(root, 'catalog_images', 'catalog_sheet.json');
 if (!fs.existsSync(sheetPath)) {
@@ -374,6 +375,7 @@ fs.mkdirSync(path.join(root, 'src/data'), { recursive: true });
 fs.writeFileSync(path.join(root, 'src/data/catalog.json'), JSON.stringify(items));
 
 writeSitemap(items);
+writeLlmsTxt(items);
 writePhotoVersions();
 
 const named = items.filter(i => i.custom_short_description).length;
@@ -441,42 +443,124 @@ console.log(`
  * SITE_URL overrides the domain for a staging build.
  */
 function writeSitemap(items) {
-  const site = (process.env.SITE_URL || 'https://hirastore.techbirdit.in').replace(/\/+$/, '');
   const today = new Date().toISOString().slice(0, 10);
 
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 
-  const url = (loc, priority, changefreq) =>
-    `  <url><loc>${esc(site + loc)}</loc><lastmod>${today}</lastmod>` +
-    `<changefreq>${changefreq}</changefreq><priority>${priority}</priority></url>`;
+  // Trailing slashes throughout: scripts/prerender.mjs writes each page as
+  // <path>/index.html, and nginx 301s the bare path to the slashed one. A
+  // sitemap full of redirects is one Google reports as errors.
+  const url = (loc, priority, changefreq, images = []) =>
+    `  <url><loc>${esc(SITE_URL + loc)}</loc><lastmod>${today}</lastmod>` +
+    `<changefreq>${changefreq}</changefreq><priority>${priority}</priority>` +
+    images.map(i => `<image:image><image:loc>${esc(SITE_URL + i)}</image:loc></image:image>`).join('') +
+    `</url>`;
 
   const lines = [
     url('/', '1.0', 'weekly'),
-    url('/shop', '0.9', 'weekly'),
-    url('/about', '0.6', 'monthly'),
-    url('/help', '0.5', 'monthly'),
+    url('/shop/', '0.9', 'weekly'),
+    url('/about/', '0.6', 'monthly'),
+    url('/help/', '0.5', 'monthly'),
   ];
 
+  const onSale = items.filter(i => !i.disabled);
+
   // One entry per category, so the collection pages are crawled too.
-  for (const cat of [...new Set(items.map(i => i.item_group).filter(Boolean))].sort()) {
-    lines.push(url(`/shop?cat=${encodeURIComponent(cat)}`, '0.7', 'weekly'));
+  for (const cat of [...new Set(onSale.map(i => i.item_group).filter(Boolean))].sort()) {
+    lines.push(url(`/shop/?cat=${encodeURIComponent(cat)}`, '0.7', 'weekly'));
   }
 
   // Sold-out pieces are one-of-a-kind and will not come back; indexing them
-  // just earns the store dead-end results.
-  for (const it of items.filter(i => !i.disabled)) {
-    lines.push(url(`/product/${encodeURIComponent(it.name)}`, '0.8', 'monthly'));
+  // just earns the store dead-end results. Photos ride along so the pieces can
+  // turn up in Google Images — for jewellery, as often as not where people look.
+  for (const it of onSale) {
+    const photos = [it.image, ...JSON.parse(it.custom_item_images || '[]')].filter(Boolean);
+    lines.push(url(`/product/${encodeURIComponent(it.name)}/`, '0.8', 'monthly',
+      [...new Set(photos)].map(p => `/catalog_images/${p}`)));
   }
 
   const xml =
     '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" ' +
+    'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n' +
     lines.join('\n') +
     '\n</urlset>\n';
 
   fs.writeFileSync(path.join(root, 'public/sitemap.xml'), xml);
-  console.log(`  sitemap   : ${lines.length} urls -> ${site}/sitemap.xml`);
+  console.log(`  sitemap   : ${lines.length} urls -> ${SITE_URL}/sitemap.xml`);
+}
+
+/**
+ * public/llms.txt and public/llms-full.txt — the store described for AI
+ * assistants (llmstxt.org).
+ *
+ * ChatGPT, Claude, Perplexity and the rest mostly do not run JavaScript, so to
+ * them the shop was an empty page. llms.txt is the short version: what the
+ * store is, its policies, and where to look. llms-full.txt lists every piece on
+ * sale with its price and link, so a question like "silver jhumkas under $50"
+ * can be answered from it. Both are rebuilt from the catalogue, so counts and
+ * prices cannot go stale the way the hand-written file did ("224 pieces").
+ */
+function writeLlmsTxt(items) {
+  const onSale = items.filter(i => !i.disabled);
+  const label = g => (g.startsWith('Accessories - ') ? g.slice('Accessories - '.length) : g);
+  const groups = [...new Set(onSale.map(i => i.item_group))]
+    .map(g => ({ g, items: onSale.filter(i => i.item_group === g) }))
+    .sort((a, b) => b.items.length - a.items.length || label(a.g).localeCompare(label(b.g)));
+  const money = n => '$' + Number(n).toLocaleString('en-US');
+  const range = list => {
+    const p = list.map(i => i.standard_rate);
+    const lo = Math.min(...p), hi = Math.max(...p);
+    return lo === hi ? money(lo) : `${money(lo)}–${money(hi)}`;
+  };
+
+  const head = [
+    '# The Hira Store',
+    '',
+    '> Handcrafted silver and fine jewelry made for everyday wear — earrings, necklaces, ' +
+      `bangles and bracelets, pendants, rings and accessories. ${onSale.length} pieces from ` +
+      `${range(onSale).replace('–', ' to ')}, shipped from San Jose, California.`,
+    '',
+    'Prices are in US dollars. Most pieces are one of a kind: once sold, a piece leaves the shop.',
+    '',
+    '## Policies',
+    '- Shipping: free within the US on orders of $100 or more; a flat $5 below that. Packed by hand and dispatched within 2-3 working days.',
+    `- Returns: damaged or wrong items are repaired, replaced or refunded. Unworn pieces in their original packaging can be returned; worn earrings and made-to-order pieces cannot. Details: ${SITE_URL}/help/`,
+    '- Payment: by card at checkout.',
+    '- Video call: shoppers can book a video call to see pieces live before buying.',
+    '',
+    '## Contact',
+    '- Email: info@Thehirastore.com',
+    '- Instagram: https://www.instagram.com/thehirastore/',
+    '- Studio: San Jose, California, USA',
+    '',
+    '## Pages',
+    `- [Shop all jewelry](${SITE_URL}/shop/): the full catalogue with search, filters and sorting`,
+    `- [Our story](${SITE_URL}/about/): who we are and how the pieces are made`,
+    `- [Shipping, returns & size guide](${SITE_URL}/help/): ring, necklace and bangle size charts`,
+    `- [Every piece on sale](${SITE_URL}/llms-full.txt): name, price, weight and link for each product`,
+    '',
+    '## Collections',
+    ...groups.map(({ g, items: list }) =>
+      `- [${label(g)}](${SITE_URL}/shop/?cat=${encodeURIComponent(g)}): ${list.length} ${list.length === 1 ? 'piece' : 'pieces'}, ${range(list)}`),
+    '',
+  ];
+  fs.writeFileSync(path.join(root, 'public/llms.txt'), head.join('\n'));
+
+  const full = [...head, '## Every piece on sale', ''];
+  for (const { g, items: list } of groups) {
+    full.push(`### ${label(g)}`, '');
+    for (const it of list) {
+      const own = String(it.custom_short_description || '').trim();
+      const desc = own && own.toLowerCase() !== String(it.item_name).toLowerCase() ? ` — ${own}` : '';
+      const wt = it.weight_per_unit > 0 ? `, ${it.weight_per_unit} g` : '';
+      full.push(`- [${it.item_name}](${SITE_URL}/product/${encodeURIComponent(it.name)}/) (${it.name}): ${money(it.standard_rate)}${wt}${desc}`);
+    }
+    full.push('');
+  }
+  fs.writeFileSync(path.join(root, 'public/llms-full.txt'), full.join('\n'));
+  console.log(`  llms.txt  : ${groups.length} collections; llms-full.txt lists ${onSale.length} products`);
 }
 
 /**

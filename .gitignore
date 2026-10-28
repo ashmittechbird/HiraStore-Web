@@ -158,3 +158,8 @@ sessions.json
 
 # Contact sheets written by scripts/import-photos.mjs for review
 .photo-review/
+
+# Browser tests: per-run test account, reports and failure traces.
+e2e/.auth/
+e2e-report/
+test-results/

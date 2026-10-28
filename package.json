@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run catalog && vite build",
-    "build:vercel": "npm run catalog && vite build --mode vercel",
+    "build:vercel": "npm run catalog && vite build --mode vercel && node scripts/prerender.mjs",
     "build:frappe": "npm run catalog && vite build --base /assets/hirastore/store/",
     "catalog": "node scripts/build-catalog.mjs",
     "deploy": "rm -rf ../hirastore/public/store/assets/* && mkdir -p ../hirastore/public/store/assets ../hirastore/public/store/site-images ../hirastore/public/store/catalog_images ../hirastore/www/store && cp -r dist/assets/. ../hirastore/public/store/assets/ && cp -r dist/site-images/. ../hirastore/public/store/site-images/ && cp -r dist/catalog_images/. ../hirastore/public/store/catalog_images/ && cp dist/favicon.ico ../hirastore/public/store/favicon.ico && cp dist/favicon.png ../hirastore/public/store/favicon.png && cp dist/index.html ../hirastore/www/store/index.html",
@@ -15,7 +15,8 @@
     "test:e2e": "node scripts/e2e-test.mjs",
     "photos:audit": "node scripts/audit-photos.mjs",
     "photos:extract": "node scripts/extract-photos.mjs",
-    "photos:import": "node scripts/import-photos.mjs"
+    "photos:import": "node scripts/import-photos.mjs",
+    "test:ui": "playwright test"
   },
   "dependencies": {
     "react": "^18.3.0",
@@ -24,6 +25,7 @@
     "zustand": "^4.5.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

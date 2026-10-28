@@ -49,6 +49,10 @@ export default function Navbar() {
   useEffect(() => {
     if (!currentUser) { setIsAdmin(false); return; }
     if (currentUser === 'Administrator') { setIsAdmin(true); return; }
+    // Frappe marks desk users with system_user=yes on sign-in. A shopper is a
+    // Website User, can't read Has Role, and asking only logged a 403 on every
+    // page they opened.
+    if (/(?:^|;\s*)system_user=no(?:;|$)/.test(document.cookie)) { setIsAdmin(false); return; }
     let alive = true;
     call('frappe.client.get_list', {
       doctype: 'Has Role',
@@ -265,7 +269,7 @@ export default function Navbar() {
           padding: 7px 16px 5px; font-size: 10px; font-weight: 600;
           letter-spacing: .14em; text-transform: uppercase; color: var(--text-light);
           border-bottom: 1px solid var(--border); margin-bottom: 4px;
-        }
+        }
         .nav-links a { font-size: 12px; font-weight: 500; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.3s; position: relative; }
         .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 1px; background: var(--text-main); transition: width 0.3s var(--ease-out); }
         .nav-links a:hover::after { width: 100%; }
@@ -279,7 +283,7 @@ export default function Navbar() {
         .nav-icon.wish-active:hover { color: #be123c; }
         .nav-admin-btn { display: flex; align-items: center; gap: 6px; padding: 6px 14px; background: #005969; color: #fff; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; border-radius: 4px; transition: background 0.2s; }
         .nav-admin-btn:hover { background: #003d4a; color: #fff; }
-        .nav-admin-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; flex-shrink: 0; }
+        .nav-admin-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; flex-shrink: 0; }
 
         .hamburger { display: none; width: 40px; height: 40px; align-items: center; justify-content: center; }
         .hamburger svg { width: 24px; height: 24px; stroke: var(--text-main); stroke-width: 1.5; fill: none; }

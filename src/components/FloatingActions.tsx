@@ -105,7 +105,7 @@ export default function FloatingActions() {
   return (
     <>
       <div className="hs-fab" role="group" aria-label="Contact The Hira Store">
-        <button type="button" className="hs-fab-btn hs-fab-call" onClick={() => setOpen(true)}>
+        <button type="button" className="hs-fab-btn hs-fab-call" aria-label="Book a Video Call" onClick={() => setOpen(true)}>
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
             <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" />
           </svg>
@@ -113,7 +113,7 @@ export default function FloatingActions() {
         </button>
 
         {wa && (
-          <a className="hs-fab-btn hs-fab-wa" href={wa} target="_blank" rel="noopener noreferrer">
+          <a className="hs-fab-btn hs-fab-wa" href={wa} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
               <path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.1-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.5-.5c.1-.2.2-.3.3-.5 0-.2 0-.4 0-.5 0-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.2.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.3.2-1.4-.1-.1-.3-.2-.5-.3z" />
               <path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.4A10 10 0 1012 2zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-2.9.8.8-2.8-.2-.3A8.2 8.2 0 1112 20.2z" />
@@ -188,7 +188,7 @@ export default function FloatingActions() {
                     <input
                       value={form.phone}
                       onChange={e => update('phone', e.target.value)}
-                      placeholder="+91 98765 43210"
+                      placeholder="+1 (555) 000-0000"
                       inputMode="tel"
                       autoComplete="tel"
                     />

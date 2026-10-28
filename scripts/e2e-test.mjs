@@ -9,6 +9,8 @@
  * a production deploy, and to fail loudly rather than print reassuring output.
  */
 
+import { readFileSync } from 'node:fs';
+
 const BASE = process.env.BASE || 'http://localhost:8001';
 const ADMIN = { usr: 'Administrator', pwd: process.env.ADMIN_PWD || 'admin' };
 
@@ -94,7 +96,10 @@ const costFields = items.filter(i => 'valuation_rate' in i || 'last_purchase_rat
 costFields.length === 0 ? ok('feed hides costing fields')
                         : bad('feed hides costing fields', `${costFields.length} expose cost`);
 
-const tagged = ['THSN003', 'THSB016', 'THSN028', 'THSE091', 'THSP012', 'THSNC001'];
+// The same list the catalogue build hides, so cleaning a photo and putting it
+// back on sale doesn't leave this check asserting yesterday's list.
+const tagged = readFileSync(new URL('../catalog_images/photos-with-tags.txt', import.meta.url), 'utf8')
+  .split(/\r?\n/).map(l => l.replace(/#.*/, '').trim()).filter(Boolean);
 const leaked = tagged.filter(t => items.some(i => i.name === t));
 leaked.length === 0 ? ok('photos with price tags stay hidden')
                     : bad('photos with price tags stay hidden', leaked.join(', '));

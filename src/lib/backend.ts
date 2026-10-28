@@ -18,6 +18,20 @@ export type Mode = 'frappe' | 'demo';
 let modePromise: Promise<Mode> | null = null;
 let resolvedMode: Mode | null = null;
 
+/**
+ * True once the page has started to go away. The browser cancels whatever
+ * requests are still in flight, and a cancelled request looks exactly like a
+ * dead backend — which is how clicking through to the next page while the last
+ * one was still loading put shoppers into "store unavailable" for a minute,
+ * unable to sign in or pay.
+ */
+let leaving = false;
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => { leaving = true; });
+  window.addEventListener('pagehide', () => { leaving = true; });
+  window.addEventListener('pageshow', () => { leaving = false; });
+}
+
 /** Last known mode, or null before the first probe settles. */
 export function currentMode(): Mode | null {
   return resolvedMode;
@@ -45,6 +59,21 @@ function setMode(m: Mode) {
  * connection. Short enough that starting a bench is picked up quickly.
  */
 const PROBE_CACHE_MS = 60_000;
+
+/**
+ * How long an outage verdict is trusted on a store that has had a backend.
+ * Short, because the usual cause is a restart or a cold worker that is back
+ * within seconds, and until it expires the shopper cannot sign in or pay.
+ */
+const OUTAGE_CACHE_MS = 15_000;
+
+/**
+ * Second, more patient probe before a store that has had a backend declares
+ * an outage. A Frappe worker answering its first request after a restart or a
+ * deploy can take several seconds; one slow ping used to put the shopper into
+ * "store unavailable" for a full minute.
+ */
+const PROBE_RETRY_TIMEOUT_MS = 8_000;
 const PROBE_CACHE_KEY = 'hs_backend_mode';
 
 /**
@@ -102,6 +131,8 @@ export const STORE_UNAVAILABLE =
 const NEVER_FAKE = new Set([
   'login',
   'frappe.core.doctype.user.user.sign_up',
+  'frappe.core.doctype.user.user.reset_password',
+  'frappe.core.doctype.user.user.update_password',
   'frappe.client.insert',
   'frappe.client.set_value',
   'frappe.client.delete',
@@ -116,7 +147,8 @@ function readCachedMode(): Mode | null {
     const raw = sessionStorage.getItem(PROBE_CACHE_KEY);
     if (!raw) return null;
     const { mode, at } = JSON.parse(raw);
-    if (Date.now() - at > PROBE_CACHE_MS) return null;
+    const ttl = mode === 'demo' && hasSeenRealBackend() ? OUTAGE_CACHE_MS : PROBE_CACHE_MS;
+    if (Date.now() - at > ttl) return null;
     return mode === 'frappe' || mode === 'demo' ? mode : null;
   } catch {
     return null;
@@ -124,6 +156,9 @@ function readCachedMode(): Mode | null {
 }
 
 function cacheMode(mode: Mode): Mode {
+  // A probe cut off by navigation proves nothing; don't make the next page
+  // inherit it.
+  if (mode === 'demo' && leaving) return setMode(mode);
   if (mode === 'frappe') markRealBackendSeen();
   try {
     sessionStorage.setItem(PROBE_CACHE_KEY, JSON.stringify({ mode, at: Date.now() }));
@@ -131,6 +166,26 @@ function cacheMode(mode: Mode): Mode {
     /* private mode — just probe again next load */
   }
   return setMode(mode);
+}
+
+async function probe(timeoutMs: number): Promise<Mode> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const r = await fetch('/api/method/ping', {
+      credentials: 'include',
+      signal: ctrl.signal,
+      headers: { Accept: 'application/json' },
+    });
+    if (!r.ok) return 'demo';
+    const body = await r.json().catch(() => null);
+    // A static host can return 200 with an HTML shell; require Frappe's shape.
+    return body && typeof body === 'object' && 'message' in body ? 'frappe' : 'demo';
+  } catch {
+    return 'demo';
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**
@@ -153,23 +208,9 @@ export function detectMode(): Promise<Mode> {
   }
 
   modePromise = (async (): Promise<Mode> => {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), PROBE_TIMEOUT_MS);
-    try {
-      const r = await fetch('/api/method/ping', {
-        credentials: 'include',
-        signal: ctrl.signal,
-        headers: { Accept: 'application/json' },
-      });
-      if (!r.ok) return cacheMode('demo');
-      const body = await r.json().catch(() => null);
-      // A static host can return 200 with an HTML shell; require Frappe's shape.
-      return cacheMode(body && typeof body === 'object' && 'message' in body ? 'frappe' : 'demo');
-    } catch {
-      return cacheMode('demo');
-    } finally {
-      clearTimeout(timer);
-    }
+    let mode = await probe(PROBE_TIMEOUT_MS);
+    if (mode === 'demo' && hasSeenRealBackend()) mode = await probe(PROBE_RETRY_TIMEOUT_MS);
+    return cacheMode(mode);
   })();
 
   return modePromise;
@@ -213,6 +254,15 @@ async function csrf(): Promise<string> {
       .catch(() => 'fetch');
   }
   return csrfPromise;
+}
+
+/**
+ * The session's CSRF token, for the few requests that go out as multipart
+ * rather than through call() — file uploads. Frappe keeps it in the session,
+ * not in a cookie, so reading document.cookie for it always came back empty.
+ */
+export function csrfToken(): Promise<string> {
+  return csrf();
 }
 
 /** Drop the cached token — the session changed, or the server rejected it. */
@@ -639,8 +689,19 @@ export async function call(
     // outage instead of returning a confirmation for an order that does not
     // exist. Reads still fall through to the bundled catalogue.
     if (e instanceof BackendError) throw e;
-    cacheMode('demo');
-    modePromise = Promise.resolve('demo');
+    if (leaving) throw e;
+
+    // One dropped request is not an outage. Ask the bench directly, patiently,
+    // before deciding: if it answers, this was a blip — a read is simply sent
+    // again; a write is not, since it may have landed, and the shopper is
+    // asked to retry instead. Payments carry an idempotency key, so a retried
+    // Pay can never charge twice.
+    const recheck = (async (): Promise<Mode> => cacheMode(await probe(PROBE_RETRY_TIMEOUT_MS)))();
+    modePromise = recheck;
+    if ((await recheck) === 'frappe') {
+      if (opts.method === 'GET') return frappeGet(path, params);
+      throw new BackendError('The connection dropped before we heard back. Please try again.');
+    }
     return demoCall(path, params);
   }
 }

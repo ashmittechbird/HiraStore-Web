@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/store/cart';
 import { useFrappeAuth } from '@/lib/frappe';
@@ -11,6 +11,7 @@ export default function CartPage() {
   const [discount, setDiscount] = useState(0);
   const [couponMsg, setCouponMsg] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCode, setAppliedCode] = useState('');
   const [removing, setRemoving] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -31,15 +32,42 @@ export default function CartPage() {
       // ERPNext keeps the percentage on the linked Pricing Rule, not the coupon.
       const res = await validateCoupon(coupon, subtotal);
       setDiscount(res.discount);
+      setAppliedCode(res.code);
       setCouponMsg(`Coupon applied! You save $${res.discount.toFixed(2)}`);
       sessionStorage.setItem('hs_coupon', JSON.stringify({ code: res.code, discount: res.discount }));
     } catch (e: unknown) {
       setCouponMsg((e as Error).message || 'Invalid coupon');
       setDiscount(0);
+      setAppliedCode('');
       sessionStorage.removeItem('hs_coupon');
     }
     setCouponLoading(false);
   }
+
+  // A coupon is a percentage of the basket, so it is re-priced whenever the
+  // basket changes. Keeping the dollar figure from when it was applied showed
+  // the wrong total after a quantity change — and the server, which prices the
+  // order itself, then refused the payment as not matching what was shown.
+  useEffect(() => {
+    if (!appliedCode) return;
+    let alive = true;
+    validateCoupon(appliedCode, subtotal)
+      .then(res => {
+        if (!alive) return;
+        setDiscount(res.discount);
+        setCouponMsg(`Coupon applied! You save $${res.discount.toFixed(2)}`);
+        sessionStorage.setItem('hs_coupon', JSON.stringify({ code: res.code, discount: res.discount }));
+      })
+      .catch((e: unknown) => {
+        if (!alive) return;
+        // e.g. the basket dropped under the coupon's minimum
+        setDiscount(0);
+        setAppliedCode('');
+        setCouponMsg((e as Error).message || 'This coupon no longer applies');
+        sessionStorage.removeItem('hs_coupon');
+      });
+    return () => { alive = false; };
+  }, [subtotal, appliedCode]);
 
   function handleRemove(id: string) {
     setRemoving(id);
@@ -51,8 +79,8 @@ export default function CartPage() {
 
   function handleCheckout() {
     if (!currentUser) { navigate('/login?return=/checkout'); return; }
-    if (discount > 0) {
-      sessionStorage.setItem('hs_coupon', JSON.stringify({ code: coupon, discount }));
+    if (discount > 0 && appliedCode) {
+      sessionStorage.setItem('hs_coupon', JSON.stringify({ code: appliedCode, discount }));
     }
     navigate('/checkout');
   }

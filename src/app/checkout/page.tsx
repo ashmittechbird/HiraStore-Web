@@ -14,6 +14,7 @@ export default function CheckoutPage() {
   const [coupon, setCoupon] = useState('');
   const [discount, setDiscount] = useState(0);
   const [couponMsg, setCouponMsg] = useState('');
+  const [appliedCode, setAppliedCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -55,8 +56,10 @@ export default function CheckoutPage() {
       setForm(f => ({ ...f, ...saved }));
     } catch { /* ok */ }
     try {
+      // Only the code is carried over; the discount is re-priced below against
+      // this basket, which may not be the one the code was applied to (Buy Now).
       const c = JSON.parse(sessionStorage.getItem('hs_coupon') || 'null');
-      if (c) { setCoupon(c.code); setDiscount(c.discount); }
+      if (c?.code) { setCoupon(c.code); setAppliedCode(c.code); }
     } catch { /* ok */ }
   }, []);
 
@@ -69,14 +72,36 @@ export default function CheckoutPage() {
     try {
       const res = await validateCoupon(coupon, subtotal);
       setDiscount(res.discount);
+      setAppliedCode(res.code);
       setCouponMsg(`Coupon applied! Saving $${res.discount.toFixed(2)}`);
       sessionStorage.setItem('hs_coupon', JSON.stringify({ code: res.code, discount: res.discount }));
     } catch (e: unknown) {
       setCouponMsg((e as Error).message || 'Invalid coupon');
       setDiscount(0);
+      setAppliedCode('');
       sessionStorage.removeItem('hs_coupon');
     }
   }
+
+  // Same as the cart: the coupon is re-priced against the basket being paid for.
+  useEffect(() => {
+    if (!appliedCode) return;
+    let alive = true;
+    validateCoupon(appliedCode, subtotal)
+      .then(res => {
+        if (!alive) return;
+        setDiscount(res.discount);
+        setCouponMsg(`Coupon applied! Saving $${res.discount.toFixed(2)}`);
+      })
+      .catch((e: unknown) => {
+        if (!alive) return;
+        setDiscount(0);
+        setAppliedCode('');
+        setCouponMsg((e as Error).message || 'This coupon no longer applies');
+        sessionStorage.removeItem('hs_coupon');
+      });
+    return () => { alive = false; };
+  }, [subtotal, appliedCode]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -92,7 +117,7 @@ export default function CheckoutPage() {
     sessionStorage.setItem('hs_checkout', JSON.stringify({
       customer: form,
       cart: effectiveItems,
-      couponCode: coupon,
+      couponCode: appliedCode,
       discount: safeDiscount,
       shipping,
       subtotal,
@@ -191,7 +216,7 @@ export default function CheckoutPage() {
             </div>
             <div className="summary-totals">
               <div className="total-row"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="total-row"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `${shipping.toFixed(2)}`}</span></div>
+              <div className="total-row"><span>Shipping</span><span>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span></div>
               {shipping > 0 && <div className="total-row" style={{ fontSize: '12px', color: '#8aa5aa' }}><span>Add ${(FREE_SHIPPING_OVER - subtotal).toFixed(2)} for free shipping</span><span /></div>}
               <div className="total-row" style={{ fontSize: '11.5px', color: '#8aa5aa', lineHeight: 1.5 }}><span>Shipping charge and tax applicable as per delivery address.</span><span /></div>
               {discount > 0 && <div className="total-row" style={{ color: '#16a34a' }}><span>Discount</span><span>−${discount.toFixed(2)}</span></div>}

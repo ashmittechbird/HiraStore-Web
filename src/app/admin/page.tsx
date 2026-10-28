@@ -4,7 +4,7 @@ import {
   useFrappeUpdateDoc, useFrappeDeleteDoc, useFrappePostCall,
 } from '@/lib/frappe';
 import { HOME_URL } from '@/lib/config';
-import { call, detectMode, db, cacheHomepageConfig, getHomepageConfig, listBookings, setBookingStatus, bookingWhatsappLink, listCoupons } from '@/lib/backend';
+import { call, csrfToken, detectMode, db, cacheHomepageConfig, getHomepageConfig, listBookings, setBookingStatus, bookingWhatsappLink, listCoupons } from '@/lib/backend';
 import type { BookingRow } from '@/lib/backend';
 import type { Mode } from '@/lib/backend';
 import './admin.css';
@@ -73,11 +73,11 @@ const I = {
 // ─── SUB-COMPONENTS ───────────────────────────────────────────────────
 function SbItem({ icon, label, active, badge, onClick }: { icon: React.ReactNode; label: string; active: boolean; badge?: number; onClick: () => void }) {
   return (
-    <div className={`sb-item${active ? ' active' : ''}`} onClick={onClick}>
+    <button type="button" className={`sb-item${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined} onClick={onClick}>
       <span style={{ width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</span>
       {label}
       {badge ? <span className="sb-badge">{badge}</span> : null}
-    </div>
+    </button>
   );
 }
 
@@ -257,14 +257,14 @@ async function uploadImage(file: File): Promise<string | null> {
   const fd = new FormData();
   fd.append('file', file, file.name);
   fd.append('is_private', '0');
-  const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1] ?? '';
   const r = await fetch('/api/method/upload_file', {
     method: 'POST',
     credentials: 'include',
-    headers: { 'X-Frappe-CSRF-Token': csrf },
+    headers: { 'X-Frappe-CSRF-Token': await csrfToken() },
     body: fd,
   });
-  const d = await r.json();
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(`Upload failed (${r.status})`);
   return d.message?.file_url || d.file_url || null;
 }
 
@@ -480,7 +480,7 @@ export default function AdminPage() {
   useEffect(() => { reloadOffers(); }, [reloadOffers]);
 
   // ── FILTERS ──
-  const filteredProducts = allProducts.filter(p => { const q = prodSearch.toLowerCase(); return (p.item_name || p.name || '').toLowerCase().includes(q) && (!prodCat || p.item_group === prodCat); });
+  const filteredProducts = allProducts.filter(p => { const q = prodSearch.toLowerCase(); return (`${p.item_name || ''} ${p.name || ''}`).toLowerCase().includes(q) && (!prodCat || p.item_group === prodCat); });
   const filteredOrders = allOrders.filter(o => { const q = orderSearch.toLowerCase(); return ((o.name || '').toLowerCase().includes(q) || (o.customer || '').toLowerCase().includes(q)) && (!orderStatusF || o.status === orderStatusF); });
   const filteredCusts = allCustomers.filter(c => { const q = custSearch.toLowerCase(); return (c.customer_name || '').toLowerCase().includes(q) || (c.email_id || '').toLowerCase().includes(q) || (c.mobile_no || '').toLowerCase().includes(q); });
   const categories = Array.from(new Set(allProducts.map(p => p.item_group).filter(Boolean))).sort() as string[];
@@ -642,12 +642,9 @@ export default function AdminPage() {
     }
 
     // Publish to Frappe so every visitor and device sees the same rails.
-    const csrf = document.cookie.match(/csrftoken=([^;]+)/)?.[1];
-    if (!csrf) {
-      toast('Saved on this device, but not published — sign in again to sync.', 'error');
-      setHpSaving(false);
-      return;
-    }
+    // (This used to look for a csrftoken cookie, which Frappe never sets, so
+    // every save stopped here and nothing was ever published.)
+    const csrf = await csrfToken();
 
     try {
       // Replace any previous copies so /files/homepage_config.json stays canonical.
@@ -700,27 +697,38 @@ export default function AdminPage() {
   async function createCoupon(e: React.FormEvent) {
     e.preventDefault();
     if (!ofCode || !ofPct || !ofUpto) { toast('Code, discount % and valid until required', 'error'); return; }
+    // Made the way the backend's own seed makes HIRA30 and the rest
+    // (hira/api/coupons.py): the percentage AND the minimum live on the
+    // Pricing Rule, which is what checkout reads. This form used to put the
+    // minimum on the coupon, where nothing looks, and it failed outright on
+    // ERPNext's required coupon name and its coupon types.
+    const today = new Date().toISOString().split('T')[0];
+    const company = companyList[0]?.name || '';
+    let ruleName = '';
     try {
-      const today = new Date().toISOString().split('T')[0];
-      const company = companyList[0]?.name || '';
       const pr = await createDoc('Pricing Rule', {
-        title: `Coupon: ${ofCode}`,
+        title: `Coupon ${ofCode}`,
         apply_on: 'Transaction',
         price_or_product_discount: 'Price',
         rate_or_discount: 'Discount Percentage',
         discount_percentage: parseFloat(ofPct),
+        min_amt: ofMin ? parseFloat(ofMin) : 0,
+        coupon_code_based: 1,
         selling: 1,
         company,
         valid_from: ofFrom || today,
         valid_upto: ofUpto,
       });
-      if (!(pr as any).name) throw new Error('Failed to create pricing rule');
+      ruleName = (pr as any).name;
+      if (!ruleName) throw new Error('Failed to create pricing rule');
       await createDoc('Coupon Code', {
+        coupon_name: ofCode,
         coupon_code: ofCode,
-        coupon_type: 'Percentage',
-        pricing_rule: (pr as any).name,
-        discount_percentage: parseFloat(ofPct),
-        minimum_amount: ofMin ? parseFloat(ofMin) : 0,
+        coupon_type: 'Promotional',
+        pricing_rule: ruleName,
+        // ERPNext refuses a code once used >= maximum_use, and 0 >= 0: an
+        // empty maximum would block the very first redemption.
+        maximum_use: 100000,
         valid_from: ofFrom || today,
         valid_upto: ofUpto,
         description: ofDesc || `${ofPct}% discount`,
@@ -728,7 +736,11 @@ export default function AdminPage() {
       toast('Coupon created: ' + ofCode, 'success');
       setOfCode(''); setOfPct(''); setOfMin(''); setOfFrom(''); setOfUpto(''); setOfDesc('');
       reloadOffers();
-    } catch (e: any) { toast('Failed: ' + e.message, 'error'); }
+    } catch (e: any) {
+      // Don't leave a discount rule behind with no coupon pointing at it.
+      if (ruleName) await deleteDoc('Pricing Rule', ruleName).catch(() => { });
+      toast('Failed: ' + e.message, 'error');
+    }
   }
 
   function delCoupon(name: string) {
@@ -814,7 +826,7 @@ export default function AdminPage() {
           </aside>
 
           {/* MAIN */}
-          <main className="adm-main">
+          <div className="adm-main">
             <header className="topbar">
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <button type="button" className="sb-toggle" onClick={() => setSbOpen(v => !v)}>
@@ -1220,7 +1232,7 @@ export default function AdminPage() {
               </>}
 
             </div>
-          </main>
+          </div>
         </div>
       )}
 

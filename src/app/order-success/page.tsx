@@ -72,7 +72,7 @@ export default function OrderSuccessPage() {
       {/* Subtle radial glow behind everything */}
       <div className="hs-glow" aria-hidden="true" />
 
-      <main className="hs-card">
+      <div className="hs-card">
         {/* Header brand */}
         <img className="hs-logo" src={HIRA_LOGO} alt="The Hira Store" />
 
@@ -157,7 +157,7 @@ export default function OrderSuccessPage() {
           <Link to="/account" className="hs-btn-primary">View My Orders</Link>
           <Link to="/shop" className="hs-btn-ghost">Continue Shopping →</Link>
         </div>
-      </main>
+      </div>
 
       <style>{styles}</style>
     </div>

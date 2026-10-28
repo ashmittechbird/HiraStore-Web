@@ -84,10 +84,12 @@ one-tap fill). Shoppers can register their own account from Sign Up.
 | `npm run import-sheet` | read the master .xlsx into `catalog_images/catalog_sheet.json` |
 | `npm run catalog` | regenerate `src/data/catalog.json` from that sheet data |
 | `npm run build` | production build (base `/assets/hirastore/store/`) |
-| `npm run build:vercel` | production build for Vercel (base `/`) |
+| `npm run build:vercel` | production build at the site root (base `/`), plus a static page per product — see [Search engines and link previews](#search-engines-and-link-previews) |
 | `npm run build:frappe` | build for the Frappe asset pipeline |
 | `npm run deploy` | copy `dist/` into a sibling `hirastore` Frappe app |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm run test:e2e` | API checks against a running bench |
+| `npm run test:ui` | browser tests of every shopper and owner journey — see [Testing](#testing) |
 
 > `build` no longer runs `deploy` automatically — `deploy` deletes files in a
 > sibling directory, which is not something a build should do silently (and it
@@ -286,7 +288,8 @@ made here, because only the static catalogue had been rebuilt.
 | `/checkout` | shipping address, coupon, Buy Now bypass |
 | `/payment` | Square card form; refuses an order it can't charge for |
 | `/order-success` | confirmation |
-| `/login`, `/signup`, `/account` | auth + order history |
+| `/login`, `/signup`, `/account` | auth, forgotten password, order history |
+| `/update-password` | where Frappe's sign-up and password-reset emails land |
 | `/about` | brand story |
 | `/admin` | products, orders, customers, coupons, homepage curation |
 
@@ -296,6 +299,64 @@ is the figure actually charged. If the two ever disagree, checkout refuses the
 order rather than billing a total the shopper wasn't shown.
 
 Seeded coupons: `HIRA30` (30%), `WELCOME10` (10%), `FESTIVE20` (20% over $100).
+
+---
+
+## Search engines and link previews
+
+The store is a single-page app, which on its own shows every crawler the same
+empty page. Three things make it readable:
+
+- **Per-page tags.** [src/lib/seo.ts](src/lib/seo.ts) gives every route its own
+  title, description, canonical, Open Graph tags and schema.org data (Product
+  with price and stock, BreadcrumbList; Organization and WebSite site-wide).
+  Cart, checkout, account, sign-in and search results are `noindex`.
+- **Static pages.** [scripts/prerender.mjs](scripts/prerender.mjs) runs after
+  `build:vercel` and writes `dist/<path>/index.html` for the home page, /shop,
+  /about, /help and every product on sale, carrying those same tags plus a
+  plain-HTML copy of the content. WhatsApp and Instagram previews and most AI
+  crawlers never run JavaScript; this is what they read. A browser hides the
+  copy and the app takes over. The values come from
+  [src/lib/structuredData.mjs](src/lib/structuredData.mjs), shared by both.
+- **Files for crawlers**, regenerated from the catalogue on every build:
+  [public/sitemap.xml](public/sitemap.xml) (with product photos),
+  [public/llms.txt](public/llms.txt) and
+  [public/llms-full.txt](public/llms-full.txt) (the store and every piece on
+  sale, for AI assistants), and the hand-written
+  [public/robots.txt](public/robots.txt).
+
+nginx serves the static pages through `try_files $uri $uri/ /index.html`, which
+answers `/product/X` with a 301 to `/product/X/` — so canonical URLs and the
+sitemap use the trailing slash.
+
+Note that nginx sends every path *beginning* with `/app` to Frappe, not just
+`/app` and `/app/…`. That is why the touch icon is `icon-180.png`, and why no
+storefront page or file may start with "app".
+
+---
+
+## Testing
+
+```bash
+npm run build:vercel     # the browser tests drive the production build
+npm run test:ui          # 60 browser tests, desktop and phone
+npm run test:e2e         # 40 API checks
+bench --site <site> execute hira.tests.checkout.run   # 20 checkout checks, server side
+```
+
+All three need the bench on `localhost:8001` serving the store's site
+(`bench --site <site> serve --port 8001`). The browser suite refuses to run
+against anything but localhost: it creates a test shopper with a random
+password, bookings and a coupon, and deletes them all again when it finishes.
+For sign-up to work locally, sign-up must be enabled (Website Settings) and
+outgoing mail either configured or muted (`bench --site <site> set-config
+mute_emails 1`).
+
+Square needs live credentials no test should hold, so the browser tests stand
+in for Square's card form and the charge endpoint — and check field by field
+what the store sends — while `hira.tests.checkout.run` covers the same charge
+on the server: pricing, coupons, a tampered total, a declined card, a double
+click. Playwright drives the installed Chrome (`PW_CHANNEL=` for its own).
 
 ---
 

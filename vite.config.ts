@@ -21,18 +21,49 @@ const backend = process.env.VITE_FRAPPE_URL || 'http://localhost:8001'
  *   dev            -> /store/                        (matches the Frappe route)
  *   build          -> /assets/hirastore/store/       (served by Frappe)
  *   build --mode vercel -> /                         (root of the Vercel domain)
+ *   preview        -> /                              (serves that root build, as nginx does)
  *
  * VITE_BASE overrides all of them.
  */
-function resolveBase(command: string, mode: string): string {
+function resolveBase(command: string, mode: string, isPreview = false): string {
   if (process.env.VITE_BASE) return process.env.VITE_BASE
+  if (isPreview) return '/'
   if (command !== 'build') return '/store/'
   if (mode === 'vercel') return '/'
   return '/assets/hirastore/store/'
 }
 
-export default defineConfig(({ command, mode }) => ({
-  base: resolveBase(command, mode),
+// changeOrigin rewrites the Host header to match the target, which is what a
+// real Frappe site expects.
+//
+// The short timeouts matter: when the bench is down or off-VPN, a TCP connect
+// hangs for ~20s by default and every page load stalls behind it. Failing fast
+// lets the runtime fall back to demo mode straight away.
+const proxyOpts = {
+  target: backend,
+  changeOrigin: true,
+  secure: false,
+  timeout: 3000,
+  proxyTimeout: 3000,
+}
+
+// Mirrors the rewrites in vercel.json so /app behaves the same locally. Vite
+// serves its own dev assets under the base (/store/), which leaves /assets free
+// for the Frappe desk's bundles.
+const backendProxy = {
+  '/api/method': proxyOpts,
+  '/api/resource': proxyOpts,
+  '/api': proxyOpts,
+  '/files': proxyOpts,
+  '/private': proxyOpts,
+  // Exactly /app and below. A bare '/app' key is a prefix match, which also
+  // sent /apple-touch-icon.png and anything else starting "app" to Frappe.
+  '^/app(/|$)': proxyOpts,
+  '/assets': proxyOpts,
+}
+
+export default defineConfig(({ command, mode, isPreview }) => ({
+  base: resolveBase(command, mode, isPreview),
   plugins: [react()],
   resolve: {
     alias: {
@@ -59,37 +90,18 @@ export default defineConfig(({ command, mode }) => ({
     // so the two could never run at once on the same machine. PORT wins when
     // set, so the port can be moved without editing this file.
     port: Number(process.env.PORT) || 5173,
-    proxy: (() => {
-      // changeOrigin rewrites the Host header to match the target, which is what
-      // a real Frappe site expects.
-      //
-      // The short timeouts matter: when the bench is down or off-VPN, a TCP
-      // connect hangs for ~20s by default and every page load stalls behind it.
-      // Failing fast lets the runtime fall back to demo mode straight away.
-      const proxyOpts = {
-        target: backend,
-        changeOrigin: true,
-        secure: false,
-        timeout: 3000,
-        proxyTimeout: 3000,
-      }
-      // Mirrors the rewrites in vercel.json so /app behaves the same in dev.
-      // Vite serves its own dev assets under the base (/store/), which leaves
-      // /assets free for the Frappe desk's bundles.
-      return {
-        '/api/method': proxyOpts,
-        '/api/resource': proxyOpts,
-        '/api': proxyOpts,
-        '/files': proxyOpts,
-        '/private': proxyOpts,
-        '/app': proxyOpts,
-        '/assets': proxyOpts,
-        // In dev the storefront is namespaced under /store/, so bare /login is
-        // free for the desk's own sign-in redirect. On Vercel the storefront
-        // sits at the root and owns /login, which is why vercel.json leaves it
-        // out of the proxy there.
-        '/login': proxyOpts,
-      }
-    })(),
+    proxy: {
+      ...backendProxy,
+      // In dev the storefront is namespaced under /store/, so bare /login is
+      // free for the desk's own sign-in redirect. On the live site and in
+      // `vite preview` the storefront sits at the root and owns /login, which
+      // is why neither vercel.json nor the preview proxies it.
+      '/login': proxyOpts,
+    },
+  },
+  // Serves dist/ for the browser tests, talking to the same bench.
+  preview: {
+    port: 4173,
+    proxy: backendProxy,
   },
 }))

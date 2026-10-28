@@ -10,7 +10,7 @@ export default function SignupPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const { call, loading } = useFrappePostCall<{ message: string }>('frappe.core.doctype.user.user.sign_up');
+  const { call, loading } = useFrappePostCall<{ message?: [number, string] | string }>('frappe.core.doctype.user.user.sign_up');
   const location = useLocation();
   const navigate = useNavigate();
   const mode = useBackendMode();
@@ -34,7 +34,18 @@ export default function SignupPage() {
       return;
     }
     try {
-      await call({ email, full_name: fullName, password, redirect_to: '' });
+      const res = await call({ email, full_name: fullName, password, redirect_to: '' });
+      // Frappe answers [code, text]: 1 = created and emailed, 2 = waiting for
+      // an administrator, 0 = not created (already registered, or disabled).
+      // Code 0 used to fall through to "Check your email!", promising a link
+      // that was never sent.
+      const [code, text] = Array.isArray(res?.message) ? res.message : [1, ''];
+      if (!choosesPassword && code === 0) {
+        setError(/already registered/i.test(text)
+          ? 'That email already has an account. Sign in instead, or use “Forgot password” on the sign-in page.'
+          : text || 'We could not create the account');
+        return;
+      }
       if (choosesPassword) {
         // The account is signed in straight away — pull the new session into the
         // auth context before navigating, or a guarded page bounces us to login.

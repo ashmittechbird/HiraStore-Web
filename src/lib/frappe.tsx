@@ -60,6 +60,11 @@ export function FrappeProvider({ children }: { url?: string; enableSocket?: bool
         const fromCookie = cookie ? decodeURIComponent(cookie) : null;
         if (fromCookie && fromCookie !== 'Guest') {
           setCurrentUser(fromCookie);
+        } else if (fromCookie === 'Guest') {
+          // Frappe stamps every guest response with user_id=Guest, and the
+          // mode probe has already made one. Asking again only earned a 403
+          // that every signed-out visitor saw logged as an error.
+          setCurrentUser(null);
         } else {
           const res = await call('frappe.auth.get_logged_user', {}, { method: 'GET' }).catch(() => null);
           const u = res?.message;

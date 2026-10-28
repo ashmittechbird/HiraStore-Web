@@ -11,7 +11,7 @@
     { "source": "/private/:path*", "destination": "/api/private/:path*" },
     { "source": "/logout", "destination": "/api/logout" },
     {
-      "source": "/((?!api/|app|assets/|files/|private/|logout|static/|catalog_images/|site-images/|favicon|robots|sitemap|llms).*)",
+      "source": "/((?!api/|app|assets/|files/|private/|logout|static/|catalog_images/|site-images/|favicon|icon-|site.webmanifest|robots|sitemap|llms).*)",
       "destination": "/index.html"
     }
   ],

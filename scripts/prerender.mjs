@@ -211,11 +211,11 @@ count++;
 
 write('/help/', render({
   title: 'Shipping, Returns & Size Guide',
-  description: 'Shipping costs and times, our returns policy, and ring, necklace and bangle size charts — everything to know before and after you order from The Hira Store.',
+  description: 'Free US shipping over $100, 30-day returns, a one-year warranty, and ring, necklace and bangle size charts — everything to know before and after you order from The Hira Store.',
   url: canonicalUrl('/help'),
   body: nav + `<main><h1>Shipping, returns &amp; size guide</h1>` +
     `<h2>Shipping</h2><p>Orders of $100 or more ship free within the United States; below that, shipping is a flat $5. Every piece is packed by hand at our studio in San Jose, California.</p>` +
-    `<h2>Returns</h2><p>If a piece arrives damaged or isn't what you ordered, tell us and we will repair, replace or refund it. Unworn pieces in their original packaging can be returned; worn earrings and made-to-order pieces cannot.</p>` +
+    `<h2>Returns &amp; warranty</h2><p>Returns are accepted within 30 days of delivery. If a piece arrives damaged or isn't what you ordered, we will repair, replace or refund it, and the return postage is on us. Unworn pieces in their original packaging can be returned at your cost; worn earrings and made-to-order pieces cannot. Every piece carries a one-year warranty against manufacturing defects.</p>` +
     `<h2>Sizes</h2><p>Ring sizes follow US sizing against ISO inner diameters; necklace lengths run from collar (12–13 in) to matinee (20–24 in); bangles use Indian sizing from 2-4 (6.0 cm) to 2-12 (7.3 cm).</p>` +
     `<p>Questions? Email <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.</p></main>` + footer,
 }));

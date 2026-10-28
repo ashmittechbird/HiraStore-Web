@@ -61,6 +61,7 @@ test.describe('in the running app', () => {
     expect(p.offers.price).toBe(item.standard_rate.toFixed(2));
     expect(p.offers.priceCurrency).toBe('USD');
     expect(p.offers.availability).toBe('https://schema.org/InStock');
+    expect(p.offers.hasMerchantReturnPolicy.merchantReturnDays).toBe(30);
     expect(p.image.length).toBeGreaterThanOrEqual(2);
     const crumbs = blocks.find(b => b['@type'] === 'BreadcrumbList')!;
     expect(crumbs.itemListElement.map((c: any) => c.name)).toEqual(['Home', 'Shop', expect.any(String), item.item_name]);

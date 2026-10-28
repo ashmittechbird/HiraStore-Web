@@ -22,6 +22,14 @@ test('home page shows collections and products, with no errors', async ({ page }
   watch.expectClean();
 });
 
+test('no product card shows star ratings — there are no reviews behind them', async ({ page }) => {
+  for (const path of ['/', '/shop']) {
+    await page.goto(path);
+    await expect(page.locator('.product-card, [role=listitem]').first()).toBeVisible();
+    await expect(page.getByText('★★★★★'), path).toHaveCount(0);
+  }
+});
+
 test('a home page card opens its product', async ({ page }) => {
   await page.goto('/');
   const link = page.locator('.product-card .card-link').first();
@@ -148,6 +156,12 @@ test('about and help pages render with their facts', async ({ page }) => {
   await expect(page).toHaveTitle(/Shipping, Returns/);
   await expect(page.getByText(/\$100/).first()).toBeVisible();
   await expect(page.getByText(/San Jose/).first()).toBeVisible();
+  // The same promises the product pages make.
+  await expect(page.getByText('30 days').first()).toBeVisible();
+  await expect(page.getByText('one year warranty')).toBeVisible();
+  await page.goto('/product/THSE001');
+  await expect(page.getByText('30-day returns')).toBeVisible();
+  await expect(page.getByText('1 year warranty').first()).toBeVisible();
 });
 
 test('every footer link goes somewhere real', async ({ page, request }) => {

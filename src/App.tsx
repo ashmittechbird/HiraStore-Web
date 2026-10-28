@@ -47,7 +47,7 @@ export default function App() {
           <Route path="/account" element={<><Seo title="My Account" noindex /><Account /></>} />
           <Route path="/wishlist" element={<><Seo title="Wishlist" noindex /><Wishlist /></>} />
           <Route path="/about" element={<><Seo title="Our Story" description="The Hira Store began in 2023 as a passion project: handcrafted, ethically sourced silver and fine jewelry made to be worn every day, not saved for special occasions." path="/about" /><About /></>} />
-          <Route path="/help" element={<><Seo title="Shipping, Returns & Size Guide" description="Shipping costs and times, our returns policy, and ring, necklace and bangle size charts — everything to know before and after you order from The Hira Store." path="/help" /><Help /></>} />
+          <Route path="/help" element={<><Seo title="Shipping, Returns & Size Guide" description="Free US shipping over $100, 30-day returns, a one-year warranty, and ring, necklace and bangle size charts — everything to know before and after you order from The Hira Store." path="/help" /><Help /></>} />
           <Route path="/checkout" element={<><Seo title="Checkout" noindex /><Checkout /></>} />
           <Route path="/payment" element={<><Seo title="Payment" noindex /><Payment /></>} />
           <Route path="/order-success" element={<><Seo title="Order Confirmed" noindex /><OrderSuccess /></>} />

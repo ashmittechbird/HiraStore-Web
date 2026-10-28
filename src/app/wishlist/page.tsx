@@ -102,7 +102,6 @@ export default function WishlistPage() {
                     <h3 className="product-name"><Link to={`/product/${encodeURIComponent(item.id)}`} className="card-link" onClick={e => e.stopPropagation()}>{item.name}</Link></h3>
                     <div className="product-price">
                       <span className="price-current">{priceStr}</span>
-                      <div className="product-rating"><span className="stars">★★★★★</span></div>
                     </div>
                   </div>
                 </article>
@@ -162,8 +161,6 @@ export default function WishlistPage() {
         .product-card:hover .product-name { color:#003d4a; }
         .product-price { display:flex; align-items:center; justify-content:space-between; }
         .price-current { font-size:16px; font-weight:600; color:#2c2c2c; font-variant-numeric:tabular-nums; }
-        .product-rating { display:flex; align-items:center; }
-        .stars { color:#c9a84c; font-size:11px; letter-spacing:0.5px; }
 
         .wl-empty { text-align:center; padding:80px 20px; }
         .empty-icon { margin-bottom:20px; opacity:0.35; display:flex; justify-content:center; }

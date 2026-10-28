@@ -26,6 +26,9 @@ export const CONTACT_EMAIL = 'info@Thehirastore.com';
 const FREE_SHIPPING_OVER = 100;
 const SHIPPING_FLAT = 5;
 
+/** Returns window, confirmed by the owner. Mirrors POLICY in app/help/page.tsx. */
+const RETURN_DAYS = 30;
+
 const ACCESSORY_PREFIX = 'Accessories - ';
 
 /**
@@ -163,6 +166,15 @@ export function productLd(item, images) {
       availability: 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/NewCondition',
       seller: { '@id': SITE_URL + '/#organization' },
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy',
+        applicableCountry: 'US',
+        returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: RETURN_DAYS,
+        returnMethod: 'https://schema.org/ReturnByMail',
+        // Unwanted pieces come back at the customer's cost; faulty ones at ours.
+        returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+      },
       shippingDetails: {
         '@type': 'OfferShippingDetails',
         shippingRate: { '@type': 'MonetaryAmount', value: shippingFor(price).toFixed(2), currency: 'USD' },

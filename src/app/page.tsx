@@ -165,7 +165,6 @@ function ProductCard({ item, onAddToCart, badge }: { item: Product; onAddToCart:
           <h3 className="product-name"><Link to={`/product/${encodeURIComponent(id)}`} className="card-link" onClick={e => e.stopPropagation()}>{name}</Link></h3>
           <div className="product-price">
             <span className="price-current">{priceStr}</span>
-            <div className="product-rating"><span className="stars">★★★★★</span></div>
           </div>
         </div>
       </div>
@@ -712,8 +711,6 @@ export default function HomePage() {
         .product-meta { font-size: 10px; font-weight: 600; color: var(--text-light); margin-bottom: 6px; letter-spacing: 0.1em; text-transform: uppercase; }
         .product-price { display: flex; align-items: center; justify-content: space-between; }
         .price-current { font-size: 16px; font-weight: 600; color: var(--text-main); }
-        .product-rating { display: flex; align-items: center; }
-        .stars { color: #c9a84c; font-size: 11px; letter-spacing: 0.5px; }
 
         /* Philosophy */
         .philosophy-section { padding: 120px 20px; text-align: center; background: #fff; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }

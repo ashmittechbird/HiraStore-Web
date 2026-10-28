@@ -18,19 +18,20 @@ import { whatsappLink } from '@/lib/contact';
  * the usual necklace length names, Indian bangle sizing. They are facts about
  * jewellery, not claims about this shop, so they are safe to state plainly.
  *
- * POLICY below is the part that is neither. Dispatch times and the returns
- * window are commitments only the store can make, and inventing them would put
- * promises on the site that nobody agreed to. The values are conservative
- * placeholders, gathered in one place so they are easy to correct — change them
- * here and both the page and its summary update together.
+ * POLICY below is the part that is neither: commitments only the store can
+ * make. The 30-day returns window and the one-year warranty are confirmed by
+ * the owner (Oct 2026) and match what every product page promises. The
+ * dispatch and delivery times are still conservative estimates. Change them
+ * here and both the page and its summary update together — and keep
+ * RETURN_DAYS in lib/structuredData.mjs in step, which tells Google.
  */
 const POLICY = {
   /** Working days between an order being placed and leaving the studio. */
   dispatchDays: '2-3',
   /** Working days in transit within the United States, after dispatch. */
   deliveryDaysUS: '3-7',
-  /** Days from delivery within which a problem must be reported. */
-  returnWindowDays: 7,
+  /** Days from delivery within which a return or a problem must be reported. */
+  returnWindowDays: 30,
   /** Who pays return postage when an item is unwanted rather than faulty. */
   returnPostage: 'the customer',
 };

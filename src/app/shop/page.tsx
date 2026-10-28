@@ -507,7 +507,6 @@ function ShopContent() {
                       <p className="product-code">{id}</p>
                       <div className="product-price">
                         <span className="price-current">{price > 0 ? `$${price.toLocaleString('en-US')}` : 'Price on request'}</span>
-                        <div className="product-rating"><span className="stars">★★★★★</span></div>
                       </div>
                     </div>
                   </article>
@@ -754,8 +753,6 @@ function ShopContent() {
         .product-card:hover .product-name { color:var(--gold-dark); }
         .product-price { display:flex; align-items:center; justify-content:space-between; }
         .price-current { font-size:16px; font-weight:600; color:var(--text-dark); font-variant-numeric:tabular-nums; }
-        .product-rating { display:flex; align-items:center; }
-        .stars { color:#c9a84c; font-size:11px; letter-spacing:0.5px; }
 
         /* SKELETON */
         .skeleton-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:28px; }
